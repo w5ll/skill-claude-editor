@@ -1,0 +1,17 @@
+# vídeos são grandes demais para o git
+*.mp4
+*.mov
+*.MOV
+*.m4v
+*.mkv
+*.webm
+*.wav
+*.mp3
+*.m4a
+saida/*/quadros/
+*.quadros.jpg
+dist/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store

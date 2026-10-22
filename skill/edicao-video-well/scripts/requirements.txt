@@ -1,0 +1,3 @@
+faster-whisper>=1.1
+numpy>=1.26
+fonttools>=4.40
