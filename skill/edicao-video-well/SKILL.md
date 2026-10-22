@@ -1,6 +1,6 @@
 ---
 name: edicao-video-well
-description: "Edita os vídeos gravados pelo Well para o Instagram (@lunardiwell): corta pausas, respirações, erros e repetições, junta tomadas, coloca legenda no padrão da marca, iguala o volume e entrega o MP4 pronto para postar. Use quando ele mandar um vídeo bruto, pedir para editar, cortar, legendar ou ajustar um vídeo já editado."
+description: "Edita os vídeos gravados pelo Well para o Instagram (@lunardiwell): corta pausas, respirações, erros e repetições, junta tomadas, coloca legenda no padrão da marca, faz elementos 3D da marca entrarem quando ele fala a palavra certa, iguala o volume e entrega o MP4 pronto para postar. Use quando ele mandar um vídeo bruto, pedir para editar, cortar, legendar, pôr elementos 3D ou ajustar um vídeo já editado."
 ---
 
 # Edição de vídeo do Well
@@ -15,6 +15,7 @@ Sempre em português, com acentuação, sem travessão e sem termo em inglês se
 | --- | --- | --- |
 | `referencias/cortes.md` | Critérios editoriais: tomada certa, o que cortar, o que nunca cortar | Antes de revisar o `cortes.json` |
 | `referencias/legendas.md` | Estilo, posição, grafia dos termos, como corrigir | Antes de gerar e revisar a legenda |
+| `referencias/elementos-3d.md` | Catálogo dos elementos 3D, modos, quando usar | Ao sugerir e revisar os elementos |
 | `referencias/som-e-imagem.md` | Volume, HDR do iPhone, formato, cor, música | Ao montar o cartão e renderizar |
 | `referencias/gravacao.md` | Dicas para o Well gravar de um jeito que edita melhor | Quando o bruto vier com problema recorrente |
 | `referencias/instalacao.md` | O que precisa estar instalado | Se faltar alguma ferramenta |
@@ -59,6 +60,7 @@ Vou juntar os 2 vídeos num Reels vertical, ritmo natural, com legenda.
 - 🎞️ **Vídeos**: 1. `IMG_2040.mov` (1:12) · 2. `IMG_2041.mov` (0:40) _(você mandou)_
 - ✂️ **Limpeza**: tiro pausas longas, respirações, erros e repetições; mantenho palavras inteiras e pausas de efeito _(sugerido)_
 - 💬 **Legenda**: ligada, até 3 palavras por vez, palavra falada em azul, fonte da marca, abaixo do rosto · sem arquivo de legenda separado _(sugerido)_
+- ✨ **Elementos 3D**: 4 elementos da marca flutuando no topo quando você fala "WhatsApp", "5 minutos", "funil" e "contrato" · 1 tela cheia no gancho _(sugerido)_
 - 🔊 **Som**: voz no volume padrão das redes · sem música, sem efeito, sem redução de ruído _(sugerido)_
 - 🎨 **Imagem**: cor original, sem filtro _(sugerido)_
 - 📐 **Formato**: vertical 9:16, mesmo tamanho e fluidez do original _(do seu vídeo)_
@@ -78,7 +80,7 @@ Regras do cartão:
 - "ok", "pode", "manda" só aprovam se responderem todas as pendências. Escolher outra opção ou pedir mudança é mudança: mostre o cartão de novo com ✏️ nas linhas alteradas e espere outro ok.
 - Música, efeito sonoro e trilha só entram se o Well pedir com essas palavras. "Deixa dinâmico" não é pedido de música.
 
-Padrões propostos: ritmo natural, legenda ligada, voz em -14 LUFS, cor e formato do original, sem música, sem efeito, sem redução de ruído, amostra conferida por você.
+Padrões propostos: ritmo natural, legenda ligada, elementos 3D sobrepostos nas palavras que combinam (um a cada 6 s no máximo; liste quais no cartão depois de uma transcrição rápida, ou diga "nos momentos certos" se ainda não transcreveu), voz em -14 LUFS, cor e formato do original, sem música, sem efeito, sem redução de ruído, amostra conferida por você.
 
 ### 3. Transcrever e propor os cortes (depois do ok)
 
@@ -101,6 +103,14 @@ python scripts/legendas.py --pasta saida/... [--formato 9:16] [--posicao baixo|m
 
 Revise `legendas.json` seguindo `referencias/legendas.md` (grafia de marca e termo jurídico, números, nomes). Corrija o campo `texto` de cada bloco e rode de novo com `--reaproveitar`. Use o mesmo `--formato` que vai no renderizar.
 
+### 4b. Elementos 3D
+
+```bash
+python scripts/elementos.py sugerir --pasta saida/... [--modo sobreposto|tela]
+```
+
+Revise `elementos.json` seguindo `referencias/elementos-3d.md`: o elemento combina com a frase, não cobre o rosto, o rótulo só traz número que o Well falou. Os elementos entram sozinhos no renderizar. Se o Well desligou os elementos no cartão, pule este passo (e apague `elementos.json` se existir).
+
 ### 5. Amostra de 8 a 15 s
 
 ```bash
@@ -108,7 +118,7 @@ python scripts/renderizar.py --pasta saida/... --amostra 0 12 [--formato 9:16] [
 python scripts/conferir.py --pasta saida/... --video saida/.../amostra-v001.mp4 --retranscrever
 ```
 
-Escolha a janela da amostra com o trecho mais difícil (emendas próximas, frase regravada). Olhe a folha de quadros e alguns quadros soltos (`ffmpeg -ss <segundos> -i video.mp4 -frames:v 1 quadro.jpg`): legenda fora do rosto, legível, palavra certa. Não acrescente nada só para enfeitar a amostra.
+Escolha a janela da amostra com o trecho mais difícil (emendas próximas, frase regravada, um elemento 3D). Olhe a folha de quadros e alguns quadros soltos (`ffmpeg -ss <segundos> -i video.mp4 -frames:v 1 quadro.jpg`): legenda fora do rosto, legível, palavra certa. Não acrescente nada só para enfeitar a amostra.
 
 Se o Well pediu para aprovar a amostra, mande para ele e espere. Se não, siga.
 
@@ -127,8 +137,9 @@ Só entregue com tudo "ok". Qualquer "FALHOU" você resolve (ajusta corte, legen
 ### ✅ Vídeo pronto
 
 - 🎬 **Vídeo**: `saida/2026-10-22_lead-curioso/2026-10-22_lead-curioso-v001.mp4`
-- ✂️ **O que mudou**: 1:52 → 0:51 · 23 pausas e 2 frases repetidas tiradas · legenda colocada
-- 🔍 **Conferido**: toca do começo ao fim, volume, legenda, enquadramento, nenhuma palavra cortada
+- ✂️ **O que mudou**: 1:52 → 0:51 · 23 pausas e 2 frases repetidas tiradas · legenda e 4 elementos 3D colocados
+- ✨ **Elementos 3D**: mensagem em 0:04 ("WhatsApp"), relógio em 0:12 ("5 minutos"), ...
+- 🔍 **Conferido**: toca do começo ao fim, volume, legenda, elementos, enquadramento, nenhuma palavra cortada
 - ⚠️ **Limites**: <só se houver: áudio estourado no original, trecho com ruído, algo que não deu>
 
 👉 Quer mudar algo? Por exemplo "legenda maior", "corta o começo", "mais rápido".
@@ -146,7 +157,7 @@ Mudança pontual ("legenda maior", "volta a frase do 0:30") mexe só no que foi 
 - Nunca sobrescreva uma entrega anterior.
 - A fala é do Well: não corte ressalva, negação ou condição que muda o sentido (cuidado especial com o que a OAB exige, veja `referencias/cortes.md`). Não junte pedaços de frases diferentes para criar uma frase que ele não disse.
 - Corte medido no áudio, não estimado pelo roteiro. O roteiro serve para grafia e ordem.
-- Sem música, efeito, filtro de cor, conversão de HDR ou redução de ruído sem o Well escolher no cartão.
+- Sem elemento 3D, música, efeito, filtro de cor, conversão de HDR ou redução de ruído sem o Well escolher no cartão.
 - Nada é enviado para fora do computador. A transcrição é local.
 - Nunca publique. Postar é com a skill de conteúdo, e só com "pode postar".
 

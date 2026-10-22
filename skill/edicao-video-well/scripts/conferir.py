@@ -121,11 +121,24 @@ def main():
     quadros = a.video.with_suffix(".quadros.jpg")
     folha_de_quadros(a.video, dur, quadros)
 
+    # Um quadro no meio de cada elemento 3D: conferir se não cobre o rosto nem a legenda.
+    quadros_elementos = []
+    for n, el in enumerate(registro.get("elementos") or []):
+        t = el["inicio"] + el["duracao"] * 0.6 - ((registro.get("amostra") or [0])[0])
+        if 0 <= t < dur:
+            destino = a.video.with_name(f"{a.video.stem}.elemento{n:02d}.jpg")
+            subprocess.run(["ffmpeg", "-v", "error", "-nostdin", "-y", "-ss", f"{t:.3f}", "-i", str(a.video),
+                            "-frames:v", "1", "-vf", "scale=-2:720", "-q:v", "3", str(destino)], check=False)
+            if destino.exists():
+                quadros_elementos.append(str(destino))
+
     resultado = {"video": str(a.video), "checks": checks, "aprovado": all(c["ok"] for c in checks),
-                 "quadros": str(quadros), "texto_retranscrito": texto_obtido}
+                 "quadros": str(quadros), "quadros_elementos": quadros_elementos, "texto_retranscrito": texto_obtido}
     salvar_json(a.video.with_suffix(".conferencia.json"), resultado)
     for c in checks:
         print(f"  {'ok ' if c['ok'] else 'FALHOU'}  {c['item']}: {c['detalhe']}")
+    for q in quadros_elementos:
+        print(f"  olhar elemento 3D: {q}")
     print(f"\n{'APROVADO' if resultado['aprovado'] else 'COM PROBLEMA'}  · folha de quadros: {quadros}")
 
 

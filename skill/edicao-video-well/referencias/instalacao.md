@@ -6,7 +6,8 @@ Precisa, no computador onde o Claude Code roda:
 | --- | --- | --- |
 | Python 3.10 ou mais novo | rodar os scripts | já vem no Mac recente; ou `brew install python` |
 | ffmpeg e ffprobe | ler, cortar e montar o vídeo | Mac: `brew install ffmpeg` · Linux: `apt install ffmpeg` |
-| faster-whisper, numpy, fonttools | transcrição local e medida da legenda | `pip install -r scripts/requirements.txt` |
+| faster-whisper, numpy, fonttools, playwright | transcrição local, medida da legenda, desenho dos elementos 3D | `pip install -r scripts/requirements.txt` |
+| Chromium do Playwright | desenhar os elementos 3D | `python -m playwright install chromium` (ou usa o Google Chrome instalado) |
 
 O ffmpeg precisa ter `libass` (legenda) e `zimg` (conversão de HDR). O do Homebrew e o do Ubuntu já vêm com os dois. Confira com:
 
@@ -29,6 +30,7 @@ Depois disso nada sai do computador.
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r skill/edicao-video-well/scripts/requirements.txt
+python -m playwright install chromium
 ```
 
 ## Onde rodar

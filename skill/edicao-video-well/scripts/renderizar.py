@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import tempfile
 import wave
@@ -118,6 +119,7 @@ def main():
     ap.add_argument("--hdr", choices=["sdr", "manter"], help="obrigatório quando o original é HDR")
     ap.add_argument("--volume", type=float, default=-14.0, help="volume final em LUFS")
     ap.add_argument("--sem-normalizar", action="store_true", help="mantém o volume original")
+    ap.add_argument("--sem-elementos", action="store_true", help="ignora elementos.json")
     ap.add_argument("--nome", help="nome base do arquivo final (padrão: nome da pasta)")
     a = ap.parse_args()
     exigir("ffmpeg")
@@ -163,7 +165,7 @@ def main():
             m = medir_loudnorm(wav, a.volume, -1.5)
             filtro_audio = filtro_loudnorm(m, a.volume, -1.5)
 
-        cmd = ["ffmpeg", "-v", "error", "-stats", "-nostdin", "-y"]
+        cmd = ["ffmpeg", "-v", os.environ.get("FFLOG", "error"), "-stats", "-nostdin", "-y"]
         grafos, rotulos = [], []
         grupos = blocos_por_video(trechos)
         for n, grupo in enumerate(grupos):
@@ -184,6 +186,14 @@ def main():
             rotulos.append(f"[v{n}]")
         cmd += ["-i", str(wav)]
         idx_audio = len(grupos)
+        elementos = []
+        if not a.sem_elementos and (pasta / "elementos.json").exists():
+            if a.hdr == "manter":
+                erro("elementos 3D não funcionam com --hdr manter; use --hdr sdr ou --sem-elementos")
+            from elementos import desenhar
+            elementos = desenhar(pasta, largura, altura, fps)
+            for el in elementos:
+                cmd += ["-thread_queue_size", "64", "-i", el["video"]]
         cadeia = "".join(rotulos) + f"concat=n={len(grupos)}:v=1:a=0[vc]" if len(grupos) > 1 else None
         if cadeia:
             grafos.append(cadeia)
@@ -191,6 +201,14 @@ def main():
         else:
             atual = "[v0]"
 
+        for k, el in enumerate(elementos):
+            entrada = idx_audio + 1 + k
+            grafos.append(f"[{entrada}:v]format=rgba,setpts=PTS-STARTPTS+{el['inicio']:.3f}/TB[e{k}]")
+            grafos.append(f"{atual}[e{k}]overlay=x={el['x']}:y={el['y']}:eof_action=pass:format=auto[ve{k}]")
+            atual = f"[ve{k}]"
+        if elementos:
+            grafos.append(f"{atual}format=yuv420p[vf]")
+            atual = "[vf]"
         if usar_legenda:
             grafos.append(f"{atual}ass=filename='{caminho_filtro(ass)}':fontsdir='{caminho_filtro(PASTA_FONTES)}'[vl]")
             atual = "[vl]"
@@ -225,6 +243,8 @@ def main():
     registro = {
         "arquivo": str(destino), "amostra": a.amostra, "formato": a.formato, "largura": largura, "altura": altura,
         "fps": f"{fps.numerator}/{fps.denominator}", "legenda": usar_legenda, "hdr": a.hdr,
+        "elementos": [{"elemento": e["elemento"], "inicio": e["inicio"], "duracao": e["duracao"],
+                       "modo": e["modo"]} for e in elementos],
         "volume_alvo": None if a.sem_normalizar else a.volume,
         "duracao_esperada": round((a.amostra[1] - a.amostra[0]) if a.amostra else duracao, 3),
         "duracao_audio_montado": round(dur_audio, 3),
