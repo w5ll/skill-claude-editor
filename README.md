@@ -72,6 +72,8 @@ python conferir.py --pasta $P --video $P/2026-10-22_lead-curioso-v001.mp4 --retr
 - Zoom e reenquadramento que acompanha o rosto.
 - Capa do Reels.
 
+O que dá para trazer do editonny para cobrir isso, em ordem de prioridade, está em [docs/comparacao-editonny.md](docs/comparacao-editonny.md).
+
 ## Créditos
 
 A forma de trabalhar (cartão de ajustes antes de editar, corte medido na onda sonora, amostra antes do vídeo inteiro, conferência real do arquivo) veio do projeto aberto [editonny](https://github.com/soumatheusgomes/editonny), de Matheus Gomes (licença MIT). O código daqui é próprio e bem mais enxuto. Fonte Sora: The Sora Project Authors, licença SIL Open Font License 1.1 (`skill/edicao-video-well/assets/fontes/OFL.txt`).
