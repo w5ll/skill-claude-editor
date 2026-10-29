@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "skill" / "edicao-video-well" / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "skill" / "welldit" / "scripts"))
 
 import publicar  # noqa: E402
 
@@ -162,6 +162,29 @@ class TestCapa(unittest.TestCase):
             g = cv2.imread(str(grade))
             self.assertEqual(g.shape[0], 960)
             self.assertGreater(g.shape[1], 540)
+
+
+class TestCapaComPerfil(unittest.TestCase):
+    def test_a_capa_usa_as_cores_do_perfil(self):
+        import copy
+        import cv2
+        marca = publicar.carregar_marca()
+        outra = copy.deepcopy(marca)
+        outra["cores"]["destaque"] = "#ff0000"       # a palavra em destaque passa a ser vermelha
+        fundo = np.full((1920, 1080, 3), 60, np.uint8)
+        with tempfile.TemporaryDirectory() as d:
+            base = Path(d) / "base.png"
+            cv2.imwrite(str(base), fundo)
+            try:
+                padrao = publicar.desenhar_capa(base, "Um *destaque* aqui", 1080, 1920, (1000, 1500), marca)
+                vermelha = publicar.desenhar_capa(base, "Um *destaque* aqui", 1080, 1920, (1000, 1500), outra)
+            except SystemExit:
+                self.skipTest("sem navegador para desenhar a capa")
+        def vermelho(jpg):
+            img = cv2.imdecode(np.frombuffer(jpg, np.uint8), cv2.IMREAD_COLOR).astype(int)
+            return int(((img[:, :, 2] > 200) & (img[:, :, 1] < 80) & (img[:, :, 0] < 80)).sum())
+        self.assertEqual(vermelho(padrao), 0)
+        self.assertGreater(vermelho(vermelha), 500)
 
 
 class TestPacote(unittest.TestCase):
