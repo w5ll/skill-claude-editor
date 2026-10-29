@@ -50,7 +50,7 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 
 **Trilha A: painel que roda a edição** (nesta ordem)
 
-- [ ] **Fase 4.** Orquestrador e estado da edição (`editar.py`, `trabalho.json`, modelos de edição) · _Well (proposta)_
+- [ ] **Fase 4.** Orquestrador e estado da edição (`editar.py`, `trabalho.json`, modelos de edição) · _Lucas, em andamento_ ([especificação](docs/fase-4-orquestrador.md))
 - [ ] **Fase 5.** Painel que executa: formulário do cartão, fila, aprovações, senha de sessão · _Well (proposta)_
 - [ ] **Fase 6.** Revisão de cortes e legenda no painel · _Well (proposta)_
 - [ ] **Fase 7.** Elementos, zoom e som no painel, conferência com botões de correção · _Well (proposta)_
