@@ -2,6 +2,10 @@
 
 O projeto deixa de ser a ferramenta do Instagram de uma pessoa e passa a ser **uma ferramenta de edição de vídeo para qualquer pessoa com acesso ao repositório**. Cada pessoa usa a própria marca (cores, fonte, nome) e escolhe como quer editar. O visual que já criamos (fundo escuro, azul acinzentado, fonte Sora) vira o **perfil padrão**, sem nenhum perfil de rede social amarrado.
 
+- **Nome: welldit** (well + edit), para o projeto e para a skill.
+- **Visual padrão: ARVEN.** As cores e os elementos 3D atuais ficam como base do projeto, com o aviso **"elementos base ARVEN"** visível. Quem usar o projeto cria o próprio perfil e troca o aviso pelo seu.
+- **Repositório público**, como já está no GitHub (sem licença por enquanto).
+
 Este arquivo é o mapa. O checklist resumido fica no [README](../README.md#fases-do-projeto). Cada fase tem a sua especificação em `docs/fase-N-nome.md`, escrita no começo da fase (como a [Fase 2](fase-2-elementos-gerados.md)).
 
 ## Como as fases se encaixam
@@ -26,11 +30,12 @@ Inspeção, cartão de ajustes, transcrição local, cortes medidos no áudio, r
 Elementos novos desenhados para as ideias que nenhum dos 12 prontos representa, com validação, folha de prévia e catálogo. Especificação: [fase-2-elementos-gerados.md](fase-2-elementos-gerados.md).
 
 ### Fase 3. Projeto para qualquer pessoa: perfis de marca · médio
-- **Perfil de marca** em `perfis/<nome>/` com `marca.json` (nome, cores, fonte, @ opcional) e a fonte. Os scripts passam a aceitar `--perfil` (sem ele, usam o perfil padrão). O `marca.json` atual vira o perfil padrão, sem o @ e sem o nome do Well.
+- **Perfil de marca** em `perfis/<nome>/` com `marca.json` (nome, cores, fonte, @ opcional, créditos) e a fonte. Os scripts passam a aceitar `--perfil` (sem ele, usam o perfil padrão). O `marca.json` atual vira o perfil **arven**, o padrão: mesmas cores, fonte e elementos, sem o @ pessoal. Um perfil `_modelo` para a pessoa copiar e preencher.
+- **Aviso "elementos base ARVEN"**: aparece no topo e nos créditos do README, no rodapé do painel e no campo `creditos` do perfil. Vale só para a marca (cores e elementos). Continua proibido levar nome de cliente, número real ou método interno da ARVEN para o projeto.
 - **Textos neutros**: SKILL.md, referências, README, CLAUDE.md e exemplos falam de "a pessoa que grava", sem o nome do Well, o @ dele nem o nicho jurídico como pressuposto.
 - **Regras de nicho viram opcionais**: os gatilhos jurídicos (OAB, ética, cadeado) saem do padrão e viram um pacote que o perfil liga. A regra "nunca cortar o aviso obrigatório" passa a ser uma lista de **avisos obrigatórios** do perfil.
-- **Nome**: o projeto e a skill ganham um nome neutro (decisão em aberto, veja abaixo) e a pasta `skill/edicao-video-well/` é renomeada junto.
-- **Pronto quando**: um perfil novo, com outras cores, gera legenda e elementos nas cores dele; o perfil padrão produz quadros **idênticos** aos de hoje (mesmo teste de comparação da Fase 2); não sobra menção ao perfil de ninguém fora de créditos e histórico.
+- **Nome welldit**: a pasta `skill/edicao-video-well/` vira `skill/welldit/`, o arquivo gerado vira `welldit.skill` e o `name:` do SKILL.md muda junto. O CLAUDE.md e o README são reescritos para o novo escopo. Renomear o repositório no GitHub (hoje `skill-claude-editor`) é o último passo da fase, com a confirmação de quem manda, porque muda o endereço (o GitHub redireciona o antigo).
+- **Pronto quando**: um perfil novo, com outras cores, gera legenda e elementos nas cores dele; o perfil padrão produz quadros **idênticos** aos de hoje (mesmo teste de comparação da Fase 2); não sobra menção ao perfil de ninguém fora de créditos e histórico; o aviso "elementos base ARVEN" aparece nos três lugares.
 - Toca: quase tudo. Por isso é a primeira e é feita por uma pessoa só.
 
 ### Fase 4. Orquestrador e estado da edição · médio
@@ -84,6 +89,25 @@ Elementos novos desenhados para as ideias que nenhum dos 12 prontos representa, 
 - **C1. Instalação em um comando e outros sistemas** · médio: um `instalar.sh` que cria o ambiente e confere as ferramentas, e o tutorial para Windows e Linux (hoje só há o do Mac).
 - **C2. Testes automáticos** · médio: a comparação de quadros dos elementos (feita à mão na Fase 2), o `validar` dos desenhos, os cortes e a legenda, rodando sozinhos a cada envio no GitHub. Com mais de uma pessoa mexendo, é o que impede uma fase de quebrar a outra.
 
+## Quem faz o quê (proposta)
+
+Duas pessoas, duas trilhas, cargas parecidas: **Well** na base e na trilha A (o painel, que é o que mais pesa e tem ordem fixa) e **Lucas** nas trilhas C e B (independentes, boas para andar em paralelo). Quem trabalha numa onda não depende da outra pessoa na mesma onda. A divisão é uma proposta: confirme com o Lucas e troque o nome no checklist do README.
+
+| Onda | Well | Lucas |
+| --- | --- | --- |
+| **0** | **Fase 3** (base). Decide o nome, a marca e o aviso | Instala o projeto seguindo o tutorial do README numa máquina limpa e **anota tudo que travar** (vira a base da C1). Escreve a especificação da C2 e da Fase 9 em `docs/`, sem mexer em código |
+| **1** | **Fase 4** (orquestrador e estado) | **C2** (testes automáticos): primeiro, para proteger todas as fases seguintes |
+| **2** | **Fase 5** (painel que executa) | **C1** (instalação em um comando, Windows e Linux) e **Fase 9** (gancho e olhar) |
+| **3** | **Fase 6** (revisão de cortes e legenda) | **Fase 10** (pacote de publicação e capa) |
+| **4** | **Fases 7 e 8** (elementos, zoom e som no painel; Claude opcional) | **Fases 11 e 12** (direção de arte e fatos; cenas explicativas) |
+
+Por que assim:
+
+- **A Fase 3 é sozinha**, mas o Lucas não fica parado: instalar numa segunda máquina é o melhor teste de instalação que existe, e as especificações são arquivos novos, sem conflito.
+- **A C2 vem logo depois da Fase 3** porque, com duas pessoas mexendo, os testes são o que avisa quando uma fase quebra a outra.
+- **A trilha A é sequencial** (cada fase usa a anterior), então fica com uma pessoa só. As fases do Lucas são scripts novos, um por fase, e só se encontram com o painel no fim de cada uma (um botão a mais na tela).
+- Cada onda é pequena o bastante para fechar numa semana de uso normal do plano, a julgar pelo gasto de referência (veja abaixo). Se uma onda sobrar, adiante a próxima fase da sua trilha.
+
 ## Como trabalhamos em dupla
 
 1. **Uma fase, um ramo (branch), um pedido de revisão (pull request).** O ramo se chama `fase-N-nome-curto`. A outra pessoa revisa antes de entrar na `main`.
@@ -97,11 +121,22 @@ Elementos novos desenhados para as ideias que nenhum dos 12 prontos representa, 
 
 ## Gasto do plano
 
+**Referência até agora:** a Fase 2 e este planejamento custaram cerca de **2% do plano semanal** no Sonnet 5.5 com esforço médio (informado pelo Well, a confirmar). Se as fases grandes custarem algo parecido, o roadmap inteiro cabe em poucas semanas, mas só os números reais de cada fase vão dizer.
+
 O Claude Code não deixa o Claude ver quanto do plano foi usado. Por isso, **antes e depois de cada fase, quem trabalhou anota o número que o próprio Claude Code mostra** (o uso do plano), e a diferença entra na tabela do README. Serve para planejar quantas fases cabem por semana e quais compensam o custo.
 
-## Decisões em aberto
+## Decisões
 
-- **Nome do projeto e da skill**: precisa ser neutro (sem pessoa, sem rede social). Ele define o nome da pasta, do arquivo `.skill` e do repositório.
-- **Escopo do perfil de marca**: além de cores, fonte e nome, o perfil guarda o @ (opcional), os termos da transcrição, os avisos obrigatórios e o pacote de gatilhos do nicho?
-- **Quem pega a Fase 3** e como as trilhas A, B e C se dividem entre vocês.
-- **O repositório fica privado ou público**? Hoje o texto já evita dados sensíveis, mas a decisão muda como tratamos créditos e licenças.
+**Tomadas**
+
+- **Nome:** welldit.
+- **Visual padrão:** ARVEN (cores e elementos atuais), com o aviso "elementos base ARVEN".
+- **Repositório:** público, por enquanto.
+- **Divisão:** Well na Fase 3 e na trilha A; Lucas nas trilhas C e B (proposta acima, falta o Lucas confirmar).
+
+**Em aberto**
+
+- **Onde mais mostrar o aviso ARVEN**: além do README, do painel e do perfil, ele deve aparecer no cartão de ajustes ou na entrega? A proposta é não aparecer no vídeo nem no cartão.
+- **Licença**: o repositório é público e não tem licença, o que na prática reserva todos os direitos. Se a ideia é qualquer pessoa usar e adaptar, falta escolher uma (por exemplo MIT, como o editonny que inspirou o projeto). Os elementos base ARVEN poderiam ter uma observação própria.
+- **Renomear o repositório** para `welldit` no GitHub (no fim da Fase 3).
+- **Escopo do perfil de marca**: o perfil guarda cores, fonte, nome, @ opcional, créditos, termos da transcrição, avisos obrigatórios e o pacote de gatilhos do nicho. Falta alguma coisa?

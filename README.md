@@ -22,7 +22,7 @@ Para instalar no seu Mac, veja [Instalar no seu Mac, com o VS Code](#instalar-no
 
 ## Fases do projeto
 
-O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de edição para qualquer pessoa com acesso ao repositório**, com a marca configurável e um painel que roda a edição inteira sem abrir uma conversa. O plano completo, as dependências e as regras de trabalho em dupla estão em [docs/roadmap.md](docs/roadmap.md).
+O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de edição para qualquer pessoa com acesso ao repositório**, com a marca configurável e um painel que roda a edição inteira sem abrir uma conversa. O nome novo é **welldit**, e o visual padrão segue a marca ARVEN (**elementos base ARVEN**). O plano completo, as dependências, a divisão entre as duas pessoas e as regras de trabalho em dupla estão em [docs/roadmap.md](docs/roadmap.md).
 
 **Como usar este checklist:** quem pega uma fase escreve o próprio nome no lugar de "livre", num commit pequeno, antes de começar. Ao terminar, marca a caixa e preenche o gasto do plano na tabela abaixo. A fase 3 é feita primeiro e por uma pessoa só; depois dela, as trilhas A, B e C andam em paralelo.
 
@@ -33,34 +33,36 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 
 **Base (primeiro e sozinha)**
 
-- [ ] **Fase 3.** Projeto para qualquer pessoa: perfis de marca, textos neutros, regras de nicho opcionais, nome novo · _livre_
+- [ ] **Fase 3.** Projeto para qualquer pessoa: perfis de marca, textos neutros, regras de nicho opcionais, nome welldit, aviso "elementos base ARVEN" · _Well_
 
 **Trilha A: painel que roda a edição** (nesta ordem)
 
-- [ ] **Fase 4.** Orquestrador e estado da edição (`editar.py`, `trabalho.json`, modelos de edição) · _livre_
-- [ ] **Fase 5.** Painel que executa: formulário do cartão, fila, aprovações, senha de sessão · _livre_
-- [ ] **Fase 6.** Revisão de cortes e legenda no painel · _livre_
-- [ ] **Fase 7.** Elementos, zoom e som no painel, conferência com botões de correção · _livre_
-- [ ] **Fase 8.** Claude por trás, opcional: revisar cortes e desenhar elementos pelo painel · _livre_
+- [ ] **Fase 4.** Orquestrador e estado da edição (`editar.py`, `trabalho.json`, modelos de edição) · _Well (proposta)_
+- [ ] **Fase 5.** Painel que executa: formulário do cartão, fila, aprovações, senha de sessão · _Well (proposta)_
+- [ ] **Fase 6.** Revisão de cortes e legenda no painel · _Well (proposta)_
+- [ ] **Fase 7.** Elementos, zoom e som no painel, conferência com botões de correção · _Well (proposta)_
+- [ ] **Fase 8.** Claude por trás, opcional: revisar cortes e desenhar elementos pelo painel · _Well (proposta)_
 
 **Trilha B: conteúdo e entrega** (independentes entre si)
 
-- [ ] **Fase 9.** Gancho dos 3 primeiros segundos e detecção de leitura e olhar · _livre_
-- [ ] **Fase 10.** Pacote de publicação e capa do Reels · _livre_
-- [ ] **Fase 11.** Direção de arte por série, conferência de fatos e imagens de apoio · _livre_
-- [ ] **Fase 12.** Cenas explicativas sincronizadas com a fala · _livre_
+- [ ] **Fase 9.** Gancho dos 3 primeiros segundos e detecção de leitura e olhar · _Lucas (proposta)_
+- [ ] **Fase 10.** Pacote de publicação e capa do Reels · _Lucas (proposta)_
+- [ ] **Fase 11.** Direção de arte por série, conferência de fatos e imagens de apoio · _Lucas (proposta)_
+- [ ] **Fase 12.** Cenas explicativas sincronizadas com a fala · _Lucas (proposta)_
 
 **Trilha C: infraestrutura** (independentes)
 
-- [ ] **C1.** Instalação em um comando e tutorial para Windows e Linux · _livre_
-- [ ] **C2.** Testes automáticos a cada envio no GitHub · _livre_
+- [ ] **C1.** Instalação em um comando e tutorial para Windows e Linux · _Lucas (proposta)_
+- [ ] **C2.** Testes automáticos a cada envio no GitHub · _Lucas (proposta)_
 
 **Gasto do plano** (o número que o Claude Code mostra, antes e depois de cada fase)
 
 | Fase | Quem | Antes | Depois | Commit |
 | --- | --- | --- | --- | --- |
 | 1 | | | | |
-| 2 | | | | `402c088` |
+| 2 | Well | | | `402c088` |
+
+Referência informada: a Fase 2 e o planejamento custaram cerca de **2% do plano semanal** (Sonnet 5.5, esforço médio).
 
 ## Instalar no seu Mac, com o VS Code
 
