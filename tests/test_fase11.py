@@ -11,7 +11,7 @@ from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "skill" / "edicao-video-well" / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "skill" / "welldit" / "scripts"))
 
 import elementos  # noqa: E402
 import fatos  # noqa: E402
@@ -283,14 +283,14 @@ class TestImagens(unittest.TestCase):
 
     def test_chave_do_cache_dos_elementos_antigos_nao_mudou(self):
         pasta, fps = Path("/x"), Fraction(30, 1)
+        marca = elementos.carregar_marca()
         item = {"elemento": "funil", "modo": "sobreposto", "texto": "", "duracao": 2.0}
-        marca = json.loads((elementos.PASTA_SKILL / "marca.json").read_text())["cores"]
-        partes = ["funil", "sobreposto", "", 2.0, 1.0, 540, 960, str(fps), marca]
+        partes = ["funil", "sobreposto", "", 2.0, 1.0, 540, 960, str(fps), elementos.assinatura_da_marca(marca)]
         antigo = hashlib.sha1(json.dumps(partes, sort_keys=True).encode()).hexdigest()[:8]
-        self.assertEqual(elementos.pasta_do_item(pasta, 3, item, 540, 960, fps).name, f"03_funil_{antigo}")
+        self.assertEqual(elementos.pasta_do_item(pasta, 3, item, 540, 960, fps, marca).name, f"03_funil_{antigo}")
         novo = {**item, "elemento": "imagem:cafe"}
-        a = elementos.pasta_do_item(pasta, 0, novo, 540, 960, fps, None, "aaa")
-        b = elementos.pasta_do_item(pasta, 0, novo, 540, 960, fps, None, "bbb")
+        a = elementos.pasta_do_item(pasta, 0, novo, 540, 960, fps, marca, None, "aaa")
+        b = elementos.pasta_do_item(pasta, 0, novo, 540, 960, fps, marca, None, "bbb")
         self.assertNotEqual(a, b)
 
     def test_imagem_vira_video_nos_dois_modos(self):
