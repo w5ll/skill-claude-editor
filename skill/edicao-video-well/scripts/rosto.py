@@ -63,7 +63,7 @@ def detector(largura: int, altura: int):
     return cv2.FaceDetectorYN.create(str(MODELO), "", (largura, altura), CONFIANCA, 0.3, 50)
 
 
-def medir_video(arquivo: str, largura: int, altura: int) -> list:
+def medir_video(arquivo: str, largura: int, altura: int, pasta=None) -> list:
     """Uma medida a cada 0,1 s do arquivo inteiro, já no enquadramento final (frações)."""
     k = max(1, round(largura / LARGURA_ANALISE))
     w, h = largura // k, altura // k
@@ -74,11 +74,19 @@ def medir_video(arquivo: str, largura: int, altura: int) -> list:
                              "-f", "rawvideo", "-"], stdout=subprocess.PIPE)
     tam = w * h * 3
     medidas = []
+    try:
+        duracao = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0",
+                                        arquivo], capture_output=True, text=True).stdout.strip() or 0)
+    except ValueError:
+        duracao = 0.0
     while True:
         bruto = proc.stdout.read(tam)
         if len(bruto) < tam:
             break
         quadro = np.frombuffer(bruto, np.uint8).reshape(h, w, 3)
+        if pasta is not None and duracao:
+            from comum import andamento
+            andamento(pasta, "procurando o rosto", len(medidas) * PASSO / duracao, Path(arquivo).name, forcar=False)
         _, faces = det.detect(quadro)
         if faces is None or len(faces) == 0:
             medidas.append(None)
@@ -166,7 +174,7 @@ def medir(pasta: Path, formato: str) -> dict:
     medidas = {}
     for vid in sorted({t["video"] for t in trechos}):
         print(f"  procurando o rosto em {Path(videos[vid]).name}...")
-        medidas[vid] = medir_video(videos[vid], largura, altura)
+        medidas[vid] = medir_video(videos[vid], largura, altura, pasta)
 
     saida = []
     for n, t in enumerate(trechos):
@@ -251,6 +259,8 @@ def main():
     pasta = a.pasta.resolve()
     if not (pasta / "cortes.json").exists():
         erro("rode propor_cortes.py antes")
+    from comum import andamento, andamento_fim
+    andamento(pasta, "procurando o rosto", 0.0)
     dados = medir(pasta, a.formato)
     salvar_json(pasta / "rosto.json", dados)
     sem = [tr for tr in dados["trechos"] if tr["achou"] < 0.3]
@@ -263,6 +273,7 @@ def main():
             print(f"  trecho {tr['trecho']:>2} {tempo(tr['inicio'])}-{tempo(tr['fim'])}: rosto não encontrado")
     if sem:
         aviso(f"atenção: {len(sem)} trecho(s) quase sem rosto; ali a legenda e o zoom ficam na posição padrão")
+    andamento_fim(pasta, "rosto encontrado")
     print(f"ok  {pasta / 'rosto.json'}")
 
 

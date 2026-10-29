@@ -267,6 +267,8 @@ def main():
     ap.add_argument("--ritmo", choices=sorted(RITMOS), default="natural")
     ap.add_argument("--videos", nargs="*", type=Path)
     a = ap.parse_args()
+    from comum import andamento, andamento_fim
+    andamento(a.pasta, "propondo os cortes")
 
     if a.videos:
         arquivos = [str(v.resolve()) for v in a.videos]
@@ -306,6 +308,7 @@ def main():
     resultado["duracao_original"] = round(total, 2)
     resultado["duracao_final"] = round(final, 2)
     salvar_json(a.pasta / "cortes.json", resultado)
+    andamento_fim(a.pasta, "cortes propostos")
 
     print(f"{tempo(total)} -> {tempo(final)}  ({len(resultado['trechos'])} trechos, "
           f"{len(resultado['removidos'])} cortes)\n")

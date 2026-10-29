@@ -189,6 +189,10 @@ Mudança pontual ("legenda maior", "volta a frase do 0:30") mexe só no que foi 
 - Nada é enviado para fora do computador. A transcrição é local.
 - Nunca publique. Postar é com a skill de conteúdo, e só com "pode postar".
 
+## Painel no navegador
+
+O Well pode acompanhar a edição pelo painel (`python scripts/painel.py`, abre `http://localhost:8765`): ele envia os brutos para `material-bruto/` e vê as etapas, a porcentagem do que está rodando, as versões e a conferência. Os scripts gravam `andamento.json` na pasta do trabalho sozinhos; não precisa fazer nada. Se ele perguntar "em que pé está", mande olhar o painel ou leia `andamento.json`. Nunca abra o painel por conta própria nem deixe ele rodando sem o Well pedir.
+
 ## Quando um script falha
 
 Erro de script é problema seu, não do Well. Não mostre a mensagem de erro nem peça para ele consertar. Tente outro caminho (por exemplo, rodar o passo direto no ffmpeg dentro da pasta do trabalho), e conte na entrega, em uma linha simples, o que foi feito diferente. Se não houver caminho, explique o limite em palavras simples e ofereça opções concretas (por exemplo, a versão sem legenda). Nunca desligue um ajuste aprovado em silêncio.

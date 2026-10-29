@@ -233,6 +233,8 @@ def main():
         erro("diga o que entra: --musica e/ou --efeitos")
     plano = planejar(pasta, a.musica, a.efeitos, a.abaixo, a.sobe, a.inicio_musica)
     salvar_json(arq, plano)
+    from comum import andamento_fim
+    andamento_fim(pasta, "som planejado")
     if plano["musica"]:
         m = plano["musica"]
         print(f"música: {Path(m['arquivo']).name} · {m['abaixo_da_voz_db']:.0f} dB abaixo da voz na fala, "

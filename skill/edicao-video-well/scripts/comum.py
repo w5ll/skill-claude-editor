@@ -203,3 +203,40 @@ def dimensoes_saida(largura: int, altura: int, formato: str) -> tuple[int, int]:
         if alvo < menor:
             w, h = round(w * alvo / menor), round(h * alvo / menor)
     return w - w % 2, h - h % 2
+
+
+# ---------- andamento (o painel lê isto para mostrar a etapa ao vivo) ----------
+
+_ULTIMO_ANDAMENTO = {"t": 0.0}
+
+
+def andamento(pasta, etapa: str, progresso: float | None = None, detalhe: str = "", forcar: bool = True):
+    """Grava em <pasta>/andamento.json o que está rodando agora. Nunca atrapalha o script."""
+    import os
+    import time
+    agora = time.time()
+    if not forcar and agora - _ULTIMO_ANDAMENTO["t"] < 1.0:
+        return
+    _ULTIMO_ANDAMENTO["t"] = agora
+    try:
+        pasta = Path(pasta)
+        pasta.mkdir(parents=True, exist_ok=True)
+        dados = {"etapa": etapa, "progresso": None if progresso is None else round(max(0.0, min(1.0, progresso)), 3),
+                 "detalhe": detalhe, "pid": os.getpid(), "atualizado": round(agora, 1), "concluido": False}
+        tmp = pasta / ".andamento.tmp"
+        tmp.write_text(json.dumps(dados, ensure_ascii=False), encoding="utf-8")
+        tmp.replace(pasta / "andamento.json")
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def andamento_fim(pasta, etapa: str, detalhe: str = ""):
+    import time
+    try:
+        dados = {"etapa": etapa, "progresso": 1.0, "detalhe": detalhe, "pid": None,
+                 "atualizado": round(time.time(), 1), "concluido": True}
+        tmp = Path(pasta) / ".andamento.tmp"
+        tmp.write_text(json.dumps(dados, ensure_ascii=False), encoding="utf-8")
+        tmp.replace(Path(pasta) / "andamento.json")
+    except Exception:  # noqa: BLE001
+        pass

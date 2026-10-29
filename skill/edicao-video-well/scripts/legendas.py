@@ -259,6 +259,8 @@ def main():
     ap.add_argument("--sem-destaque", action="store_true", help="não pinta a palavra falada")
     ap.add_argument("--reaproveitar", action="store_true", help="usa legendas.json já editado")
     a = ap.parse_args()
+    from comum import andamento, andamento_fim
+    andamento(a.pasta, "montando a legenda")
 
     insp = ler_json(a.pasta / "inspecao.json")["videos"][0]
     cortes_arq = a.pasta / "cortes.json"
@@ -303,6 +305,7 @@ def main():
         print(f"  atenção: {av}")
     if len(blocos) > 12:
         print("  ...")
+    andamento_fim(a.pasta, "legenda pronta")
     print(f"ok  {destino}  {a.pasta / 'legendas.ass'}  {a.pasta / 'legendas.srt'}")
 
 

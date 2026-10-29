@@ -253,12 +253,15 @@ def main():
         erro("rode propor_cortes.py antes")
     if not (pasta / "rosto.json").exists():
         print("atenção: sem rosto.json o zoom cresce em volta do centro. Rode rosto.py antes.")
+    from comum import andamento, andamento_fim
+    andamento(pasta, "planejando a câmera")
     dados = planejar(pasta, a.intensidade)
     salvar_json(arq, dados)
     enfases = [b for b in dados["blocos"] if b["motivo"].startswith("ênfase")]
     print(f"{len(dados['blocos'])} blocos de câmera · {len(enfases)} aproximações de ênfase")
     for b in dados["blocos"]:
         print(f"  {tempo(b['inicio'])}-{tempo(b['fim'])}  {b['zoom']:.0%}  {b['motivo']}")
+    andamento_fim(pasta, "câmera planejada")
     print(f"ok  {arq}")
 
 

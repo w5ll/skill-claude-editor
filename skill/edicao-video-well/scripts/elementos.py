@@ -284,6 +284,8 @@ def desenhar(pasta: Path, largura: int, altura: int, fps) -> list[dict]:
                     "arroba": marca.get("arroba", "")})
                 pagina.evaluate("document.fonts.ready")
                 for q in range(total):
+                    from comum import andamento
+                    andamento(pasta, "desenhando os elementos 3D", q / total, item["elemento"], forcar=False)
                     pagina.evaluate(f"desenhar({q / float(fps)})")
                     pagina.screenshot(path=str(destino / f"{q + 1:04d}.png"), omit_background=True,
                                       clip={"x": 0, "y": 0, "width": w, "height": h})
@@ -330,6 +332,8 @@ def main():
             aviso("elementos.json já existia: a versão anterior foi guardada em elementos.anterior.json")
             shutil.copy(destino, pasta / "elementos.anterior.json")
         salvar_json(destino, {"itens": itens})
+        from comum import andamento_fim
+        andamento_fim(pasta, "elementos sugeridos")
         print(f"{len(itens)} elementos sugeridos")
         for n, it in enumerate(itens):
             print(f"  {n:>2}  {tempo(it['inicio'])}  {it['elemento']:<9} quando fala \"{it['gatilho']}\""

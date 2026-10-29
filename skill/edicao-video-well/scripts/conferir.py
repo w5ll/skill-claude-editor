@@ -188,6 +188,8 @@ def main():
                     help="segundos (no vídeo editado) de pausas de efeito que ficam de propósito")
     a = ap.parse_args()
 
+    from comum import andamento, andamento_fim
+    andamento(a.pasta, "conferindo", detalhe=a.video.name)
     registro_arq = a.video.with_suffix(".render.json")
     registro = ler_json(registro_arq) if registro_arq.exists() else {}
     cortes = ler_json(a.pasta / "cortes.json")
@@ -320,6 +322,7 @@ def main():
                  "quadros": str(quadros), "folhas_de_emendas": folhas, "quadros_elementos": quadros_elementos,
                  "texto_retranscrito": texto_obtido}
     salvar_json(a.video.with_suffix(".conferencia.json"), resultado)
+    andamento_fim(a.pasta, "conferido", a.video.name)
     for c in checks:
         print(f"  {'ok ' if c['ok'] else 'FALHOU'}  {c['item']}: {c['detalhe']}")
     for f in folhas:

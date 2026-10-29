@@ -123,7 +123,27 @@ O que acontece depois:
 
 Vídeo do iPhone em 4K: peça para sair em 1080x1920 (`--formato original@1080`). É o tamanho que o Instagram usa, a edição fica bem mais rápida e o arquivo final, bem menor.
 
-### 7. Atualizar a skill
+### 7. Painel no navegador (opcional)
+
+Uma página para enviar os vídeos e acompanhar a edição sem abrir pastas. Em outro terminal do VS Code (menu Terminal, Novo Terminal), na pasta do projeto:
+
+```bash
+source .venv/bin/activate
+```
+
+```bash
+python skill/edicao-video-well/scripts/painel.py
+```
+
+O navegador abre em `http://localhost:8765`. Lá você:
+
+- **Envia vídeos:** arraste os brutos para a página. Eles vão para `material-bruto` e nunca sobrescrevem um arquivo com o mesmo nome. Depois do envio, o botão "copiar pedido de edição" copia o prompt pronto para colar no Claude Code.
+- **Acompanha cada edição:** as etapas feitas (inspeção, transcrição, cortes, rosto, legenda, amostra, vídeo, conferência) e o que está rodando agora, com a porcentagem na transcrição, no rosto, no desenho dos elementos e no render. Se um passo parar no meio (erro ou fim do limite de uso), o painel avisa.
+- **Vê o resultado:** assiste à amostra e às versões, abre as folhas de quadros e de emendas, e vê a lista da conferência.
+
+O painel só funciona no seu computador: ninguém na rede vê. Quem edita e aprova continua sendo a conversa no Claude Code. Para fechar o painel: Ctrl+C no terminal dele.
+
+### 8. Atualizar a skill
 
 Quando houver melhoria nova, no terminal do VS Code (menu Terminal, Novo Terminal):
 
@@ -163,6 +183,7 @@ skill/edicao-video-well/         ← a skill (é isso que vira o arquivo .skill)
   assets/modelos/                detector de rosto YuNet (licença MIT)
   assets/sons/                   3 músicas e 10 efeitos sonoros (domínio público), com a origem em sons.json
   templates/elementos.html       desenho e animação dos elementos 3D
+  templates/painel.html          página do painel
   scripts/
     inspecionar.py               lê o vídeo bruto: duração, formato, HDR, volume, quadros
     transcrever.py               transcrição local palavra por palavra (faster-whisper)
@@ -176,6 +197,7 @@ skill/edicao-video-well/         ← a skill (é isso que vira o arquivo .skill)
     som.py                       música e efeitos sonoros (som.json)
     renderizar.py                monta o vídeo: amostra ou inteiro
     conferir.py                  confere o arquivo final
+    painel.py                    painel no navegador: enviar vídeos e acompanhar a edição
 material-bruto/                  vídeos brutos (fora do git)
 saida/                           trabalhos editados (vídeos fora do git)
 ```

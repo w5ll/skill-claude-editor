@@ -158,7 +158,27 @@ def codificacao(hdr, principal, fps) -> list[str]:
                   "-movflags", "+faststart"]
 
 
-def aplicar_camera(cmd_base: list, cmd_final: list, camera, largura: int, altura: int, fps, tmp: Path) -> str:
+def rodar_com_progresso(cmd: list, pasta: Path, etapa: str, duracao: float) -> str:
+    """Roda o ffmpeg lendo o andamento dele (-progress). Devolve o erro, se houver."""
+    from comum import andamento
+    cmd = cmd[:-1] + ["-progress", "pipe:1", "-nostats"] + cmd[-1:]
+    with tempfile.TemporaryFile(mode="w+") as err:
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=err, text=True)
+        for linha in proc.stdout:
+            if linha.startswith("out_time_us=") and duracao > 0:
+                try:
+                    andamento(pasta, etapa, int(linha.split("=")[1]) / 1e6 / duracao, forcar=False)
+                except ValueError:
+                    pass
+        proc.wait()
+        if proc.returncode != 0:
+            err.seek(0)
+            return err.read()[-2000:] or "o ffmpeg falhou"
+    return ""
+
+
+def aplicar_camera(cmd_base: list, cmd_final: list, camera, largura: int, altura: int, fps, tmp: Path,
+                   pasta: Path | None = None, etapa: str = "", total: int = 0) -> str:
     """Primeiro ffmpeg solta os quadros cortados, aqui cada quadro ganha o zoom, o segundo
     ffmpeg põe elementos e legenda e grava. Devolve o erro, se houver."""
     import cv2
@@ -191,6 +211,9 @@ def aplicar_camera(cmd_base: list, cmd_final: list, camera, largura: int, altura
             except BrokenPipeError:  # a amostra terminou antes do fim do vídeo
                 break
             n += 1
+            if pasta is not None and total:
+                from comum import andamento
+                andamento(pasta, etapa, n / total, forcar=False)
     finally:
         try:
             pb.stdin.close()
@@ -231,6 +254,9 @@ def main():
     exigir("ffmpeg")
 
     pasta = a.pasta.resolve()
+    from comum import andamento, andamento_fim
+    etapa = "renderizando a amostra" if a.amostra else "renderizando o vídeo"
+    andamento(pasta, etapa, 0.0, "montando o som")
     insp = ler_json(pasta / "inspecao.json")["videos"]
     cortes = ler_json(pasta / "cortes.json")
     principal = insp[0]
@@ -320,8 +346,8 @@ def main():
             cmd = (["ffmpeg"] + log + entradas + ["-i", str(wav)] + elem_in +
                    ["-filter_complex", ";".join(grafos), "-map", atual, "-map", "[ac]"] + corte +
                    codificacao(a.hdr, principal, fps) + [str(destino)])
-            proc = subprocess.run(cmd, capture_output=True, text=True)
-            falha = proc.stderr[-2000:] if proc.returncode != 0 else ""
+            dur_saida = (min(a.amostra[1], duracao) - a.amostra[0]) if a.amostra else duracao
+            falha = rodar_com_progresso(cmd, pasta, etapa, dur_saida)
         else:
             cmd_base = (["ffmpeg"] + log + entradas + ["-filter_complex", ";".join(grafos_base), "-map", rot_base,
                         "-f", "rawvideo", "-pix_fmt", "yuv420p", "-"])
@@ -334,7 +360,9 @@ def main():
                          "-framerate", f"{fps.numerator}/{fps.denominator}", "-i", "-", "-i", str(wav)] + elem_in +
                          ["-filter_complex", ";".join(grafos), "-map", atual, "-map", "[ac]"] + corte +
                          codificacao(a.hdr, principal, fps) + [str(destino)])
-            falha = aplicar_camera(cmd_base, cmd_final, camera, largura, altura, fps, tmp)
+            fim_q = min(a.amostra[1], duracao) if a.amostra else duracao
+            falha = aplicar_camera(cmd_base, cmd_final, camera, largura, altura, fps, tmp,
+                                   pasta, etapa, int(fim_q * float(fps)))
         if falha:
             destino.unlink(missing_ok=True)  # não deixa arquivo pela metade
             erro("o ffmpeg falhou:\n" + falha)
@@ -357,6 +385,7 @@ def main():
         "emendas": [round(t["saida_inicio"], 4) for t in trechos[1:]],
     }
     salvar_json(destino.with_suffix(".render.json"), registro)
+    andamento_fim(pasta, "amostra pronta" if a.amostra else "vídeo pronto", destino.name)
     vol = medir_volume(destino)
     print(f"ok  {destino}  · volume {vol['volume_lufs']} LUFS · pico {vol['pico_dbtp']} dBTP")
 

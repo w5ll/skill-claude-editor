@@ -83,7 +83,15 @@ def _palavras(segmentos, deslocamento: float = 0.0, termos: set[str] | None = No
     return palavras
 
 
-def transcrever(arquivo: Path, modelo, idioma: str | None, termos: str) -> dict:
+def com_progresso(segmentos, duracao: float, pasta, nome: str):
+    from comum import andamento
+    for seg in segmentos:
+        if pasta is not None and duracao > 0:
+            andamento(pasta, "transcrevendo", seg.end / duracao, nome, forcar=False)
+        yield seg
+
+
+def transcrever(arquivo: Path, modelo, idioma: str | None, termos: str, pasta=None) -> dict:
     audio = carregar_mono(arquivo)
     opcoes = dict(
         language=idioma,
@@ -95,7 +103,7 @@ def transcrever(arquivo: Path, modelo, idioma: str | None, termos: str) -> dict:
     )
     lista_termos = {normalizar(t) for t in re.split(r"[,;]", termos or "") if normalizar(t)}
     segmentos, info = modelo.transcribe(audio, **opcoes)
-    palavras = _palavras(segmentos, termos=lista_termos)
+    palavras = _palavras(com_progresso(segmentos, len(audio) / TAXA_ANALISE, pasta, arquivo.name), termos=lista_termos)
 
     # Encaixa as palavras na fala medida no áudio.
     regioes = medir_fala(envelope_db(audio))["regioes"]
@@ -196,6 +204,8 @@ def main():
         retranscrever_trecho(a.videos[0], a.pasta, a.modelo, a.idioma, *a.trecho)
         return
 
+    from comum import andamento, andamento_fim
+    andamento(a.pasta, "transcrevendo", 0.0, "carregando o modelo")
     modelo = None
     for video in a.videos:
         if not video.exists():
@@ -210,13 +220,15 @@ def main():
             print(f"carregando o modelo {a.modelo} (a primeira vez baixa da internet)...")
             modelo = WhisperModel(a.modelo, device="auto", compute_type="int8")
         t0 = time.time()
-        dados = transcrever(video, modelo, None if a.idioma == "auto" else a.idioma, a.termos)
+        dados = transcrever(video, modelo, None if a.idioma == "auto" else a.idioma, a.termos, a.pasta)
         dados["assinatura"] = assinatura(video)
         dados["termos"] = a.termos
         dados["modelo"] = a.modelo
         salvar_json(destino, dados)
+        andamento(a.pasta, "transcrevendo", 1.0, video.name)
         print(f"ok  {destino}  ({len(dados['palavras'])} palavras em {time.time() - t0:.0f} s)")
         print(f"    {dados['texto'][:300]}{'...' if len(dados['texto']) > 300 else ''}")
+    andamento_fim(a.pasta, "transcrito")
 
 
 if __name__ == "__main__":

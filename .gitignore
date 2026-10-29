@@ -19,3 +19,5 @@ __pycache__/
 # sons da skill (domínio público) vão para o git
 !skill/edicao-video-well/assets/sons/**/*.wav
 !skill/edicao-video-well/assets/sons/**/*.mp3
+.painel/
+saida/*/andamento.json

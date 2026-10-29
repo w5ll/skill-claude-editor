@@ -116,6 +116,8 @@ def main():
     ap.add_argument("--pasta", type=Path, required=True, help="pasta do trabalho (saida/AAAA-MM-DD_tema)")
     a = ap.parse_args()
     exigir("ffmpeg")
+    from comum import andamento, andamento_fim
+    andamento(a.pasta, "inspecionando", detalhe=", ".join(v.name for v in a.videos))
 
     resultado = {"videos": [inspecionar(v, a.pasta / "quadros") for v in a.videos]}
     salvar_json(a.pasta / "inspecao.json", resultado)
@@ -128,6 +130,7 @@ def main():
               f"ruído {(au.get('ruido') or {}).get('diferenca_db')} dB abaixo da voz")
         for p in v["pendencias"]:
             print(f"  atenção: {p}")
+    andamento_fim(a.pasta, "inspecionado")
     print(f"ok  {a.pasta / 'inspecao.json'}")
 
 
