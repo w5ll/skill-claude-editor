@@ -1,5 +1,7 @@
 # Próximas fases
 
+> **Substituído:** o plano em fases, com o checklist e as regras de trabalho em dupla, está em [roadmap.md](roadmap.md). Este arquivo fica como histórico das ideias de origem.
+
 Mapeado em 29/10/2026, depois da primeira edição real (vídeo de planejamento, IMG_5127 + IMG_5128) e do painel no navegador.
 
 ## Fase 2. Elementos 3D novos

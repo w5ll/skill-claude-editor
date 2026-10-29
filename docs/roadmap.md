@@ -1,0 +1,107 @@
+# Plano em fases
+
+O projeto deixa de ser a ferramenta do Instagram de uma pessoa e passa a ser **uma ferramenta de edição de vídeo para qualquer pessoa com acesso ao repositório**. Cada pessoa usa a própria marca (cores, fonte, nome) e escolhe como quer editar. O visual que já criamos (fundo escuro, azul acinzentado, fonte Sora) vira o **perfil padrão**, sem nenhum perfil de rede social amarrado.
+
+Este arquivo é o mapa. O checklist resumido fica no [README](../README.md#fases-do-projeto). Cada fase tem a sua especificação em `docs/fase-N-nome.md`, escrita no começo da fase (como a [Fase 2](fase-2-elementos-gerados.md)).
+
+## Como as fases se encaixam
+
+```text
+Fase 1 ✅  Fase 2 ✅  ──►  Fase 3 (base: perfis de marca)  ──┬──►  Trilha A: painel   4 → 5 → 6 → 7 → 8
+                                                              ├──►  Trilha B: conteúdo e entrega   9 · 10 · 11 · 12
+                                                              └──►  Trilha C: infraestrutura   C1 · C2
+```
+
+- **Fase 3 vem antes de tudo e sozinha**: ela mexe em quase todos os arquivos de texto. Enquanto ela não termina, as outras fases não começam, para não gerar conflito.
+- Depois da Fase 3, as três trilhas podem andar **em paralelo**, cada pessoa numa trilha. Dentro da trilha A a ordem é fixa; nas trilhas B e C as fases são independentes.
+
+## As fases
+
+Tamanho é relativo ao esforço da Fase 2 (grande): pequeno, médio ou grande. O gasto real do plano é registrado no fim de cada fase (veja [Gasto do plano](#gasto-do-plano)).
+
+### Fase 1 ✅ Skill de edição e painel de acompanhamento
+Inspeção, cartão de ajustes, transcrição local, cortes medidos no áudio, rosto, legenda, zoom, música e efeitos, renderização, conferência, painel que mostra o andamento, tutorial de instalação.
+
+### Fase 2 ✅ Elementos 3D gerados a partir da fala
+Elementos novos desenhados para as ideias que nenhum dos 12 prontos representa, com validação, folha de prévia e catálogo. Especificação: [fase-2-elementos-gerados.md](fase-2-elementos-gerados.md).
+
+### Fase 3. Projeto para qualquer pessoa: perfis de marca · médio
+- **Perfil de marca** em `perfis/<nome>/` com `marca.json` (nome, cores, fonte, @ opcional) e a fonte. Os scripts passam a aceitar `--perfil` (sem ele, usam o perfil padrão). O `marca.json` atual vira o perfil padrão, sem o @ e sem o nome do Well.
+- **Textos neutros**: SKILL.md, referências, README, CLAUDE.md e exemplos falam de "a pessoa que grava", sem o nome do Well, o @ dele nem o nicho jurídico como pressuposto.
+- **Regras de nicho viram opcionais**: os gatilhos jurídicos (OAB, ética, cadeado) saem do padrão e viram um pacote que o perfil liga. A regra "nunca cortar o aviso obrigatório" passa a ser uma lista de **avisos obrigatórios** do perfil.
+- **Nome**: o projeto e a skill ganham um nome neutro (decisão em aberto, veja abaixo) e a pasta `skill/edicao-video-well/` é renomeada junto.
+- **Pronto quando**: um perfil novo, com outras cores, gera legenda e elementos nas cores dele; o perfil padrão produz quadros **idênticos** aos de hoje (mesmo teste de comparação da Fase 2); não sobra menção ao perfil de ninguém fora de créditos e histórico.
+- Toca: quase tudo. Por isso é a primeira e é feita por uma pessoa só.
+
+### Fase 4. Orquestrador e estado da edição · médio
+- Um `editar.py` que roda a **próxima etapa** de uma edição, para nos portões de aprovação e retoma de onde parou.
+- Um arquivo de estado por edição (`trabalho.json`) com as escolhas do cartão, a etapa atual e as aprovações. **O painel e a conversa leem o mesmo estado**: dá para começar num e terminar no outro.
+- **Perfis de edição** (modelos prontos de escolhas, em `modelos/`): por exemplo "Reels padrão" (ritmo dinâmico, zoom leve, música calma, 1080x1920 a 60 quadros, ruído leve, cor padrão).
+- O **cartão de ajustes gerado por código** a partir da inspeção (pendências e recomendações), além do texto que a conversa já mostra.
+- **Pronto quando**: `editar.py` leva um vídeo do bruto até a amostra seguindo um modelo, para nos portões e retoma depois de ser interrompido.
+
+### Fase 5. Painel que executa · grande
+- Formulário do cartão já preenchido com o recomendado e botão "Aprovar e começar".
+- Fila (um trabalho por vez, vários vídeos), progresso, cancelar e retomar.
+- Botões de aprovar a amostra e a entrega; lista de versões; abrir a pasta.
+- **Segurança**: como o painel passa a rodar comandos, usa uma **senha de sessão** e confere a origem do pedido, para nenhum site aberto no navegador conseguir acioná-lo. Só roda etapas conhecidas, nunca comando livre. Continua só no computador da pessoa.
+- Depende da Fase 4.
+
+### Fase 6. Revisão de cortes e legenda no painel · grande
+- O texto da fala com o que fica e o que sai; clique para tirar ou voltar um trecho; ouvir qualquer trecho e qualquer emenda; desfazer.
+- **Suspeitas marcadas**: palavra de baixa confiança, som sem palavra, trecho repetido, fim da gravação, frase que não termina.
+- Duração total ao vivo contra a meta da pessoa.
+- Legenda editável por bloco, com prévia.
+- Depende da Fase 5. É a tela mais valiosa: foi onde a edição real deu mais trabalho.
+
+### Fase 7. Elementos, zoom e som no painel · médio
+- Elementos: lista com tempo e prévia, trocar, tirar, mudar o rótulo, catálogo (promover o que gostou).
+- Zoom: intensidade e aproximações. Som: música e efeitos com escuta.
+- Conferência com **botões de correção** ("aceitar essa pausa", "aplicar o ganho sugerido", "refazer").
+- Depende da Fase 5.
+
+### Fase 8. Claude por trás, opcional · médio
+- Botões "pedir ao Claude" nas decisões que são de julgamento: primeira revisão dos cortes, escolha das ideias-chave e desenho de elementos novos, correção de grafia da legenda.
+- O painel chama o Claude sem abrir conversa e mostra o resultado para a pessoa aprovar. Mostra quanto do plano foi usado. Dá para desligar: o painel funciona 100% sem ele.
+- Depende das Fases 6 e 7. Precisa do Claude Code instalado.
+
+### Fase 9. Gancho e olhar · médio (trilha B)
+- Avaliar se os 3 primeiros segundos prendem e sugerir trazer uma frase mais forte do meio ou um elemento em tela cheia.
+- Detectar quando a pessoa lê ou olha para baixo (pelo `rosto.py`) e sugerir corte ou zoom para disfarçar.
+
+### Fase 10. Pacote de publicação e capa · médio (trilha B)
+- Junto com o MP4: texto do post, arquivo de legenda, capa a partir de um quadro com título no visual do perfil, e conferência dos limites do Instagram (duração, tamanho, área segura).
+
+### Fase 11. Direção de arte por série e conferência de fatos · médio (trilha B)
+- Um arquivo por série de vídeos com o estilo (elementos, música, ritmo, zoom) que todas as edições da série seguem, ligado aos modelos da Fase 4.
+- Antes de editar, marcar números e afirmações para a pessoa confirmar.
+- Imagens de apoio de uso livre, com a licença registrada (como os sons).
+
+### Fase 12. Cenas explicativas sincronizadas com a fala · grande (trilha B)
+- Telas com texto e números animados (lista de 3 passos, antes e depois) além dos elementos 3D.
+
+### Trilha C. Infraestrutura (independente)
+- **C1. Instalação em um comando e outros sistemas** · médio: um `instalar.sh` que cria o ambiente e confere as ferramentas, e o tutorial para Windows e Linux (hoje só há o do Mac).
+- **C2. Testes automáticos** · médio: a comparação de quadros dos elementos (feita à mão na Fase 2), o `validar` dos desenhos, os cortes e a legenda, rodando sozinhos a cada envio no GitHub. Com mais de uma pessoa mexendo, é o que impede uma fase de quebrar a outra.
+
+## Como trabalhamos em dupla
+
+1. **Uma fase, um ramo (branch), um pedido de revisão (pull request).** O ramo se chama `fase-N-nome-curto`. A outra pessoa revisa antes de entrar na `main`.
+2. **Quem pega a fase marca o nome** no checklist do README, num commit pequeno, antes de começar. Assim duas pessoas não fazem a mesma coisa.
+3. **Cada fase começa pela especificação** (`docs/fase-N-nome.md`): o que entra, o que não entra, os testes. Só depois vem o código.
+4. **Cada fase termina com** os testes passando, a documentação atualizada (README, SKILL.md e referências), o `./empacotar.sh` rodado, o checklist marcado e o gasto do plano registrado.
+5. **Conflitos**: a trilha A mexe em `painel.py`, `painel.html` e nos arquivos novos do orquestrador; a trilha B cria scripts novos (um por fase); a trilha C mexe em instalação e testes. `elementos.py`, `renderizar.py` e `SKILL.md` são compartilhados: avise no pedido de revisão quando mexer neles.
+6. **Mensagem de commit**: em português, no padrão do histórico, uma ideia por commit.
+7. **O que nunca entra no repositório**: vídeos, nome de cliente, número real, método interno de empresa. O repositório pode ficar público.
+8. **Idioma**: tudo em português, com acentuação, sem travessão e sem termo em inglês sem tradução.
+
+## Gasto do plano
+
+O Claude Code não deixa o Claude ver quanto do plano foi usado. Por isso, **antes e depois de cada fase, quem trabalhou anota o número que o próprio Claude Code mostra** (o uso do plano), e a diferença entra na tabela do README. Serve para planejar quantas fases cabem por semana e quais compensam o custo.
+
+## Decisões em aberto
+
+- **Nome do projeto e da skill**: precisa ser neutro (sem pessoa, sem rede social). Ele define o nome da pasta, do arquivo `.skill` e do repositório.
+- **Escopo do perfil de marca**: além de cores, fonte e nome, o perfil guarda o @ (opcional), os termos da transcrição, os avisos obrigatórios e o pacote de gatilhos do nicho?
+- **Quem pega a Fase 3** e como as trilhas A, B e C se dividem entre vocês.
+- **O repositório fica privado ou público**? Hoje o texto já evita dados sensíveis, mas a decisão muda como tratamos créditos e licenças.

@@ -20,6 +20,48 @@ Para instalar no seu Mac, veja [Instalar no seu Mac, com o VS Code](#instalar-no
 12. Confere uma amostra de 8 a 15 segundos, depois faz o vídeo inteiro e confere de novo: toca até o fim, volume, nenhuma palavra cortada, nenhum estalo, trecho repetido, silêncio sobrando ou quadro preto, fala completa, e uma folha com os quadros de cada emenda.
 13. Entrega o MP4, sem nunca apagar os originais nem as versões anteriores.
 
+## Fases do projeto
+
+O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de edição para qualquer pessoa com acesso ao repositório**, com a marca configurável e um painel que roda a edição inteira sem abrir uma conversa. O plano completo, as dependências e as regras de trabalho em dupla estão em [docs/roadmap.md](docs/roadmap.md).
+
+**Como usar este checklist:** quem pega uma fase escreve o próprio nome no lugar de "livre", num commit pequeno, antes de começar. Ao terminar, marca a caixa e preenche o gasto do plano na tabela abaixo. A fase 3 é feita primeiro e por uma pessoa só; depois dela, as trilhas A, B e C andam em paralelo.
+
+**Feito**
+
+- [x] **Fase 1.** Skill de edição e painel de acompanhamento
+- [x] **Fase 2.** Elementos 3D gerados a partir da fala ([especificação](docs/fase-2-elementos-gerados.md))
+
+**Base (primeiro e sozinha)**
+
+- [ ] **Fase 3.** Projeto para qualquer pessoa: perfis de marca, textos neutros, regras de nicho opcionais, nome novo · _livre_
+
+**Trilha A: painel que roda a edição** (nesta ordem)
+
+- [ ] **Fase 4.** Orquestrador e estado da edição (`editar.py`, `trabalho.json`, modelos de edição) · _livre_
+- [ ] **Fase 5.** Painel que executa: formulário do cartão, fila, aprovações, senha de sessão · _livre_
+- [ ] **Fase 6.** Revisão de cortes e legenda no painel · _livre_
+- [ ] **Fase 7.** Elementos, zoom e som no painel, conferência com botões de correção · _livre_
+- [ ] **Fase 8.** Claude por trás, opcional: revisar cortes e desenhar elementos pelo painel · _livre_
+
+**Trilha B: conteúdo e entrega** (independentes entre si)
+
+- [ ] **Fase 9.** Gancho dos 3 primeiros segundos e detecção de leitura e olhar · _livre_
+- [ ] **Fase 10.** Pacote de publicação e capa do Reels · _livre_
+- [ ] **Fase 11.** Direção de arte por série, conferência de fatos e imagens de apoio · _livre_
+- [ ] **Fase 12.** Cenas explicativas sincronizadas com a fala · _livre_
+
+**Trilha C: infraestrutura** (independentes)
+
+- [ ] **C1.** Instalação em um comando e tutorial para Windows e Linux · _livre_
+- [ ] **C2.** Testes automáticos a cada envio no GitHub · _livre_
+
+**Gasto do plano** (o número que o Claude Code mostra, antes e depois de cada fase)
+
+| Fase | Quem | Antes | Depois | Commit |
+| --- | --- | --- | --- | --- |
+| 1 | | | | |
+| 2 | | | | `402c088` |
+
 ## Instalar no seu Mac, com o VS Code
 
 Passo a passo para editar no seu computador. É o jeito recomendado: o vídeo não sai da sua máquina e não tem limite de tamanho. Leva uns 20 minutos na primeira vez, e depois disso é só usar.
