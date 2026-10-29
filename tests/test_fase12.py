@@ -11,13 +11,13 @@ from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "skill" / "edicao-video-well" / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "skill" / "welldit" / "scripts"))
 
 import cenas  # noqa: E402
 import elementos  # noqa: E402
 import som  # noqa: E402
 
-MARCA = json.loads((elementos.PASTA_SKILL / "marca.json").read_text())
+MARCA = elementos.carregar_marca()
 
 
 def fala(texto: str, inicio: float = 0.0, passo: float = 0.3) -> list[dict]:
@@ -234,13 +234,14 @@ class TestAplicarEPainel(unittest.TestCase):
 class TestChaveDoCache(unittest.TestCase):
     def test_elementos_antigos_nao_mudaram(self):
         item = {"elemento": "funil", "modo": "sobreposto", "texto": "", "duracao": 2.0}
-        partes = ["funil", "sobreposto", "", 2.0, 1.0, 540, 960, str(Fraction(30, 1)), MARCA["cores"]]
+        partes = ["funil", "sobreposto", "", 2.0, 1.0, 540, 960, str(Fraction(30, 1)), elementos.assinatura_da_marca(MARCA)]
         antigo = hashlib.sha1(json.dumps(partes, sort_keys=True).encode()).hexdigest()[:8]
-        self.assertEqual(elementos.pasta_do_item(Path("/x"), 3, item, 540, 960, Fraction(30, 1)).name, f"03_funil_{antigo}")
+        nome = elementos.pasta_do_item(Path("/x"), 3, item, 540, 960, Fraction(30, 1), MARCA).name
+        self.assertEqual(nome, f"03_funil_{antigo}")
 
     def test_cena_muda_a_chave_quando_o_conteudo_ou_o_tempo_mudam(self):
         a = {**item_lista(), "caixa_usada": [0, 0, 950, 500]}
-        k = lambda it: elementos.pasta_do_item(Path("/x"), 0, it, 1080, 1920, Fraction(30, 1)).name
+        k = lambda it: elementos.pasta_do_item(Path("/x"), 0, it, 1080, 1920, Fraction(30, 1), MARCA).name
         b = copy.deepcopy(a)
         b["cena"]["passos"][0]["texto"] = "Outro texto"
         c = {**a, "inicio": a["inicio"] + 1}

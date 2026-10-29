@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face { font-family: "Sora ExtraBold"; src: url("../assets/fontes/Sora-ExtraBold.ttf"); }
+  html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; }
+  #palco { position: relative; overflow: hidden; }
+  #palco.tela { background: radial-gradient(120% 80% at 50% 30%, var(--fundo) 0%, var(--fundo-profundo) 100%); }
+  #elemento { position: absolute; will-change: transform, opacity; }
+  #elemento svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  #texto { position: absolute; left: 8%; right: 8%; text-align: center; font-family: var(--fonte, "Sora ExtraBold");
+           color: var(--texto); line-height: 1.08; letter-spacing: -0.01em; }
+  #texto b { color: var(--destaque); font-weight: inherit; }
+  #arroba { position: absolute; top: 5.5%; left: 0; right: 0; text-align: center; font-family: var(--fonte, "Sora ExtraBold");
+            color: var(--rotulo); letter-spacing: .04em; }
+</style>
+</head>
+<body>
+<div id="palco"><div id="elemento"></div><div id="texto"></div><div id="arroba"></div></div>
+<script>
+/* Elementos 3D base ARVEN,
+   com partes nomeadas para animar. desenhar(t) posiciona tudo no instante t (segundos),
+   para gerar cada quadro do vídeo de forma exata.
+   Os 12 elementos prontos estão em FORMAS. Um elemento gerado (cfg.svg) vem de fora, validado,
+   e usa as animações de animarGerado(). */
+let C, CFG, ALVO, GER = null;   // GER: preparo do elemento gerado (null nos 12 prontos)
+
+function defs(E) {
+  return `<defs>
+  <linearGradient id="met" x1="0" y1="0" x2="0.3" y2="1"><stop offset="0" stop-color="#eef2fa"/><stop offset=".35" stop-color="${E}"/><stop offset="1" stop-color="#2a2f40"/></linearGradient>
+  <linearGradient id="met2" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9d1e4"/><stop offset=".5" stop-color="${E}"/><stop offset="1" stop-color="#3a4054"/></linearGradient>
+  <linearGradient id="lado" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a5168"/><stop offset="1" stop-color="#151722"/></linearGradient>
+  <linearGradient id="brilho" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/></linearGradient>
+  <radialGradient id="esf" cx=".36" cy=".3" r=".75"><stop offset="0" stop-color="#f6f8fd"/><stop offset=".28" stop-color="#c3cbe0"/><stop offset=".62" stop-color="${E}"/><stop offset="1" stop-color="#1c1f2c"/></radialGradient>
+  <radialGradient id="vidro" cx=".35" cy=".25" r=".9"><stop offset="0" stop-color="#ffffff" stop-opacity=".55"/><stop offset=".45" stop-color="${E}" stop-opacity=".35"/><stop offset="1" stop-color="#0a0a12" stop-opacity=".6"/></radialGradient>
+  <radialGradient id="buraco" cx=".5" cy=".42" r=".6"><stop offset="0" stop-color="#000"/><stop offset=".7" stop-color="#05050a"/><stop offset="1" stop-color="#2a2f40"/></radialGradient>
+  <radialGradient id="sombra" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".7"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+</defs>`;
+}
+const chao = (cy = 368, rx = 130) => `<ellipse id="chao" cx="200" cy="${cy}" rx="${rx}" ry="18" fill="url(#sombra)"/>`;
+const extr = (d, prof = 20, extra = '') => `<path d="${d}" fill="url(#lado)" transform="translate(0 ${prof})"/>
+  <path d="${d}" fill="url(#met)"/><path d="${d}" fill="none" stroke="url(#brilho)" stroke-width="3"/>${extra}`;
+
+const FORMAS = {
+  esfera: () => chao(372, 120) + `<g id="corpo"><circle cx="200" cy="190" r="150" fill="url(#esf)"/><ellipse cx="150" cy="120" rx="46" ry="26" fill="#fff" opacity=".35" transform="rotate(-30 150 120)"/></g>`,
+  anel: () => chao(360, 150) + `<g id="gira"><g transform="rotate(-18 200 200)">
+      <ellipse cx="200" cy="214" rx="160" ry="74" fill="none" stroke="url(#lado)" stroke-width="44"/>
+      <ellipse cx="200" cy="200" rx="160" ry="74" fill="none" stroke="url(#met2)" stroke-width="44"/>
+      <ellipse cx="200" cy="200" rx="160" ry="74" fill="none" stroke="url(#brilho)" stroke-width="4" transform="translate(0 -20)"/></g></g>`,
+  cubo: () => chao(372, 140) + `<path d="M200 52 L332 122 Q340 126 340 136 L340 268 Q340 278 332 282 L208 348 Q200 352 192 348 L68 282 Q60 278 60 268 L60 136 Q60 126 68 122 Z" fill="url(#lado)"/>
+      <path d="M200 52 L332 122 L200 192 L68 122 Z" fill="#dfe5f2"/>
+      <path d="M68 122 L200 192 L200 350 L68 280 Z" fill="url(#met)"/>
+      <path d="M332 122 L200 192 L200 350 L332 280 Z" fill="url(#met2)" opacity=".85"/>
+      <path id="reflexo" d="M200 52 L332 122 L200 192 L68 122 Z" fill="url(#brilho)" opacity=".6"/>`,
+  cristal: () => chao(372, 110) + `<path d="M200 30 L310 160 L200 360 Z" fill="url(#met2)"/><path d="M200 30 L90 160 L200 360 Z" fill="url(#met)"/>
+      <path d="M90 160 L200 200 L310 160 L200 360 Z" fill="url(#lado)" opacity=".55"/><path d="M200 30 L90 160 L200 200 L310 160 Z" fill="url(#vidro)"/>
+      <path d="M200 30 L90 160 M200 30 L310 160 M200 30 L200 200" stroke="#fff" stroke-opacity=".5" stroke-width="2"/>`,
+  mensagem: () => chao(372, 140) + extr('M86 70 H314 Q350 70 350 106 V236 Q350 272 314 272 H170 L104 330 L116 272 H86 Q50 272 50 236 V106 Q50 70 86 70 Z', 22,
+      [140, 200, 260].map(x => `<circle class="ponto" cx="${x}" cy="171" r="20" fill="#16161f" opacity=".75"/>`).join('')),
+  funil: () => chao(376, 70) + `<path d="M50 96 L350 96 L232 238 L232 352 L168 352 L168 238 Z" fill="url(#lado)" transform="translate(0 16)"/>
+      <path d="M50 96 L350 96 L232 238 L232 352 L168 352 L168 238 Z" fill="url(#met)"/>
+      <ellipse cx="200" cy="96" rx="150" ry="36" fill="url(#lado)"/><ellipse cx="200" cy="92" rx="138" ry="28" fill="#0d0d15"/>
+      <ellipse cx="200" cy="96" rx="150" ry="36" fill="none" stroke="#eef2fa" stroke-opacity=".7" stroke-width="3"/>
+      ${[[160, 84], [214, 78], [246, 92]].map(([x, y]) => `<circle class="bola" data-x="${x}" data-y="${y}" cx="${x}" cy="${y}" r="9" fill="${C.destaque}"/>`).join('')}`,
+  relogio: () => chao(374, 130) + `<circle cx="200" cy="214" r="150" fill="url(#lado)"/><circle cx="200" cy="196" r="150" fill="url(#met)"/>
+      <circle cx="200" cy="196" r="118" fill="#12121b"/><circle cx="200" cy="196" r="150" fill="none" stroke="url(#brilho)" stroke-width="4"/>
+      ${[...Array(12)].map((_, i) => `<line x1="200" y1="92" x2="200" y2="${i % 3 ? 102 : 112}" stroke="${C.apoio}" stroke-width="${i % 3 ? 3 : 6}" stroke-linecap="round" transform="rotate(${i * 30} 200 196)"/>`).join('')}
+      <line id="horas" x1="200" y1="196" x2="200" y2="122" stroke="${C.texto}" stroke-width="10" stroke-linecap="round"/>
+      <line id="ponteiro" x1="200" y1="196" x2="262" y2="226" stroke="${C.destaque}" stroke-width="8" stroke-linecap="round"/><circle cx="200" cy="196" r="12" fill="${C.texto}"/>`,
+  grafico: () => chao(372, 150) + [[70, 230], [160, 170], [250, 90]].map(([x, y]) => {
+      const h = 330 - y;
+      return `<g class="barra"><path d="M${x} ${y} l40 -20 l40 20 v${h} l-40 20 l-40 -20 Z" fill="url(#lado)"/>
+        <path d="M${x} ${y} l40 20 v${h} l-40 -20 Z" fill="url(#met)"/><path d="M${x + 40} ${y + 20} l40 -20 v${h} l-40 20 Z" fill="url(#met2)" opacity=".85"/>
+        <path d="M${x} ${y} l40 -20 l40 20 l-40 20 Z" fill="#e8edf7"/></g>`; }).join(''),
+  alvo: () => chao(374, 130) + `<circle cx="200" cy="212" r="150" fill="url(#lado)"/>` +
+      [150, 112, 74, 36].map((r, i) => `<circle cx="200" cy="196" r="${r}" fill="${i % 2 ? '#12121b' : 'url(#met)'}"/>`).join('') +
+      `<circle cx="200" cy="196" r="150" fill="none" stroke="url(#brilho)" stroke-width="4"/>
+       <circle id="onda" cx="200" cy="196" r="36" fill="none" stroke="${C.destaque}" stroke-width="6" opacity="0"/>`,
+  cadeado: () => chao(374, 120) + `<g id="haste"><path d="M130 170 V120 a70 70 0 0 1 140 0 V170" fill="none" stroke="url(#lado)" stroke-width="34" transform="translate(0 10)"/>
+      <path d="M130 170 V120 a70 70 0 0 1 140 0 V170" fill="none" stroke="url(#met2)" stroke-width="34"/></g>` +
+      extr('M96 160 H304 Q330 160 330 186 V318 Q330 344 304 344 H96 Q70 344 70 318 V186 Q70 160 96 160 Z', 18,
+      `<circle cx="200" cy="236" r="22" fill="#12121b"/><rect x="190" y="244" width="20" height="50" rx="8" fill="#12121b"/>`),
+  lupa: () => chao(376, 120) + `<g id="lente"><line x1="250" y1="250" x2="340" y2="340" stroke="url(#lado)" stroke-width="44" stroke-linecap="round" transform="translate(0 10)"/>
+      <line x1="250" y1="250" x2="340" y2="340" stroke="url(#met2)" stroke-width="44" stroke-linecap="round"/>
+      <circle cx="170" cy="180" r="120" fill="none" stroke="url(#lado)" stroke-width="36" transform="translate(0 12)"/>
+      <circle cx="170" cy="180" r="102" fill="url(#vidro)"/><circle cx="170" cy="180" r="120" fill="none" stroke="url(#met)" stroke-width="36"/>
+      <ellipse cx="130" cy="135" rx="34" ry="18" fill="#fff" opacity=".4" transform="rotate(-35 130 135)"/></g>`,
+  furo: () => `<ellipse cx="200" cy="232" rx="180" ry="96" fill="url(#lado)"/><ellipse cx="200" cy="214" rx="180" ry="96" fill="url(#met)"/>
+      <ellipse cx="200" cy="214" rx="180" ry="96" fill="none" stroke="url(#brilho)" stroke-width="4"/>
+      <ellipse cx="200" cy="222" rx="118" ry="58" fill="url(#buraco)"/>
+      <path d="M120 120 Q160 150 196 200" stroke="${C.destaque}" stroke-opacity=".35" stroke-width="3" stroke-dasharray="6 10" fill="none"/>
+      ${[0, 1, 2].map(i => `<circle class="bola" data-i="${i}" cx="120" cy="120" r="14" fill="${C.destaque}"/>`).join('')}`,
+};
+
+const limitar = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const saidaCubica = x => 1 - Math.pow(1 - x, 3);
+const saidaVolta = x => { const c = 1.6; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/* cfg: {elemento, modo: "sobreposto"|"tela", largura, altura, duracao, texto, cores, arroba, fonte: {familia, url}} */
+function montar(cfg) {
+  CFG = cfg; C = cfg.cores;
+  const raiz = document.documentElement.style;
+  if (cfg.fonte) {   // fonte do perfil de marca (o arquivo vem de fora, a família é só um nome interno)
+    const st = document.createElement('style');
+    st.textContent = `@font-face { font-family: "FontePerfil"; src: url("${cfg.fonte.url}"); }`;
+    document.head.appendChild(st);
+    raiz.setProperty('--fonte', '"FontePerfil", "Sora ExtraBold", sans-serif');
+  }
+  raiz.setProperty('--fundo', C.fundo); raiz.setProperty('--fundo-profundo', C.fundo_profundo);
+  raiz.setProperty('--texto', C.texto); raiz.setProperty('--destaque', C.destaque); raiz.setProperty('--rotulo', C.rotulo);
+  const palco = document.getElementById('palco');
+  palco.className = cfg.modo;
+  palco.style.width = cfg.largura + 'px'; palco.style.height = cfg.altura + 'px';
+  const el = document.getElementById('elemento');
+  // Elemento gerado (cfg.svg): o desenho vem pronto de fora, sempre sobre os mesmos gradientes da marca.
+  const forma = cfg.svg ? () => cfg.svg : (FORMAS[cfg.elemento] || FORMAS.esfera);
+  el.innerHTML = `<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">${defs(C.elemento_3d)}${forma()}</svg>`;
+  GER = cfg.svg ? prepararGerado(el.querySelector('svg'), cfg) : null;
+  const txt = document.getElementById('texto');
+  // *palavra* fica na cor de destaque do perfil
+  txt.innerHTML = cfg.texto ? esc(cfg.texto).replace(/\*(.+?)\*/g, '<b>$1</b>') : '';
+  document.getElementById('arroba').textContent = cfg.modo === 'tela' ? (cfg.arroba || '') : '';
+  document.getElementById('arroba').style.fontSize = Math.round(cfg.largura * 0.03) + 'px';
+
+  if (cfg.modo === 'tela') {
+    const lado = Math.round(cfg.largura * 0.62);
+    ALVO = { x: (cfg.largura - lado) / 2, y: cfg.altura * (cfg.texto ? 0.15 : 0.25), lado };
+    txt.style.top = (ALVO.y + lado + cfg.altura * 0.03) + 'px';
+    txt.style.fontSize = Math.round(cfg.largura * 0.085) + 'px';
+  } else {
+    const temTexto = !!cfg.texto;
+    const lado = Math.round(cfg.largura * (temTexto ? 0.82 : 0.9));
+    ALVO = { x: (cfg.largura - lado) / 2, y: cfg.largura * 0.04, lado };
+    txt.style.top = (ALVO.y + lado + cfg.largura * 0.01) + 'px';
+    txt.style.left = '0'; txt.style.right = '0';
+    txt.style.fontSize = Math.round(cfg.largura * 0.13) + 'px';
+    txt.style.textShadow = `0 0 ${Math.round(cfg.largura * 0.02)}px ${C.fundo_profundo}, 0 ${Math.round(cfg.largura * 0.008)}px 0 ${C.fundo_profundo}`;
+  }
+  el.style.left = ALVO.x + 'px'; el.style.top = ALVO.y + 'px';
+  el.style.width = ALVO.lado + 'px'; el.style.height = ALVO.lado + 'px';
+}
+
+function animarPartes(u) {
+  if (GER) { animarGerado(u); return; }
+  const q = s => document.querySelector(s), qa = s => [...document.querySelectorAll(s)];
+  switch (CFG.elemento) {
+    case 'relogio': // ponteiro corre: o tempo passando
+      q('#ponteiro').setAttribute('transform', `rotate(${u * 300} 200 196)`);
+      q('#horas').setAttribute('transform', `rotate(${u * 25} 200 196)`); break;
+    case 'grafico': // barras sobem uma depois da outra
+      qa('.barra').forEach((b, i) => {
+        const k = saidaVolta(limitar((u - i * 0.12) / 0.45));
+        b.setAttribute('transform', `translate(0 350) scale(1 ${Math.max(0.001, k)}) translate(0 -350)`);
+      }); break;
+    case 'mensagem': // três pontinhos: alguém digitando
+      qa('.ponto').forEach((p, i) => p.setAttribute('transform', `translate(0 ${-14 * Math.max(0, Math.sin(u * 7 - i * 0.9))})`)); break;
+    case 'funil': // bolinhas (leads) caindo no funil
+      qa('.bola').forEach((b, i) => {
+        const ciclo = ((u * 0.9 + i * 0.33) % 1);
+        b.setAttribute('cy', +b.dataset.y - 90 + ciclo * 130);
+        b.setAttribute('cx', +b.dataset.x + (200 - b.dataset.x) * ciclo * 0.8);
+        b.setAttribute('opacity', limitar(Math.min(ciclo * 5, (1 - ciclo) * 3)));
+      }); break;
+    case 'cadeado': // a haste desce e tranca
+      q('#haste').setAttribute('transform', `translate(0 ${-40 * (1 - saidaVolta(limitar((u - 0.15) / 0.35)))})`); break;
+    case 'furo': // leads escorrendo pelo buraco
+      qa('.bola').forEach((b, i) => {
+        const ciclo = ((u * 0.7 + i * 0.33) % 1);
+        b.setAttribute('cx', 120 + 80 * ciclo); b.setAttribute('cy', 120 + 100 * ciclo * ciclo);
+        b.setAttribute('r', 14 * (1 - 0.6 * ciclo)); b.setAttribute('opacity', limitar(Math.min(ciclo * 6, (1 - ciclo) * 2.5)));
+      }); break;
+    case 'alvo': { // onda saindo do centro: acertou
+      const c = (u * 0.8) % 1, o = q('#onda');
+      o.setAttribute('r', 36 + 120 * c); o.setAttribute('opacity', (1 - c) * 0.9); break; }
+    case 'lupa': // procurando
+      q('#lente').setAttribute('transform', `translate(${Math.sin(u * 2.4) * 18} ${Math.cos(u * 2.4) * 8})`); break;
+    case 'anel':
+      q('#gira').setAttribute('transform', `rotate(${Math.sin(u * 1.5) * 8} 200 200)`); break;
+    case 'cubo':
+      q('#reflexo').setAttribute('opacity', 0.35 + 0.35 * Math.sin(u * 2)); break;
+  }
+}
+
+/* ---------- Elementos gerados ----------
+   O SVG gerado marca as partes que se mexem com um id (ou a classe .passo) e escolhe uma destas
+   animações no elementos.json. Cada parte é embrulhada num <g> próprio, que é o que se anima:
+   assim a parte pode ter o seu próprio transform sem conflito. u = segundos desde que o elemento assentou. */
+const SVGNS = 'http://www.w3.org/2000/svg';
+const FORMAS_SVG = 'path,circle,ellipse,rect,line,polyline,polygon';
+const PARTE_DA_ANIMACAO = { girar: '#gira', subir: '#sobe', balancar: '#balanca', encaixar: '#encaixa',
+                            pulsar: '#pulsa', brilhar: '#reflexo', aparecer: '.passo' };
+
+function envolver(el) {
+  const w = document.createElementNS(SVGNS, 'g');
+  el.parentNode.insertBefore(w, el); w.appendChild(el);
+  return w;
+}
+
+/* O reflexo só aparece dentro do desenho: recorta pelas faces de metal (fill met ou met2). */
+function recortarReflexo(svg, alvo) {
+  const cp = document.createElementNS(SVGNS, 'clipPath');
+  cp.setAttribute('id', 'recorte-reflexo');
+  svg.querySelectorAll(FORMAS_SVG).forEach(f => {
+    if (alvo.w.contains(f)) return;
+    const fill = f.getAttribute('fill') || '';
+    if (fill !== 'url(#met)' && fill !== 'url(#met2)') return;
+    const c = f.cloneNode(false);
+    ['fill', 'stroke', 'stroke-width', 'opacity', 'id', 'class'].forEach(a => c.removeAttribute(a));
+    const ts = [];
+    for (let p = f; p && p !== svg; p = p.parentNode) {
+      const t = p.getAttribute && p.getAttribute('transform');
+      if (t) ts.unshift(t);
+    }
+    if (ts.length) c.setAttribute('transform', ts.join(' ')); else c.removeAttribute('transform');
+    cp.appendChild(c);
+  });
+  if (!cp.firstChild) return;
+  svg.querySelector('defs').appendChild(cp);
+  const fora = document.createElementNS(SVGNS, 'g');
+  fora.setAttribute('clip-path', 'url(#recorte-reflexo)');
+  alvo.w.parentNode.insertBefore(fora, alvo.w); fora.appendChild(alvo.w);
+}
+
+function prepararGerado(svg, cfg) {
+  const g = { animacao: cfg.animacao, parar: !!cfg.parar, alvos: [], traco: null, comp: 0 };
+  if (cfg.animacao === 'tracar') {
+    const p = svg.querySelector('#traco');
+    if (p && p.getTotalLength) {
+      g.traco = p; g.comp = p.getTotalLength();
+      p.setAttribute('stroke-dasharray', g.comp); p.setAttribute('stroke-dashoffset', g.comp);
+    }
+    return g;
+  }
+  const seletor = PARTE_DA_ANIMACAO[cfg.animacao];
+  if (!seletor) return g;
+  svg.querySelectorAll(seletor).forEach(el => {
+    const w = envolver(el), b = w.getBBox();
+    g.alvos.push({ w, cx: b.x + b.width / 2, cy: b.y + b.height / 2 });
+  });
+  if (cfg.animacao === 'brilhar' && g.alvos[0]) recortarReflexo(svg, g.alvos[0]);
+  return g;
+}
+
+function animarGerado(u) {
+  const g = GER, ciclo = (periodo) => (u / periodo) * Math.PI * 2;
+  if (g.animacao === 'tracar') {   // o traço se desenha em 1 s e fica
+    if (g.traco) g.traco.setAttribute('stroke-dashoffset', g.comp * (1 - saidaCubica(limitar(u / 1.0))));
+    return;
+  }
+  g.alvos.forEach((a, i) => {
+    let tr = '', op = null;
+    switch (g.animacao) {
+      case 'girar': { // uma volta a cada 3 s, ou de -25° a 0° e para (agulha de bússola)
+        const ang = g.parar ? -25 * (1 - saidaVolta(limitar(u / 0.9))) : (u / 3) * 360;
+        tr = `rotate(${ang} ${a.cx} ${a.cy})`; break; }
+      case 'subir': // sobe 40 e volta, devagar
+        tr = `translate(0 ${-40 * (0.5 - 0.5 * Math.cos(ciclo(2.4)))})`; break;
+      case 'balancar': // de -6° a 6°, como barco na onda
+        tr = `rotate(${6 * Math.sin(ciclo(2.0))} ${a.cx} ${a.cy})`; break;
+      case 'encaixar': { // desce 60, encaixa aos 0,3 s e dá um quique pequeno
+        const k = u < 0.3 ? -60 * (1 - Math.pow(u / 0.3, 2))
+                          : -7 * Math.exp(-(u - 0.3) * 9) * Math.abs(Math.sin((u - 0.3) * 20));
+        tr = `translate(0 ${k})`; break; }
+      case 'pulsar': { // cresce 8% e volta, a cada 0,8 s
+        const s = 1 + 0.08 * (0.5 - 0.5 * Math.cos(ciclo(0.8)));
+        tr = `translate(${a.cx} ${a.cy}) scale(${s}) translate(${-a.cx} ${-a.cy})`; break; }
+      case 'brilhar': { // o reflexo passa de lado a lado uma vez
+        const p = limitar((u - 0.2) / 1.2);
+        tr = `translate(${-230 + 460 * p} 0)`; op = Math.sin(Math.PI * p); break; }
+      case 'aparecer': { // as partes entram uma a uma, a cada 0,15 s
+        const k = limitar((u - i * 0.15) / 0.3);
+        tr = `translate(0 ${(1 - saidaVolta(k)) * 26})`; op = limitar(k * 3); break; }
+    }
+    a.w.setAttribute('transform', tr);
+    if (op !== null) a.w.setAttribute('opacity', op);
+  });
+}
+
+function desenhar(t) {
+  const dur = CFG.duracao;
+  const e = limitar(t / 0.45);                 // entrada
+  const s = limitar((t - (dur - 0.3)) / 0.3);  // saída
+  const escala = (0.55 + 0.45 * saidaVolta(e)) * (1 - 0.18 * saidaCubica(s));
+  const opac = limitar(e * 2) * (1 - s);
+  const dy = (1 - saidaCubica(e)) * ALVO.lado * 0.15 + Math.sin(t * 2.6) * ALVO.lado * 0.015;
+  const giro = Math.sin(t * 1.7) * 3;
+  const el = document.getElementById('elemento');
+  el.style.opacity = opac;
+  el.style.transform = `translateY(${dy}px) rotate(${giro}deg) scale(${escala})`;
+  animarPartes(Math.max(0, t - 0.2));
+
+  const txt = document.getElementById('texto');
+  const et = limitar((t - 0.18) / 0.35);
+  txt.style.opacity = limitar(et * 1.5) * (1 - s);
+  txt.style.transform = `translateY(${(1 - saidaCubica(et)) * 30}px)`;
+
+  if (CFG.modo === 'tela') {  // o fundo da marca entra e sai rápido, como um corte
+    const palco = document.getElementById('palco');
+    palco.style.opacity = limitar(t / 0.12) * (1 - limitar((t - (dur - 0.12)) / 0.12));
+  }
+}
+</script>
+</body>
+</html>

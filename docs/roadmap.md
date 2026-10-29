@@ -11,7 +11,7 @@ Este arquivo é o mapa. O checklist resumido fica no [README](../README.md#fases
 ## Como as fases se encaixam
 
 ```text
-Fase 1 ✅  Fase 2 ✅  ──►  Fase 3 (base: perfis de marca)  ──┬──►  Trilha A: painel   4 → 5 → 6 → 7 → 8
+Fase 1 ✅  Fase 2 ✅  Fase 3 ✅  ──►  ──┬──►  Trilha A: painel   4 → 5 → 6 → 7 → 8
                                                               ├──►  Trilha B: conteúdo e entrega   9 · 10 · 11 · 12
                                                               └──►  Trilha C: infraestrutura   C1 · C2
 ```
@@ -29,14 +29,14 @@ Inspeção, cartão de ajustes, transcrição local, cortes medidos no áudio, r
 ### Fase 2 ✅ Elementos 3D gerados a partir da fala
 Elementos novos desenhados para as ideias que nenhum dos 12 prontos representa, com validação, folha de prévia e catálogo. Especificação: [fase-2-elementos-gerados.md](fase-2-elementos-gerados.md).
 
-### Fase 3. Projeto para qualquer pessoa: perfis de marca · médio
+### Fase 3 ✅ Projeto para qualquer pessoa: perfis de marca · médio
 - **Perfil de marca** em `perfis/<nome>/` com `marca.json` (nome, cores, fonte, @ opcional, créditos) e a fonte. Os scripts passam a aceitar `--perfil` (sem ele, usam o perfil padrão). O `marca.json` atual vira o perfil **arven**, o padrão: mesmas cores, fonte e elementos, sem o @ pessoal. Um perfil `_modelo` para a pessoa copiar e preencher.
 - **Aviso "elementos base ARVEN"**: aparece no topo e nos créditos do README, no rodapé do painel e no campo `creditos` do perfil. Vale só para a marca (cores e elementos). Continua proibido levar nome de cliente, número real ou método interno da ARVEN para o projeto.
 - **Textos neutros**: SKILL.md, referências, README, CLAUDE.md e exemplos falam de "a pessoa que grava", sem o nome do Well, o @ dele nem o nicho jurídico como pressuposto.
 - **Regras de nicho viram opcionais**: os gatilhos jurídicos (OAB, ética, cadeado) saem do padrão e viram um pacote que o perfil liga. A regra "nunca cortar o aviso obrigatório" passa a ser uma lista de **avisos obrigatórios** do perfil.
 - **Nome welldit**: a pasta `skill/edicao-video-well/` vira `skill/welldit/`, o arquivo gerado vira `welldit.skill` e o `name:` do SKILL.md muda junto. O CLAUDE.md e o README são reescritos para o novo escopo. Renomear o repositório no GitHub (hoje `skill-claude-editor`) é o último passo da fase, com a confirmação de quem manda, porque muda o endereço (o GitHub redireciona o antigo).
 - **Pronto quando**: um perfil novo, com outras cores, gera legenda e elementos nas cores dele; o perfil padrão produz quadros **idênticos** aos de hoje (mesmo teste de comparação da Fase 2); não sobra menção ao perfil de ninguém fora de créditos e histórico; o aviso "elementos base ARVEN" aparece nos três lugares.
-- Toca: quase tudo. Por isso é a primeira e é feita por uma pessoa só.
+- Toca: quase tudo. Por isso é a primeira e é feita por uma pessoa só, direto na `main` (as outras fases usam um ramo cada). Especificação e decisões da implementação: [fase-3-perfis-de-marca.md](fase-3-perfis-de-marca.md).
 
 ### Fase 4. Orquestrador e estado da edição · médio
 - Um `editar.py` que roda a **próxima etapa** de uma edição, para nos portões de aprovação e retoma de onde parou.

@@ -26,7 +26,7 @@ Dois modos, como nos elementos:
 - Nada entra sem o "ok" na linha ✨ do cartão, com a folha de prévia.
 - Cena é um elemento: entra no `elementos.json`, não se sobrepõe a outro elemento e deixa pelo menos 1,5 s de folga.
 - A cena não esconde o rosto: o painel foge dele; a tela é curta e só com o "ok".
-- Mesma identidade: fonte Sora ExtraBold, cores de `marca.json`, entrada de 0,45 s e saída de 0,3 s.
+- Mesma identidade: a fonte e as cores do perfil de marca (`marca.json` do perfil; no padrão, Sora ExtraBold e as cores arven), entrada de 0,45 s e saída de 0,3 s.
 - Tudo local, tudo em português.
 
 ## O item no `elementos.json`

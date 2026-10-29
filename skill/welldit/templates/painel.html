@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>welldit</title>
+<style>
+  @font-face { font-family: "FontePerfil"; src: url("/fonte.ttf"); font-display: swap; }
+  :root {
+    --fundo: #16161f; --fundo-profundo: #0a0a12; --cartao: #1a1a24; --linha: #333446;
+    --destaque: #a8b4d4; --texto: #eaefef; --apoio: #b4bccd; --rotulo: #8f97ab; --metal: #7f8caa;
+    --ok: #8fd4a8; --falha: #f0a3a3; --aviso: #f0d08f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--fundo-profundo); color: var(--texto);
+    font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  .topo { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--fundo-profundo) 92%, transparent); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--linha); }
+  .topo .dentro, main { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+  .topo .dentro { display: flex; align-items: center; gap: 12px; height: 60px; }
+  h1, h2, .titulo { font-family: "FontePerfil", sans-serif; letter-spacing: -.01em; }
+  h1 { font-size: 18px; margin: 0; }
+  h1 span { color: var(--destaque); }
+  .rodape { max-width: 1080px; margin: 0 auto; padding: 0 16px 28px; font-size: 12px; color: var(--rotulo); }
+  .rodape:empty { display: none; }
+  .conexao { margin-left: auto; font-size: 13px; color: var(--rotulo); display: flex; align-items: center; gap: 6px; }
+  .bolinha { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
+  .bolinha.fora { background: var(--falha); }
+  main { padding-top: 24px; padding-bottom: 64px; }
+  h2 { font-size: 16px; margin: 32px 0 12px; color: var(--apoio); }
+  .cartao { background: var(--cartao); border: 1px solid var(--linha); border-radius: 14px; padding: 16px; }
+  .soltar { display: block; border: 2px dashed var(--linha); border-radius: 14px; padding: 28px 16px; text-align: center;
+    cursor: pointer; transition: border-color .15s, background .15s; }
+  .soltar:hover, .soltar.em-cima { border-color: var(--destaque); background: rgba(168,180,212,.06); }
+  .soltar strong { font-family: "FontePerfil", sans-serif; font-size: 17px; display: block; margin-bottom: 4px; }
+  .soltar small { color: var(--rotulo); }
+  .fila { margin-top: 12px; display: grid; gap: 8px; }
+  .envio { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: 14px; }
+  .envio .nome { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .envio .num { color: var(--rotulo); font-variant-numeric: tabular-nums; }
+  .barra { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--linha); overflow: hidden; }
+  .barra i { display: block; height: 100%; width: 0; background: var(--destaque); transition: width .3s; }
+  .barra.ok i { background: var(--ok); }
+  .barra.falha i { background: var(--falha); }
+  .grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+  .bruto { display: flex; gap: 12px; align-items: center; padding: 10px; }
+  .bruto img, .bruto .sem { width: 54px; height: 72px; object-fit: cover; border-radius: 8px; background: var(--linha); flex: none; }
+  .bruto .info { min-width: 0; flex: 1; }
+  .bruto .info b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+  .bruto .info span { color: var(--rotulo); font-size: 13px; }
+  button { font: inherit; color: var(--texto); background: transparent; border: 1px solid var(--linha);
+    border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+  button:hover { border-color: var(--destaque); color: var(--destaque); }
+  button.mini { font-size: 12px; padding: 3px 8px; margin-top: 4px; }
+  .vazio { color: var(--rotulo); font-size: 14px; }
+  .trabalho { margin-bottom: 14px; }
+  .trabalho .cab { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; }
+  .trabalho .cab .titulo { font-size: 17px; }
+  .trabalho .cab .quando { color: var(--rotulo); font-size: 13px; }
+  .etapas { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 4px; }
+  .etapa { font-size: 13px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--linha); color: var(--rotulo); }
+  .etapa.feito { color: var(--texto); border-color: rgba(143,212,168,.45); background: rgba(143,212,168,.08); }
+  .etapa.feito::before { content: "✓ "; color: var(--ok); }
+  .etapa.falha { border-color: rgba(240,163,163,.5); color: var(--falha); }
+  .etapa small { color: var(--rotulo); margin-left: 4px; }
+  .extras { font-size: 13px; color: var(--rotulo); margin-top: 6px; }
+  .agora { margin-top: 12px; padding: 12px; border-radius: 10px; background: var(--fundo); border: 1px solid var(--linha); }
+  .agora .linha1 { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+  .agora .linha1 .pct { margin-left: auto; font-variant-numeric: tabular-nums; color: var(--destaque); }
+  .agora .det { color: var(--rotulo); font-size: 13px; margin: 2px 0 8px; }
+  .agora.parou { border-color: rgba(240,208,143,.5); }
+  .agora.parou .linha1 { color: var(--aviso); }
+  .gira { width: 14px; height: 14px; border: 2px solid var(--linha); border-top-color: var(--destaque); border-radius: 50%;
+    animation: gira 0.9s linear infinite; flex: none; }
+  @keyframes gira { to { transform: rotate(360deg); } }
+  .versoes { margin-top: 14px; display: grid; gap: 8px; }
+  .versao { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; padding: 10px 12px; border-radius: 10px;
+    background: var(--fundo); border: 1px solid var(--linha); }
+  .versao .nome b { font-weight: 600; }
+  .versao .nome span { color: var(--rotulo); font-size: 13px; margin-left: 6px; }
+  .versao .acoes { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  .selo { font-size: 12px; padding: 2px 8px; border-radius: 999px; margin-left: 6px; }
+  .selo.ok { background: rgba(143,212,168,.15); color: var(--ok); }
+  .selo.falha { background: rgba(240,163,163,.15); color: var(--falha); }
+  .checks { grid-column: 1 / -1; margin: 4px 0 0; padding: 0; list-style: none; font-size: 13px; display: none; }
+  .checks.aberto { display: block; }
+  .checks li { padding: 2px 0; color: var(--apoio); }
+  .checks li.f { color: var(--falha); }
+  .checks li b { font-weight: 600; }
+  .modal { position: fixed; inset: 0; background: rgba(5,5,10,.88); display: none; align-items: center;
+    justify-content: center; z-index: 20; padding: 16px; }
+  .modal.aberto { display: flex; }
+  .modal .caixa { max-width: min(560px, 100%); max-height: 100%; display: flex; flex-direction: column; gap: 10px; }
+  .modal video, .modal img { max-width: 100%; max-height: calc(100vh - 110px); border-radius: 12px; background: #000; }
+  .modal .barra-topo { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .modal .barra-topo span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .aviso-copiado { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--cartao);
+    border: 1px solid var(--destaque); border-radius: 10px; padding: 10px 16px; font-size: 14px; display: none; z-index: 30; }
+  @media (max-width: 560px) {
+    .versao { grid-template-columns: 1fr; }
+    .versao .acoes { justify-content: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="topo"><div class="dentro">
+  <h1>welldit <span id="marca-nome"></span></h1>
+  <div class="conexao"><i class="bolinha" id="bolinha"></i><span id="conexao">conectando</span></div>
+</div></div>
+
+<main>
+  <section>
+    <h2>Enviar vídeos brutos</h2>
+    <label class="soltar" id="soltar">
+      <strong>Arraste os vídeos para cá</strong>
+      <small>ou clique para escolher · vão para a pasta material-bruto · o original nunca é sobrescrito</small>
+      <input type="file" id="arquivos" multiple accept="video/*,.mov,.mp4,.m4v,.txt,.md,.docx,.pdf" hidden>
+    </label>
+    <div class="fila" id="fila"></div>
+  </section>
+
+  <section>
+    <h2>Vídeos brutos</h2>
+    <div class="grade" id="brutos"><p class="vazio">Carregando...</p></div>
+  </section>
+
+  <section>
+    <h2>Edições</h2>
+    <div id="trabalhos"><p class="vazio">Carregando...</p></div>
+  </section>
+</main>
+<footer class="rodape" id="rodape"></footer>
+
+<div class="modal" id="modal">
+  <div class="caixa">
+    <div class="barra-topo"><span id="modal-nome"></span><button id="fechar">Fechar</button></div>
+    <div id="modal-corpo"></div>
+  </div>
+</div>
+<div class="aviso-copiado" id="copiado">Pedido copiado. Cole no Claude Code.</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (t) => String(t ?? "").replace(/[&<>"]/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const url = (c) => "/arquivo?c=" + encodeURIComponent(c);
+
+function tamanho(b) {
+  if (b >= 1e9) return (b / 1e9).toFixed(2).replace(".", ",") + " GB";
+  if (b >= 1e6) return Math.round(b / 1e6) + " MB";
+  return Math.max(1, Math.round(b / 1e3)) + " KB";
+}
+function quando(seg) {
+  const d = new Date(seg * 1000), hoje = new Date();
+  const hora = d.toLocaleTimeString("pt-BR", {hour: "2-digit", minute: "2-digit"});
+  if (d.toDateString() === hoje.toDateString()) return "hoje, " + hora;
+  return d.toLocaleDateString("pt-BR", {day: "2-digit", month: "2-digit"}) + ", " + hora;
+}
+
+function pedidoPara(caminho) {
+  return `Edita o vídeo ${caminho} para o Instagram, seguindo a skill em skill/welldit/SKILL.md. ` +
+    `Use o ambiente .venv do projeto (source .venv/bin/activate). Antes de tudo, confere se está instalado o que a skill ` +
+    `precisa; se faltar algo, me explica e espera meu ok. Depois inspeciona o vídeo e me mostra o cartão de ajustes antes de editar.`;
+}
+async function copiar(texto) {
+  try { await navigator.clipboard.writeText(texto); }
+  catch {
+    const t = document.createElement("textarea"); t.value = texto; document.body.appendChild(t);
+    t.select(); document.execCommand("copy"); t.remove();
+  }
+  const a = $("#copiado"); a.style.display = "block"; setTimeout(() => a.style.display = "none", 2200);
+}
+
+/* ---------- envio ---------- */
+const fila = [];
+let enviando = false;
+const soltar = $("#soltar");
+["dragenter", "dragover"].forEach((e) => soltar.addEventListener(e, (ev) => { ev.preventDefault(); soltar.classList.add("em-cima"); }));
+["dragleave", "drop"].forEach((e) => soltar.addEventListener(e, (ev) => { ev.preventDefault(); soltar.classList.remove("em-cima"); }));
+soltar.addEventListener("drop", (ev) => adicionar(ev.dataTransfer.files));
+$("#arquivos").addEventListener("change", (ev) => { adicionar(ev.target.files); ev.target.value = ""; });
+
+function adicionar(lista) {
+  for (const f of lista) {
+    const el = document.createElement("div");
+    el.className = "envio";
+    el.innerHTML = `<span class="nome">${esc(f.name)}</span><span class="num">na fila · ${tamanho(f.size)}</span><div class="barra"><i></i></div>`;
+    $("#fila").prepend(el);
+    fila.push({arquivo: f, el});
+  }
+  proximo();
+}
+function proximo() {
+  if (enviando || !fila.length) return;
+  enviando = true;
+  const {arquivo, el} = fila.shift();
+  const num = el.querySelector(".num"), barra = el.querySelector(".barra"), i = el.querySelector("i");
+  const xhr = new XMLHttpRequest();
+  const inicio = Date.now();
+  xhr.open("PUT", "/api/enviar?nome=" + encodeURIComponent(arquivo.name));
+  xhr.upload.onprogress = (ev) => {
+    if (!ev.lengthComputable) return;
+    const p = ev.loaded / ev.total, s = (Date.now() - inicio) / 1000;
+    i.style.width = (p * 100).toFixed(1) + "%";
+    const vel = s > 1 ? ` · ${Math.round(ev.loaded / s / 1e6)} MB/s` : "";
+    num.textContent = `${Math.round(p * 100)}% de ${tamanho(ev.total)}${vel}`;
+  };
+  xhr.onload = () => {
+    let r = {};
+    try { r = JSON.parse(xhr.responseText); } catch {}
+    if (xhr.status === 200 && r.ok) {
+      barra.classList.add("ok"); i.style.width = "100%";
+      num.innerHTML = `enviado como ${esc(r.nome)} `;
+      const b = document.createElement("button"); b.className = "mini"; b.textContent = "copiar pedido de edição";
+      b.onclick = () => copiar(pedidoPara(r.caminho)); num.appendChild(b);
+      atualizar();
+    } else {
+      barra.classList.add("falha"); num.textContent = r.erro || "falhou";
+    }
+    enviando = false; proximo();
+  };
+  xhr.onerror = () => { barra.classList.add("falha"); num.textContent = "o painel não respondeu"; enviando = false; proximo(); };
+  xhr.send(arquivo);
+}
+
+/* ---------- estado ---------- */
+let ultimoBrutos = "", ultimos = {};
+
+function desenharBrutos(estado) {
+  const chave = JSON.stringify([estado.brutos, estado.enviando]);
+  if (chave === ultimoBrutos) return;
+  ultimoBrutos = chave;
+  const lista = estado.brutos;
+  if (!lista.length) { $("#brutos").innerHTML = `<p class="vazio">Nenhum vídeo em material-bruto ainda.</p>`; return; }
+  $("#brutos").innerHTML = lista.map((b) => `
+    <div class="cartao bruto">
+      ${b.video ? `<img loading="lazy" src="/miniatura?c=${encodeURIComponent(b.caminho)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'sem'}))">` : `<div class="sem"></div>`}
+      <div class="info"><b title="${esc(b.nome)}">${esc(b.nome)}</b>
+        <span>${tamanho(b.tamanho)} · ${quando(b.modificado)}</span><br>
+        ${b.video ? `<button class="mini" data-copiar="${esc(b.caminho)}">copiar pedido de edição</button>` : ""}
+      </div>
+    </div>`).join("");
+}
+
+function desenharTrabalho(t) {
+  const conferida = t.etapas.find((e) => e.chave === "conferencia");
+  const etapas = t.etapas.map((e) => {
+    const falhou = e.chave === "conferencia" && !e.feito && e.detalhe === "com problema";
+    return `<span class="etapa ${e.feito ? "feito" : ""} ${falhou ? "falha" : ""}">${esc(e.nome)}${e.detalhe ? `<small>${esc(e.detalhe)}</small>` : ""}</span>`;
+  }).join("");
+  let agora = "";
+  const a = t.agora;
+  if (a && a.situacao === "rodando") {
+    const pct = a.progresso == null ? "" : Math.round(a.progresso * 100) + "%";
+    agora = `<div class="agora"><div class="linha1"><i class="gira"></i>${esc(capital(a.etapa))}<span class="pct">${pct}</span></div>
+      <div class="det">${esc(a.detalhe || "")}</div>
+      ${a.progresso == null ? "" : `<div class="barra"><i style="width:${(a.progresso * 100).toFixed(1)}%"></i></div>`}</div>`;
+  } else if (a && a.situacao === "parou") {
+    agora = `<div class="agora parou"><div class="linha1">Parou em: ${esc(a.etapa)}</div>
+      <div class="det">O script não terminou. Veja a conversa no Claude Code (pode ter dado erro, ou o limite de uso acabou).</div></div>`;
+  } else if (a && a.situacao === "concluido") {
+    agora = `<div class="extras">Última etapa: ${esc(a.etapa)}${a.detalhe ? " · " + esc(a.detalhe) : ""} · ${quando(a.atualizado)}</div>`;
+  }
+  const versoes = t.versoes.map((v, k) => {
+    const c = v.conferencia;
+    const selo = c ? `<span class="selo ${c.aprovado ? "ok" : "falha"}">${c.aprovado ? "aprovado" : "com problema"}</span>` : "";
+    const checks = c ? `<ul class="checks" id="ck-${esc(t.nome)}-${k}">${c.checks.map((x) =>
+      `<li class="${x.ok ? "" : "f"}">${x.ok ? "✓" : "✗"} <b>${esc(x.item)}</b>: ${esc(x.detalhe)}</li>`).join("")}</ul>` : "";
+    if (!v.pronta) return `<div class="versao">
+      <div class="nome"><b>${esc(v.nome)}</b><span>gravando... ${tamanho(v.tamanho)}</span></div><div class="acoes"></div></div>`;
+    return `<div class="versao">
+      <div class="nome"><b>${esc(v.nome)}</b>${selo}<span>${tamanho(v.tamanho)} · ${quando(v.modificado)}</span></div>
+      <div class="acoes">
+        <button data-video="${esc(v.caminho)}" data-nome="${esc(v.nome)}">assistir</button>
+        ${v.quadros ? `<button data-img="${esc(v.quadros)}" data-nome="quadros de ${esc(v.nome)}">quadros</button>` : ""}
+        ${v.emendas.map((e, j) => `<button data-img="${esc(e)}" data-nome="emendas ${j + 1} de ${esc(v.nome)}">emendas${v.emendas.length > 1 ? " " + (j + 1) : ""}</button>`).join("")}
+        ${c ? `<button data-checks="ck-${esc(t.nome)}-${k}">conferência</button>` : ""}
+      </div>${checks}</div>`;
+  }).join("");
+  return `<div class="cab"><span class="titulo">${esc(t.nome)}</span>
+      <span class="quando">${esc(t.videos.join(" + "))}${t.videos.length ? " · " : ""}atualizado ${quando(t.modificado)}</span></div>
+    <div class="etapas">${etapas}</div>
+    ${t.extras.length ? `<div class="extras">Com ${esc(t.extras.join(", "))}</div>` : ""}
+    ${agora}
+    ${versoes ? `<div class="versoes">${versoes}</div>` : ""}`;
+}
+const capital = (s) => s ? s[0].toUpperCase() + s.slice(1) : "";
+
+function desenharTrabalhos(estado) {
+  const caixa = $("#trabalhos");
+  if (!estado.trabalhos.length) { caixa.innerHTML = `<p class="vazio">Nenhuma edição em saida ainda. Envie um vídeo e peça a edição no Claude Code.</p>`; ultimos = {}; return; }
+  const vistos = new Set();
+  estado.trabalhos.forEach((t, ordem) => {
+    vistos.add(t.nome);
+    const chave = JSON.stringify(t);
+    let el = document.getElementById("t-" + t.nome);
+    if (!el) { el = document.createElement("div"); el.className = "cartao trabalho"; el.id = "t-" + t.nome; }
+    if (caixa.children[ordem] !== el) caixa.insertBefore(el, caixa.children[ordem] || null);
+    if (ultimos[t.nome] !== chave) {
+      const abertos = [...el.querySelectorAll(".checks.aberto")].map((x) => x.id);
+      el.innerHTML = desenharTrabalho(t);
+      abertos.forEach((id) => document.getElementById(id)?.classList.add("aberto"));
+      ultimos[t.nome] = chave;
+    }
+  });
+  [...caixa.children].forEach((el) => { if (!vistos.has(el.id?.slice(2))) el.remove(); });
+  caixa.querySelector(".vazio")?.remove();
+}
+
+/* Perfil de marca: nome, cores e créditos vêm de perfis/NOME/marca.json (o painel padrão é o do perfil arven). */
+async function aplicarMarca() {
+  try {
+    const m = await (await fetch("/marca.json", {cache: "no-store"})).json();
+    const c = m.cores || {}, raiz = document.documentElement.style;
+    const mapa = {"--fundo": "fundo", "--fundo-profundo": "fundo_profundo", "--cartao": "cartao", "--linha": "linha",
+      "--destaque": "destaque", "--texto": "texto", "--apoio": "apoio", "--rotulo": "rotulo", "--metal": "elemento_3d"};
+    for (const [variavel, chave] of Object.entries(mapa)) if (c[chave]) raiz.setProperty(variavel, c[chave]);
+    document.getElementById("marca-nome").textContent = m.nome || "";
+    document.getElementById("rodape").textContent = m.creditos || "";
+    document.title = m.nome ? `welldit · ${m.nome}` : "welldit";
+  } catch (e) { /* sem perfil: fica o visual padrão do arquivo */ }
+}
+
+async function atualizar() {
+  try {
+    const r = await fetch("/api/estado", {cache: "no-store"});
+    const estado = await r.json();
+    desenharBrutos(estado); desenharTrabalhos(estado);
+    $("#bolinha").classList.remove("fora"); $("#conexao").textContent = "atualizando ao vivo";
+  } catch {
+    $("#bolinha").classList.add("fora"); $("#conexao").textContent = "painel desligado: rode o painel.py";
+  }
+}
+
+/* ---------- cliques ---------- */
+document.addEventListener("click", (ev) => {
+  const b = ev.target.closest("button");
+  if (!b) return;
+  if (b.dataset.copiar) copiar(pedidoPara(b.dataset.copiar));
+  if (b.dataset.checks) document.getElementById(b.dataset.checks)?.classList.toggle("aberto");
+  if (b.dataset.video) abrir(b.dataset.nome, `<video src="${url(b.dataset.video)}" controls autoplay playsinline></video>`);
+  if (b.dataset.img) abrir(b.dataset.nome, `<img src="${url(b.dataset.img)}" alt="">`);
+});
+function abrir(nome, html) { $("#modal-nome").textContent = nome; $("#modal-corpo").innerHTML = html; $("#modal").classList.add("aberto"); }
+function fechar() { $("#modal").classList.remove("aberto"); $("#modal-corpo").innerHTML = ""; }
+$("#fechar").onclick = fechar;
+$("#modal").addEventListener("click", (ev) => { if (ev.target.id === "modal") fechar(); });
+document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") fechar(); });
+
+aplicarMarca();
+atualizar();
+setInterval(atualizar, 2000);
+</script>
+</body>
+</html>

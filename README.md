@@ -1,24 +1,35 @@
-# Edição de vídeo do Well
+# welldit
 
-Skill do Claude que **edita os vídeos** que o Well ([@lunardiwell](https://instagram.com/lunardiwell)) grava para o Instagram. Par da skill de conteúdo ([skill-cards-insta](https://github.com/w5ll/skill-cards-insta)): lá nasce o roteiro, aqui o vídeo gravado vira Reels pronto.
+Skill do Claude que **edita vídeos gravados com o celular** para o Instagram (well + edit): corta pausas e erros, coloca legenda, elementos 3D e zoom no padrão da sua marca, iguala o volume e entrega o MP4 pronto. Qualquer pessoa com acesso ao repositório pode usar, com o próprio perfil de marca.
+
+> **Elementos base ARVEN.** O visual padrão (cores, fonte e elementos 3D) é o do perfil `arven`. Para usar as suas cores, crie um perfil: veja [Marca e perfis](#marca-e-perfis).
+
+Combina com uma skill de conteúdo, se você usar uma (por exemplo a [skill-cards-insta](https://github.com/w5ll/skill-cards-insta)): lá nasce o roteiro, aqui o vídeo gravado vira Reels pronto.
 
 Para instalar no seu Mac, veja [Instalar no seu Mac, com o VS Code](#instalar-no-seu-mac-com-o-vs-code).
 
 ## Como funciona
 
-1. Você manda o vídeo bruto (e o roteiro, se tiver): *"edita esse vídeo do lead curioso"*.
+1. Você manda o vídeo bruto (e o roteiro, se tiver): *"edita esse vídeo da dica rápida"*.
 2. A skill olha o vídeo e mostra um **cartão com todos os ajustes** (ritmo, legenda, som, formato, cor). Nada é editado antes do seu "ok".
 3. Transcreve a fala no próprio computador, palavra por palavra.
 4. Corta pausas longas, respirações, erros, frases repetidas e começos errados. O corte é medido na onda do som, para não comer sílaba.
-5. Acha o seu rosto em cada trecho, 10 vezes por segundo.
+5. Acha o seu rosto em cada trecho, 10 vezes por segundo. Com isso, **avalia o gancho** (os 3 primeiros segundos, nota de 0 a 5) e propõe cortar a saudação ou puxar do meio uma frase mais forte, e **marca os trechos em que você lê** (cabeça abaixada ou virada) para você decidir entre outra tomada, corte ou zoom. Só sugere; nada muda sem o seu "ok".
 6. Coloca a legenda no padrão da marca: Sora ExtraBold, até 3 palavras por vez, palavra falada em azul. Se ela fosse cobrir a boca ou o queixo, desce ou sobe sozinha.
-7. Faz os **elementos 3D do carrossel** entrarem animados quando você fala a palavra certa: "WhatsApp" chama a mensagem digitando, "cinco minutos" o relógio com o rótulo "5 minutos", "funil" o funil com leads caindo. Eles procuram um lugar que não cubra o rosto. Também tem o modo tela cheia, que vira um slide do carrossel por um instante. Quando você fala de uma ideia que nenhum dos 12 elementos prontos representa (direção, método, sorte, estar à deriva), a skill **desenha um elemento novo** só para ela: bússola, escada, engrenagem, trevo. Você vê uma **folha de prévia** (cada elemento em três instantes, sobre o fundo da marca e sobre o seu próprio vídeo) e só entra o que você aprovar. Os que você gostar podem ficar no catálogo para os próximos vídeos.
+7. Faz os **elementos 3D da marca** entrarem animados quando você fala a palavra certa: "WhatsApp" chama a mensagem digitando, "cinco minutos" o relógio com o rótulo "5 minutos", "funil" o funil com leads caindo. Eles procuram um lugar que não cubra o rosto. Também tem o modo tela cheia, que vira um slide do carrossel por um instante. Quando você fala de uma ideia que nenhum dos 12 elementos prontos representa (direção, método, sorte, estar à deriva), a skill **desenha um elemento novo** só para ela: bússola, escada, engrenagem, trevo. Você vê uma **folha de prévia** (cada elemento em três instantes, sobre o fundo da marca e sobre o seu próprio vídeo) e só entra o que você aprovar. Os que você gostar podem ficar no catálogo para os próximos vídeos.
 8. Se você pedir, dá **zoom de ênfase**: alterna o enquadramento a cada frase, como se fossem duas câmeras, e aproxima nas palavras fortes ("nunca", números, "dobro").
 9. Tira o **chiado de fundo** (leve ou forte, conforme a medição) e avisa áudio estourado e eco da sala.
 10. Se você pedir, põe **música** por baixo (abaixa sozinha quando você fala) e um **efeito sonoro** em cada elemento 3D. Tudo de domínio público.
 11. Iguala o volume da voz ao padrão das redes, e o volume entre uma tomada e outra.
 12. Confere uma amostra de 8 a 15 segundos, depois faz o vídeo inteiro e confere de novo: toca até o fim, volume, nenhuma palavra cortada, nenhum estalo, trecho repetido, silêncio sobrando ou quadro preto, fala completa, e uma folha com os quadros de cada emenda.
 13. Entrega o MP4, sem nunca apagar os originais nem as versões anteriores.
+14. Se você pedir, monta o **pacote de publicação**: escolhe 4 quadros para a capa (rosto grande, centrado, nítido), põe o título no padrão da marca fora do rosto e dentro do corte da grade do perfil, confere o texto do post (tamanho, hashtags, números que você não falou) e os limites do Instagram, e entrega tudo numa pasta pronta para postar. Nada é publicado.
+
+Também, quando você pedir:
+
+- **Série**: um arquivo em `series/` guarda o jeito de editar de um conjunto de vídeos (ritmo, legenda, elementos, zoom, música, avisos e hashtags do post), e todo vídeo da série o segue. O cartão mostra cada escolha com "(da série ...)".
+- **Conferência de fatos**: antes do render, a skill marca na sua fala os números, datas, fontes e referências de lei, e pergunta se estão certos. Ela nunca decide o que é verdade: só marca e pergunta.
+- **Imagens de apoio**: uma biblioteca local de imagens de uso livre, com a licença, a origem e o crédito registrados, que entram no vídeo como os elementos 3D (cartão ou tela cheia).
 
 Também, quando você pedir: **cenas explicativas**, com texto e números animados na marca, cada parte entrando quando você a fala. Há quatro tipos: lista de passos ("primeiro, segundo, terceiro"), antes e depois, um número que sobe ("30%", "R$ 130 mil") e de-para ("de 1 milhão para 130 mil"). Entram como um cartão fora do rosto ou em tela cheia por poucos segundos, e todo número da cena tem que ter sido falado por você.
 
@@ -35,7 +46,7 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 
 **Base (primeiro e sozinha)**
 
-- [ ] **Fase 3.** Projeto para qualquer pessoa: perfis de marca, textos neutros, regras de nicho opcionais, nome welldit, aviso "elementos base ARVEN" · _Well_
+- [x] **Fase 3.** Projeto para qualquer pessoa: perfis de marca, textos neutros, regras de nicho opcionais, nome welldit, aviso "elementos base ARVEN" ([especificação](docs/fase-3-perfis-de-marca.md)) · _Well_
 
 **Trilha A: painel que roda a edição** (nesta ordem)
 
@@ -47,10 +58,10 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 
 **Trilha B: conteúdo e entrega** (independentes entre si)
 
-- [ ] **Fase 9.** Gancho dos 3 primeiros segundos e detecção de leitura e olhar · _Lucas (proposta)_
-- [ ] **Fase 10.** Pacote de publicação e capa do Reels · _Lucas (proposta)_
-- [ ] **Fase 11.** Direção de arte por série, conferência de fatos e imagens de apoio · _Lucas (proposta)_
-- [ ] **Fase 12.** Cenas explicativas sincronizadas com a fala · _Lucas, em andamento_ ([especificação](docs/fase-12-cenas-explicativas.md))
+- [x] **Fase 9.** Gancho dos 3 primeiros segundos e detecção de leitura e olhar · _Lucas_ ([especificação](docs/fase-9-gancho-olhar.md))
+- [x] **Fase 10.** Pacote de publicação e capa do Reels · _Lucas_ ([especificação](docs/fase-10-pacote-publicacao.md))
+- [x] **Fase 11.** Direção de arte por série, conferência de fatos e imagens de apoio · _Lucas_ ([especificação](docs/fase-11-serie-fatos-imagens.md))
+- [x] **Fase 12.** Cenas explicativas sincronizadas com a fala · _Lucas_ ([especificação](docs/fase-12-cenas-explicativas.md))
 
 **Trilha C: infraestrutura** (independentes)
 
@@ -62,9 +73,26 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 | Fase | Quem | Antes | Depois | Commit |
 | --- | --- | --- | --- | --- |
 | 1 | | | | |
-| 2 | Well | | | `402c088` |
+| 2 | Well | 0% | 2% (inclui o planejamento das fases) | `402c088` |
+| 3 | Well | 2% | 5% (cerca de 3 pontos) | `09a07de` a `f61ed7a` |
+| 9 | Lucas | a anotar | a anotar | PR #1 |
+| 10 | Lucas | a anotar | a anotar | PR #2 |
+| 11 | Lucas | a anotar | a anotar | PR #3 |
+| 12 | Lucas | a anotar | a anotar | PR #4 |
 
-Referência informada: a Fase 2 e o planejamento custaram cerca de **2% do plano semanal** (Sonnet 5.5, esforço médio).
+Referência informada (Sonnet 5.5, esforço médio): a Fase 2 e o planejamento custaram cerca de **2% do plano semanal**, e a Fase 3 mais cerca de **3 pontos**, indo a 5%. Números lidos no Claude Code por quem rodou a fase, sem casa decimal.
+
+## Marca e perfis
+
+O visual de cada edição (cores, fonte, nome, @ e créditos) vem de um **perfil de marca**: uma pasta em `skill/welldit/perfis/`. O perfil padrão é o `arven` (elementos base ARVEN). Para usar a sua marca:
+
+```bash
+source .venv/bin/activate
+python skill/welldit/scripts/perfil.py novo minha-marca      # copia o modelo para skill/welldit/perfis/minha-marca/
+python skill/welldit/scripts/perfil.py validar minha-marca   # confere campos, cores e fonte
+```
+
+Edite `skill/welldit/perfis/minha-marca/marca.json` (os campos estão em [perfis/LEIA.md](skill/welldit/perfis/LEIA.md)) e, ao pedir a edição, diga *"use o perfil minha-marca"*. A escolha fica gravada na pasta do trabalho e vale até o fim da edição. Além das cores e da fonte, o perfil guarda os **pacotes de palavras** que chamam elementos 3D (marketing, jurídico...), os **avisos obrigatórios** que nunca podem ser cortados e os **termos** com a grafia certa de marcas. Perfis pessoais não vão para o git.
 
 ## Instalar no seu Mac, com o VS Code
 
@@ -127,7 +155,7 @@ source .venv/bin/activate
 ```
 
 ```bash
-pip install -r skill/edicao-video-well/scripts/requirements.txt
+pip install -r skill/welldit/scripts/requirements.txt
 ```
 
 O segundo comando faz a skill sempre usar o ffmpeg completo, mesmo que o Mac tenha outro instalado. O último baixa as bibliotecas de transcrição, rosto e desenho, e leva alguns minutos.
@@ -155,10 +183,10 @@ Para desenhar os elementos 3D a skill usa o Google Chrome. Se você não tiver o
 3. No Claude Code, cole:
 
 ```text
-Edita o vídeo material-bruto/IMG_0000.MOV para o Instagram, seguindo a skill em skill/edicao-video-well/SKILL.md. Use o ambiente .venv do projeto (source .venv/bin/activate). Antes de tudo, confere se está instalado o que a skill precisa (referencias/instalacao.md); se faltar algo, me explica o que vai instalar e espera meu ok. Depois inspeciona o vídeo e me mostra o cartão de ajustes antes de editar.
+Edita o vídeo material-bruto/IMG_0000.MOV para o Instagram, seguindo a skill em skill/welldit/SKILL.md. Use o ambiente .venv do projeto (source .venv/bin/activate). Antes de tudo, confere se está instalado o que a skill precisa (referencias/instalacao.md); se faltar algo, me explica o que vai instalar e espera meu ok. Depois inspeciona o vídeo e me mostra o cartão de ajustes antes de editar.
 ```
 
-Troque `IMG_0000.MOV` pelo nome do seu arquivo. Se forem dois vídeos que se completam, cite os dois, na ordem.
+Troque `IMG_0000.MOV` pelo nome do seu arquivo. Para usar um perfil seu, acrescente "Use o perfil minha-marca." Se forem dois vídeos que se completam, cite os dois, na ordem.
 
 O que acontece depois:
 
@@ -178,8 +206,10 @@ source .venv/bin/activate
 ```
 
 ```bash
-python skill/edicao-video-well/scripts/painel.py
+python skill/welldit/scripts/painel.py
 ```
+
+(Para o painel nas cores de um perfil seu: `python skill/welldit/scripts/painel.py --perfil minha-marca`.)
 
 O navegador abre em `http://localhost:8765`. Lá você:
 
@@ -207,31 +237,36 @@ Pode rodar com uma edição em andamento: o que já foi feito fica salvo na past
 | Ele diz que o ffmpeg não tem `libass` ou `zscale` | Faça o passo 3 com `ffmpeg-full` e o segundo comando do passo 4 |
 | Erro ao instalar o faster-whisper | O ambiente foi criado com o Python errado: apague a pasta `.venv` e refaça o passo 4 |
 | "Approaching limit" no Claude Code | Seu limite de uso está acabando. Se ele parar, nada se perde: depois que o limite zerar, mande "continua a edição de onde parou, sem refazer a transcrição" |
-| A transcrição mostra palavras sem sentido repetidas ("OAB, OAB", "Obrigado", "Tchau") | É fala que ele não reconheceu. Peça para transcrever aquele trecho de novo com `--trecho INICIO FIM`, sem termos |
-| O vídeo terminou antes do fecho | Peça para ele transcrever os últimos 20 segundos com `--trecho` e conferir antes de cortar |
+| A transcrição mostra palavras sem sentido repetidas ("Amém", "Obrigado", "Tchau") | É fala que o transcritor não reconheceu. Peça para transcrever aquele trecho de novo com `--trecho INICIO FIM`, sem termos |
+| O vídeo terminou antes do fecho | Peça para transcrever os últimos 20 segundos com `--trecho` e conferir antes de cortar |
 | Mac dormiu no meio | Mantenha a tampa aberta e o carregador ligado durante a edição |
 
 ## Estrutura
 
 ```
-skill/edicao-video-well/         ← a skill (é isso que vira o arquivo .skill)
+skill/welldit/         ← a skill (é isso que vira o arquivo .skill)
   SKILL.md                       fluxo, cartão de ajustes, entrega, regras
   referencias/
     cortes.md                    o que cortar, o que nunca cortar, tomada certa
     legendas.md                  estilo, posição, grafia dos termos
     elementos-3d.md              catálogo dos elementos 3D, modos, critério e como desenhar elementos novos
     rosto-e-camera.md            rosto (legenda e elementos fora dele) e zoom de ênfase
+    gancho-e-olhar.md            nota do começo, propostas de gancho, leitura e olhar para baixo
     som-e-imagem.md              volume, ruído, estouro, eco, música, efeitos, HDR, formato, cor
+    publicacao.md                capa, texto do post, limites do Instagram e a pasta de publicação
+    series.md                    séries: o jeito de editar de um conjunto de vídeos
+    fatos.md                     números, datas, fontes e afirmações a confirmar
+    imagens.md                   imagens de apoio: licenças, registro e créditos
     cenas.md                     cenas explicativas: lista, antes e depois, número, de-para
     gravacao.md                  dicas para gravar de um jeito que edita melhor
     instalacao.md                o que precisa estar instalado
-  marca.json                     cores da marca (as mesmas do carrossel)
+  perfis/                        perfis de marca: arven (o padrão, elementos base ARVEN) e _modelo para copiar
   assets/fontes/                 Sora ExtraBold (licença OFL)
   assets/modelos/                detector de rosto YuNet (licença MIT)
   assets/sons/                   3 músicas e 10 efeitos sonoros (domínio público), com a origem em sons.json
   templates/elementos.html       desenho e animação dos 12 elementos 3D prontos e das 8 animações dos gerados
   templates/exemplos-gerados/    4 elementos gerados de modelo: bússola, escada, engrenagem, trevo
-  templates/gerados/             catálogo dos elementos gerados que o Well aprovou (catalogo.json e os desenhos)
+  templates/gerados/             catálogo dos elementos gerados aprovados (catalogo.json e os desenhos)
   templates/painel.html          página do painel
   scripts/
     inspecionar.py               lê o vídeo bruto: duração, formato, HDR, volume, quadros
@@ -242,6 +277,7 @@ skill/edicao-video-well/         ← a skill (é isso que vira o arquivo .skill)
     rosto.py                     acha o rosto em cada trecho (rosto.json)
     camera.py                    planeja o zoom de ênfase (camera.json)
     legendas.py                  monta a legenda no tempo do corte, fora do rosto (.ass e .srt)
+    perfil.py                    lista, cria e confere os perfis de marca
     elementos.py                 sugere, desenha, valida, mostra a prévia e guarda no catálogo os elementos 3D
     som.py                       música e efeitos sonoros (som.json)
     renderizar.py                monta o vídeo: amostra ou inteiro
@@ -254,12 +290,12 @@ saida/                           trabalhos editados (vídeos fora do git)
 ## Rodando na mão
 
 ```bash
-pip install -r skill/edicao-video-well/scripts/requirements.txt   # uma vez (precisa do ffmpeg)
+pip install -r skill/welldit/scripts/requirements.txt   # uma vez (precisa do ffmpeg)
 python -m playwright install chromium                              # uma vez (desenha os elementos 3D)
-cd skill/edicao-video-well/scripts
-P=../../../saida/2026-10-22_lead-curioso
-python inspecionar.py ../../../material-bruto/2026-10-22_lead-curioso/IMG_2040.mov --pasta $P
-python transcrever.py ../../../material-bruto/2026-10-22_lead-curioso/IMG_2040.mov --pasta $P --termos "Arven, WhatsApp"
+cd skill/welldit/scripts
+P=../../../saida/2026-10-22_dica-rapida
+python inspecionar.py ../../../material-bruto/2026-10-22_dica-rapida/IMG_2040.mov --pasta $P --perfil arven   # o perfil fica gravado na pasta
+python transcrever.py ../../../material-bruto/2026-10-22_dica-rapida/IMG_2040.mov --pasta $P --termos "NomeDaMarca, WhatsApp"
 python propor_cortes.py --pasta $P --ritmo natural
 python rosto.py --pasta $P
 python elementos.py sugerir --pasta $P
@@ -270,14 +306,14 @@ python legendas.py --pasta $P
 python som.py planejar --pasta $P --musica batida --efeitos   # só se quiser música ou efeito
 python renderizar.py --pasta $P --amostra 0 12 --ruido leve
 python renderizar.py --pasta $P --ruido leve
-python conferir.py --pasta $P --video $P/2026-10-22_lead-curioso-v001.mp4 --retranscrever
+python conferir.py --pasta $P --video $P/2026-10-22_dica-rapida-v001.mp4 --retranscrever
 python elementos.py promover bussola --pasta $P --palavras "bussol,rumo"   # guarda um gerado aprovado no catálogo
 ```
 
 ## Empacotando a skill
 
 ```bash
-./empacotar.sh        # gera dist/edicao-video-well.skill
+./empacotar.sh        # gera dist/welldit.skill
 ```
 
 ## O que ainda não faz
@@ -290,4 +326,4 @@ O que veio do editonny e o que ficou de fora está em [docs/comparacao-editonny.
 
 ## Créditos
 
-A forma de trabalhar (cartão de ajustes antes de editar, corte medido na onda sonora, amostra antes do vídeo inteiro, conferência real do arquivo) veio do projeto aberto [editonny](https://github.com/soumatheusgomes/editonny), de Matheus Gomes (licença MIT). O código daqui é próprio e bem mais enxuto. Detector de rosto YuNet: OpenCV Zoo, licença MIT. Músicas (HoliznaCC0) e efeitos sonoros (vários autores do Freesound): domínio público (CC0), escolhidos da biblioteca do editonny, com a origem em `skill/edicao-video-well/assets/sons/sons.json`. Fonte Sora: The Sora Project Authors, licença SIL Open Font License 1.1 (`skill/edicao-video-well/assets/fontes/OFL.txt`).
+A forma de trabalhar (cartão de ajustes antes de editar, corte medido na onda sonora, amostra antes do vídeo inteiro, conferência real do arquivo) veio do projeto aberto [editonny](https://github.com/soumatheusgomes/editonny), de Matheus Gomes (licença MIT). O código daqui é próprio e bem mais enxuto. Detector de rosto YuNet: OpenCV Zoo, licença MIT. Músicas (HoliznaCC0) e efeitos sonoros (vários autores do Freesound): domínio público (CC0), escolhidos da biblioteca do editonny, com a origem em `skill/welldit/assets/sons/sons.json`. Elementos base ARVEN: o visual padrão (cores e elementos 3D) é da marca ARVEN. Fonte Sora: The Sora Project Authors, licença SIL Open Font License 1.1 (`skill/welldit/assets/fontes/OFL.txt`).
