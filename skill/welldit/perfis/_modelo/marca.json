@@ -1,0 +1,28 @@
+{
+  "nome": "Nome da sua marca",
+  "arroba": "@seuperfil",
+  "creditos": "",
+  "cores": {
+    "fundo": "#16161f",
+    "fundo_profundo": "#0a0a12",
+    "cartao": "#1a1a24",
+    "linha": "#333446",
+    "elemento_3d": "#7f8caa",
+    "destaque": "#a8b4d4",
+    "texto": "#eaefef",
+    "apoio": "#b4bccd",
+    "rotulo": "#8f97ab"
+  },
+  "legenda": {
+    "fonte": "Sora ExtraBold",
+    "arquivo_fonte": "assets/fontes/Sora-ExtraBold.ttf",
+    "cor_texto": "texto",
+    "cor_palavra_falada": "destaque",
+    "cor_contorno": "fundo_profundo"
+  },
+  "gatilhos": [
+    "geral"
+  ],
+  "avisos_obrigatorios": [],
+  "termos": []
+}

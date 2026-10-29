@@ -6,7 +6,7 @@ Mapeado em 29/10/2026, depois da primeira edição real (vídeo de planejamento,
 
 ## Fase 2. Elementos 3D novos
 
-> **Atualizado:** a Fase 2 passou a ser elementos gerados a partir da fala de cada vídeo. A especificação está em [fase-2-elementos-gerados.md](fase-2-elementos-gerados.md) e **já está implementada**. Bússola, escada, engrenagem e trevo foram feitos como exemplos (`skill/edicao-video-well/templates/exemplos-gerados/`). A lista abaixo fica como ideias de desenho para os próximos.
+> **Atualizado:** a Fase 2 passou a ser elementos gerados a partir da fala de cada vídeo. A especificação está em [fase-2-elementos-gerados.md](fase-2-elementos-gerados.md) e **já está implementada**. Bússola, escada, engrenagem e trevo foram feitos como exemplos (`skill/welldit/templates/exemplos-gerados/`). A lista abaixo fica como ideias de desenho para os próximos.
 
 Hoje são 12 elementos, quase todos ligados a marketing jurídico (mensagem, funil, furo, cadeado...). O vídeo de planejamento mostrou o buraco: ele fala de direção, objetivos, disciplina, decisões e sorte, e quase nada disso tinha elemento.
 
