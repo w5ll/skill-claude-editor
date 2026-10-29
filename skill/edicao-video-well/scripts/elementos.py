@@ -14,8 +14,10 @@ Elementos (os mesmos do carrossel): esfera, anel, cubo, cristal, mensagem, funil
 grafico, alvo, cadeado, lupa, furo.
 
 Modos:
-- sobreposto: o elemento flutua sobre o vídeo, no topo (ou esquerda, direita, meio), com
-  um rótulo opcional. O rosto do Well continua na tela.
+- sobreposto: o elemento flutua sobre o vídeo, com um rótulo opcional. O rosto do Well
+  continua na tela. Posição "auto" (padrão): com rosto.json, procura o primeiro lugar que
+  não cobre o rosto (topo, topo menor, esquerda, direita, cada vez menor), já com o zoom
+  da câmera. Também aceita topo, esquerda, direita ou meio fixos.
 - tela: por 1 a 3 s a tela vira o fundo escuro da marca com o elemento e um título curto,
   como um slide do carrossel no meio do vídeo. A voz continua por baixo.
 
@@ -125,7 +127,7 @@ def sugerir(palavras: list[dict], duracao_video: float, modo: str, intervalo: fl
         if dur < 1.0:
             continue
         itens.append({"elemento": elemento, "inicio": round(inicio, 3), "duracao": round(dur, 2),
-                      "modo": modo, "posicao": "topo", "texto": texto or "",
+                      "modo": modo, "posicao": "auto", "texto": texto or "",
                       "gatilho": gatilho.strip(".,!?"), "fala_em": round(w["i"], 3)})
         ultimo = w["i"]
     return itens
@@ -136,7 +138,7 @@ def sugerir(palavras: list[dict], duracao_video: float, modo: str, intervalo: fl
 def tamanho_quadro(item: dict, largura: int, altura: int) -> tuple[int, int]:
     if item["modo"] == "tela":
         return largura, altura
-    lado = round(largura * 0.40)
+    lado = round(largura * 0.40 * float(item.get("escala_usada", item.get("escala", 1.0))))
     h = round(lado * 1.32) if item.get("texto") else lado
     return lado - lado % 2, h - h % 2
 
@@ -145,7 +147,7 @@ def posicao_quadro(item: dict, largura: int, altura: int) -> tuple[int, int]:
     if item["modo"] == "tela":
         return 0, 0
     w, h = tamanho_quadro(item, largura, altura)
-    pos = item.get("posicao", "topo")
+    pos = item.get("posicao_usada", item.get("posicao", "topo"))
     if pos == "esquerda":
         return round(largura * 0.04), round(altura * 0.12)
     if pos == "direita":
@@ -155,8 +157,53 @@ def posicao_quadro(item: dict, largura: int, altura: int) -> tuple[int, int]:
     return (largura - w) // 2, round(altura * 0.07)
 
 
+# Ordem de tentativa da posição automática: (posição, escala).
+TENTATIVAS = [("topo", 1.0), ("topo", 0.8), ("esquerda", 0.8), ("direita", 0.8),
+              ("esquerda", 0.65), ("direita", 0.65), ("topo", 0.65), ("esquerda", 0.5), ("direita", 0.5)]
+
+
+def resolver_posicao(item: dict, largura: int, altura: int, rostos, camera) -> str | None:
+    """Escolhe onde o elemento entra sem cobrir o rosto. Devolve um aviso, se não achou lugar."""
+    item.pop("posicao_usada", None)
+    item.pop("escala_usada", None)
+    if item["modo"] == "tela" or item.get("posicao", "auto") != "auto":
+        return None
+    if rostos is None:
+        item["posicao_usada"], item["escala_usada"] = "topo", float(item.get("escala", 1.0))
+        return None
+    from rosto import zona_protegida
+    zonas = []
+    for t, r in rostos.amostras(item["inicio"], item["inicio"] + item["duracao"]):
+        z = zona_protegida(r)
+        zonas.append(camera.na_tela(z, t) if camera else z)
+    if not zonas:
+        item["posicao_usada"], item["escala_usada"] = "topo", 1.0
+        return None
+    melhor = None
+    for pos, esc in TENTATIVAS:
+        teste = {**item, "posicao_usada": pos, "escala_usada": esc}
+        w, h = tamanho_quadro(teste, largura, altura)
+        x, y = posicao_quadro(teste, largura, altura)
+        # O desenho ocupa só o miolo do quadro (sobra transparente em volta).
+        bx0, by0, bx1, by1 = x + w * 0.12, y + h * 0.08, x + w * 0.88, y + h * 0.92
+        cobre = 0.0
+        for zx0, zy0, zx1, zy1 in zonas:
+            ix = max(0.0, min(bx1, zx1) - max(bx0, zx0))
+            iy = max(0.0, min(by1, zy1) - max(by0, zy0))
+            cobre = max(cobre, ix * iy)
+        if cobre <= 0:
+            item["posicao_usada"], item["escala_usada"] = pos, esc
+            return None
+        if melhor is None or cobre < melhor[0]:
+            melhor = (cobre, pos, esc)
+    item["posicao_usada"], item["escala_usada"] = melhor[1], melhor[2]
+    return (f"o {item['elemento']} em {item['inicio']:.1f} s encosta no rosto em qualquer posição: "
+            "use o modo tela ou tire o elemento")
+
+
 def pasta_do_item(pasta: Path, n: int, item: dict, largura: int, altura: int, fps) -> Path:
     chave = json.dumps([item["elemento"], item["modo"], item.get("texto", ""), item["duracao"],
+                        item.get("escala_usada", item.get("escala", 1.0)),
                         largura, altura, str(fps), ler_json(PASTA_SKILL / "marca.json")["cores"]], sort_keys=True)
     return pasta / "elementos" / f"{n:02d}_{item['elemento']}_{hashlib.sha1(chave.encode()).hexdigest()[:8]}"
 
@@ -166,7 +213,7 @@ def abrir_navegador(p):
     tentativas = [{}]
     if os.environ.get("NAVEGADOR_CHROMIUM"):
         tentativas.insert(0, {"executable_path": os.environ["NAVEGADOR_CHROMIUM"]})
-    for caminho in sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux/chrome"), reverse=True):
+    for caminho in sorted(glob.glob("/opt/pw-browsers/chromium-*/chrome-linux*/chrome"), reverse=True):
         tentativas.append({"executable_path": caminho})
     tentativas.append({"channel": "chrome"})
     ultimo_erro = None
@@ -188,10 +235,17 @@ def desenhar(pasta: Path, largura: int, altura: int, fps) -> list[dict]:
     itens = dados.get("itens", [])
     marca = ler_json(PASTA_SKILL / "marca.json")
     molde = (PASTA_SKILL / "templates" / "elementos.html").resolve().as_uri()
+    from camera import Camera
+    from rosto import Rostos
+    rostos = Rostos.carregar(pasta, largura, altura)
+    camera = Camera.carregar(pasta, largura, altura)
     pendentes = []
     for n, item in enumerate(itens):
         if item["elemento"] not in ELEMENTOS:
             erro(f"elemento desconhecido: {item['elemento']} (use {', '.join(ELEMENTOS)})")
+        aviso_pos = resolver_posicao(item, largura, altura, rostos, camera)
+        if aviso_pos:
+            aviso(f"atenção: {aviso_pos}")
         destino = pasta_do_item(pasta, n, item, largura, altura, fps)
         total = max(1, math.ceil(item["duracao"] * float(fps)))
         item["quadros"] = str(destino)
@@ -276,6 +330,10 @@ def main():
         insp = ler_json(pasta / "inspecao.json")["videos"][0]
         largura, altura = dimensoes_saida(insp["largura"], insp["altura"], a.formato)
         itens = desenhar(pasta, largura, altura, fps_racional({"avg_frame_rate": insp["fps"]}))
+        for n, it in enumerate(itens):
+            lugar = "tela cheia" if it["modo"] == "tela" else (
+                f"{it.get('posicao_usada', it.get('posicao'))}, tamanho {float(it.get('escala_usada', 1.0)):.0%}")
+            print(f"  {n:>2}  {tempo(it['inicio'])}  {it['elemento']:<9} {lugar}")
         print(f"ok  {len(itens)} elementos prontos em {pasta / 'elementos'}")
 
 

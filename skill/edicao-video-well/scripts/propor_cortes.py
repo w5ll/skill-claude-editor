@@ -44,6 +44,16 @@ RESPIRO_MAX = 0.70     # som sem palavra mais curto que isso é tratado como res
 SOBRA_MINIMA = 0.12    # pedaço que sobra de um corte e é curto demais para ficar
 
 HESITACOES = {"ahn", "ah", "hum", "hmm", "hã", "ã", "eh", "uh", "humm", "ééé", "éé"}
+# "ã" e "é" sem acento viram "a" e "e", que são artigo e verbo: esses só contam com o acento.
+SO_COM_ACENTO = {"ã", "é", "éé", "ééé"}
+
+
+def eh_hesitacao(p: str) -> bool:
+    cru = re.sub(r"[^\wãéêâ]+", "", p.lower())
+    if cru in SO_COM_ACENTO:
+        return cru != "é"  # "é" sozinho é o verbo; "éé" arrastado é hesitação
+    n = normalizar(p)
+    return n in {normalizar(h) for h in HESITACOES - SO_COM_ACENTO} and n not in {"a", "e", "o"}
 
 
 def normalizar(p: str) -> str:
@@ -161,7 +171,7 @@ def achar_repeticoes(palavras: list[dict], env: np.ndarray, duracao: float):
 
     # 3. Hesitações e palavras duvidosas.
     for k, w in enumerate(palavras):
-        if norm[k] in {normalizar(h) for h in HESITACOES}:
+        if eh_hesitacao(w["p"]):
             fim = palavras[k + 1]["i"] if k + 1 < len(palavras) else min(duracao, w["f"] + 0.1)
             remover.append({"inicio": round(inicio_de(k), 3),
                             "fim": round(ponto_mais_baixo(env, w["f"], max(w["f"], fim)), 3),

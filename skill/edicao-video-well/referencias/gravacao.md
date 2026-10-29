@@ -19,7 +19,7 @@ Mande estas dicas quando o bruto vier com um problema que se repete. Uma ou duas
 ## Som
 
 - Microfone de lapela, se tiver. Sem lapela, celular perto (até 1 metro) e sala sem eco (cortina, estante, tapete ajudam).
-- Ar-condicionado e ventilador desligados durante a gravação.
+- Ar-condicionado e ventilador desligados durante a gravação. A redução de ruído tira chiado constante, mas tira melhor quanto menos chiado tiver, e eco de sala não sai na edição.
 - Não fale alto demais perto do microfone: som estourado não tem conserto.
 
 ## Mandando o material

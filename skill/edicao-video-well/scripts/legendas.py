@@ -1,7 +1,7 @@
 """Monta a legenda do vídeo editado, no tempo do corte, palavra por palavra.
 
 Uso:
-    python legendas.py --pasta saida/2026-10-22_tema [--palavras 3] [--posicao baixo|meio|alto]
+    python legendas.py --pasta saida/2026-10-22_tema [--palavras 3] [--posicao auto|baixo|meio|alto]
         [--maiusculas] [--sem-destaque]
     python legendas.py --pasta saida/2026-10-22_tema --reaproveitar
         (refaz o .ass e o .srt a partir de legendas.json editado à mão)
@@ -14,6 +14,12 @@ Grava:
 Padrão visual (marca do Well): Sora ExtraBold, texto #eaefef com contorno escuro,
 palavra que está sendo falada em #a8b4d4, até 3 palavras por vez, fora do rosto e
 dentro da área segura do Instagram (longe dos botões da direita e da legenda do post).
+
+Posição auto (padrão): fica embaixo, como sempre. Com rosto.json (rosto.py), cada bloco
+confere se cobre olhos, boca ou queixo, já com o zoom da câmera (camera.json). Se cobrir,
+desce para logo abaixo do queixo; se não couber, sobe para acima da testa; se nem assim
+couber, fica embaixo e o script avisa o momento. Rode de novo depois de mudar o corte,
+o rosto ou a câmera (o renderizar.py confere).
 """
 
 from __future__ import annotations
@@ -127,14 +133,80 @@ def escapar(t: str) -> str:
     return t.replace("\\", "\\\\").replace("{", "(").replace("}", ")")
 
 
+SEGURO_TOPO = 0.12    # nada importante acima de 12% da altura
+SEGURO_BASE = 0.80    # nem abaixo de 80% (legenda do post e botões)
+FOLGA_ROSTO = 0.015   # distância mínima entre a legenda e o rosto (fração da altura)
+
+
+def base_padrao(estilo: dict) -> float:
+    return estilo["altura"] * (1 - 0.24)
+
+
+def caixa_texto(estilo: dict) -> float:
+    tamanho = estilo["altura"] * estilo["tamanho"]
+    return tamanho * 1.1 + 2 * max(2, tamanho * 0.09)
+
+
+def posicionar(blocos: list[dict], estilo: dict, pasta: Path, medir) -> list[str]:
+    """Escolhe a altura de cada bloco para não cobrir o rosto. Devolve avisos."""
+    for b in blocos:
+        b.pop("y", None)
+        b.pop("lugar", None)
+    if estilo["posicao"] != "auto":
+        return []
+    from camera import Camera
+    from rosto import Rostos, zona_protegida
+    largura, altura = estilo["largura"], estilo["altura"]
+    rostos = Rostos.carregar(pasta, largura, altura)
+    if rostos is None:
+        return ["sem rosto.json: legenda embaixo, sem desviar do rosto (rode rosto.py)"]
+    camera = Camera.carregar(pasta, largura, altura)
+    alto_txt = caixa_texto(estilo)
+    folga = altura * FOLGA_ROSTO
+    padrao = base_padrao(estilo)
+    avisos, anterior = [], None
+    caixa = (lambda t: t.upper()) if estilo["maiusculas"] else (lambda t: t)
+    for b in blocos:
+        zonas = []
+        for t, r in rostos.amostras(b["inicio"], b["fim"]):
+            z = zona_protegida(r)
+            zonas.append(camera.na_tela(z, t) if camera else z)
+        if not zonas:
+            continue
+        zx0, zy0 = min(z[0] for z in zonas), min(z[1] for z in zonas)
+        zx1, zy1 = max(z[2] for z in zonas), max(z[3] for z in zonas)
+        meia = medir(caixa(b["texto"])) / 2 + alto_txt * 0.2
+        cruza_x = largura / 2 - meia < zx1 and largura / 2 + meia > zx0
+
+        def livre(y):
+            return not (cruza_x and y - alto_txt < zy1 + folga and y > zy0 - folga)
+
+        def cabe(y):
+            return y - alto_txt >= altura * SEGURO_TOPO and y <= altura * SEGURO_BASE
+
+        opcoes = [(padrao, "embaixo")]
+        if anterior and anterior[1] != "embaixo":
+            opcoes.append(anterior)
+        opcoes += [(zy1 + folga + alto_txt, "abaixo do queixo"), (zy0 - folga, "acima da testa")]
+        escolha = next(((y, nome) for y, nome in opcoes if cabe(y) and livre(y)), None)
+        if escolha is None:
+            escolha = (padrao, "embaixo")
+            avisos.append(f"a legenda encosta no rosto em {b['inicio']:.1f} s (\"{b['texto']}\"): "
+                          "o rosto ocupa quase a tela toda; confira o quadro")
+        b["y"], b["lugar"] = round(escolha[0]), escolha[1]
+        anterior = escolha
+    return avisos
+
+
 def gerar_ass(blocos, largura, altura, estilo) -> str:
     marca = ler_json(PASTA_SKILL / "marca.json")
     cores = marca["cores"]
     tamanho = round(altura * estilo["tamanho"])
     contorno = max(2, round(tamanho * 0.09))
-    alinhamento = {"baixo": 2, "meio": 5, "alto": 8}[estilo["posicao"]]
+    alinhamento = {"auto": 2, "baixo": 2, "meio": 5, "alto": 8}[estilo["posicao"]]
     # Área segura: texto importante entre 12% e 80% da altura (botões e legenda do post embaixo).
-    margem_v = {"baixo": round(altura * 0.24), "meio": round(altura * 0.04), "alto": round(altura * 0.16)}[estilo["posicao"]]
+    margem_v = {"auto": round(altura * 0.24), "baixo": round(altura * 0.24), "meio": round(altura * 0.04),
+                "alto": round(altura * 0.16)}[estilo["posicao"]]
     margem_h = round(largura * (1 - LARGURA_UTIL) / 2)
     texto, destaque, sombra = cor_ass(cores["texto"]), cor_ass(cores["destaque"]), cor_ass(cores["fundo_profundo"])
     linhas = [
@@ -155,9 +227,10 @@ def gerar_ass(blocos, largura, altura, estilo) -> str:
     for b in blocos:
         pal = b.get("palavras") or []
         partes = [caixa(escapar(p)) for p in b["texto"].split()]
+        pos = f"{{\\an2\\pos({largura // 2},{b['y']})}}" if b.get("y") is not None else ""
         if not estilo["destaque"] or len(pal) != len(partes):
             # Sem destaque, ou o texto foi corrigido à mão e mudou o número de palavras.
-            linhas.append(f"Dialogue: 0,{t_ass(b['inicio'])},{t_ass(b['fim'])},Legenda,,0,0,0,,{' '.join(partes)}")
+            linhas.append(f"Dialogue: 0,{t_ass(b['inicio'])},{t_ass(b['fim'])},Legenda,,0,0,0,,{pos}{' '.join(partes)}")
             continue
         for k, w in enumerate(pal):
             ini = b["inicio"] if k == 0 else w["i"]
@@ -166,7 +239,7 @@ def gerar_ass(blocos, largura, altura, estilo) -> str:
                 continue
             txt = " ".join(
                 (f"{{\\c{destaque}}}{p}{{\\c{texto}}}" if j == k else p) for j, p in enumerate(partes))
-            linhas.append(f"Dialogue: 0,{t_ass(ini)},{t_ass(fim)},Legenda,,0,0,0,,{txt}")
+            linhas.append(f"Dialogue: 0,{t_ass(ini)},{t_ass(fim)},Legenda,,0,0,0,,{pos}{txt}")
     return "\n".join(linhas) + "\n"
 
 
@@ -179,7 +252,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--pasta", type=Path, required=True)
     ap.add_argument("--palavras", type=int, default=3, help="máximo de palavras por bloco")
-    ap.add_argument("--posicao", choices=["baixo", "meio", "alto"], default="baixo")
+    ap.add_argument("--posicao", choices=["auto", "baixo", "meio", "alto"], default="auto")
     ap.add_argument("--formato", default="original", help="o mesmo que vai no renderizar.py")
     ap.add_argument("--tamanho", type=float, default=0.046, help="altura da letra em fração da altura do vídeo")
     ap.add_argument("--maiusculas", action="store_true")
@@ -200,6 +273,7 @@ def main():
             erro("não existe legendas.json para reaproveitar")
         dados = ler_json(destino)
         blocos, estilo = dados["blocos"], dados["estilo"]
+        largura, altura = estilo["largura"], estilo["altura"]
     else:
         largura, altura = dimensoes_saida(insp["largura"], insp["altura"], a.formato)
         estilo = {"palavras": a.palavras, "posicao": a.posicao, "tamanho": a.tamanho,
@@ -210,14 +284,23 @@ def main():
         caixa = (lambda t: t.upper()) if a.maiusculas else (lambda t: t)
         blocos = agrupar(palavras_no_corte(a.pasta, cortes, fps), a.palavras,
                          cabe=lambda t: medir(caixa(t)) <= limite)
-        salvar_json(destino, {"estilo": estilo, "blocos": blocos})
+
+    from camera import assinatura_camera
+    avisos = posicionar(blocos, estilo, a.pasta.resolve(), Medidor(altura * estilo["tamanho"]))
+    estilo["camera"] = assinatura_camera(a.pasta.resolve())
+    salvar_json(destino, {"estilo": estilo, "blocos": blocos})
 
     ass = gerar_ass(blocos, estilo["largura"], estilo["altura"], estilo)
     (a.pasta / "legendas.ass").write_text(ass, encoding="utf-8")
     (a.pasta / "legendas.srt").write_text(gerar_srt(blocos), encoding="utf-8")
     print(f"{len(blocos)} blocos de legenda")
     for b in blocos[:12]:
-        print(f"  {b['inicio']:6.2f}-{b['fim']:6.2f}  {b['texto']}")
+        print(f"  {b['inicio']:6.2f}-{b['fim']:6.2f}  {b['texto']}{'  (' + b['lugar'] + ')' if b.get('lugar') else ''}")
+    lugares = [b["lugar"] for b in blocos if b.get("lugar") and b["lugar"] != "embaixo"]
+    if lugares:
+        print(f"  {len(lugares)} bloco(s) mudaram de lugar para não cobrir o rosto")
+    for av in avisos:
+        print(f"  atenção: {av}")
     if len(blocos) > 12:
         print("  ...")
     print(f"ok  {destino}  {a.pasta / 'legendas.ass'}  {a.pasta / 'legendas.srt'}")

@@ -6,14 +6,16 @@ Precisa, no computador onde o Claude Code roda:
 | --- | --- | --- |
 | Python 3.10 ou mais novo | rodar os scripts | já vem no Mac recente; ou `brew install python` |
 | ffmpeg e ffprobe | ler, cortar e montar o vídeo | Mac: `brew install ffmpeg` · Linux: `apt install ffmpeg` |
-| faster-whisper, numpy, fonttools, playwright | transcrição local, medida da legenda, desenho dos elementos 3D | `pip install -r scripts/requirements.txt` |
+| faster-whisper, numpy, fonttools, playwright, opencv | transcrição local, medida da legenda, desenho dos elementos 3D, detecção do rosto e zoom | `pip install -r scripts/requirements.txt` |
 | Chromium do Playwright | desenhar os elementos 3D | `python -m playwright install chromium` (ou usa o Google Chrome instalado) |
 
-O ffmpeg precisa ter `libass` (legenda) e `zimg` (conversão de HDR). O do Homebrew e o do Ubuntu já vêm com os dois. Confira com:
+O ffmpeg precisa ter `libass` (legenda), `zimg` (conversão de HDR) e o filtro de ruído `afftdn`. O do Homebrew e o do Ubuntu já vêm com tudo. Confira com:
 
 ```bash
-ffmpeg -hide_banner -filters | grep -E " (ass|zscale) "
+ffmpeg -hide_banner -filters | grep -E " (ass|zscale|afftdn|asendcmd) "
 ```
+
+As músicas e os efeitos sonoros (cerca de 8 MB) e o detector de rosto já vêm dentro da skill. Nada é baixado na hora.
 
 ## Modelo de transcrição
 

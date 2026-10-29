@@ -1,5 +1,7 @@
 # O que o editonny tem e a nossa skill ainda não
 
+> **Atualização de 29/10/2026:** os itens 1 a 5 foram implementados (redução de ruído, conferência mais rígida, legenda e elementos fora do rosto, zoom de ênfase, música e efeitos). Os itens 6 e a capa do Reels continuam em aberto. Detalhes no fim.
+
 Comparação feita em 28/10/2026 com a versão do editonny publicada no GitHub ([soumatheusgomes/editonny](https://github.com/soumatheusgomes/editonny), licença MIT). Serve para decidir o que trazer para a `edicao-video-well`. O código continua sendo escrito do nosso jeito, mais enxuto; do editonny vem a ideia e, quando valer a pena, os números que ele já mediu.
 
 ## O que já trouxemos na primeira versão
@@ -113,3 +115,15 @@ Arquivos de referência: `engine/helpers/mix_music.py`, `engine/helpers/sound_pl
 - Músicas e efeitos sonoros: CC0, domínio público. Crédito não é obrigatório, mas vamos manter a origem de cada arquivo.
 - Detector de rosto YuNet: MIT.
 - O ajuste de cor dele foi adaptado de outro projeto (video-use, MIT). Não vamos usar.
+
+## Feito em 29/10/2026
+
+| Item | Onde ficou | Diferença em relação ao editonny |
+| --- | --- | --- |
+| 1. Redução de ruído | `scripts/ruido.py`, `--ruido` no `renderizar.py` | mesmo método (corte do grave + filtro com amostra das pausas); medição de estouro e eco junto, na inspeção |
+| 2. Rosto | `scripts/rosto.py`, legenda `--posicao auto`, elementos `posicao: auto` | a legenda muda de lugar bloco por bloco; o elemento diminui e vai para o lado se precisar |
+| 3. Zoom de ênfase | `scripts/camera.py`, aplicado no `renderizar.py` | o zoom cresce em volta do rosto (o rosto não sai do lugar); não muda com elemento 3D na tela |
+| 4. Conferência | `scripts/conferir.py` | estalo, repetição, silêncio morto, quadro preto, volume entre trechos (com o ganho sugerido) e folha de emendas |
+| 5. Música e efeitos | `scripts/som.py`, `assets/sons/` | 3 músicas e 10 efeitos, cada elemento 3D com o seu som; a música abaixa sozinha na fala |
+
+Também foi corrigido um erro antigo do corte automático: o artigo "a" era tratado como hesitação ("ã" sem acento vira "a") e saía do vídeo, como em "a maioria" e "passo a passo".

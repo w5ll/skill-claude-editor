@@ -11,9 +11,10 @@
 
 ## Posição
 
-- Padrão `baixo`: a base do texto fica a 24% da borda de baixo, acima da legenda do post e dos botões do Instagram.
+- Padrão `auto`: a base do texto fica a 24% da borda de baixo, acima da legenda do post e dos botões do Instagram. Com `rosto.json` (veja `rosto-e-camera.md`), cada bloco que cobriria olhos, boca ou queixo desce para logo abaixo do queixo ou sobe para acima da testa. A lista de blocos mostra onde cada um ficou.
+- Posição fixa, sem desviar: `--posicao baixo`, `meio` ou `alto`.
 - O texto ocupa no máximo 74% da largura, longe dos botões da direita.
-- Olhe os quadros: se a legenda cobre a boca ou o queixo do Well, use `--posicao meio` (centro da tela) ou `--posicao alto`.
+- Rode de novo (`--reaproveitar`) depois de mudar o corte, o rosto ou a câmera: o renderizador avisa quando a legenda ficou velha.
 - Texto importante entre 12% e 80% da altura. Não há área segura universal: confira no celular se possível.
 
 ## Grafia

@@ -18,7 +18,7 @@ Os mesmos elementos do carrossel (vidro fosco e metal escovado no tom #7f8caa, l
 
 ## Dois modos
 
-- **sobreposto** (padrão): o elemento flutua sobre o vídeo, por 2 s, com o rosto do Well na tela. Posição `topo` (padrão), `esquerda`, `direita` ou `meio`. Rótulo opcional embaixo (ex.: "5 minutos").
+- **sobreposto** (padrão): o elemento flutua sobre o vídeo, por 2 s, com o rosto do Well na tela. Posição `auto` (padrão): com `rosto.json`, procura o primeiro lugar que não cobre o rosto (topo, topo menor, esquerda, direita, cada vez menor), já com o zoom da câmera; sem `rosto.json`, fica no topo. Também aceita `topo`, `esquerda`, `direita` ou `meio` fixos, e `"escala": 0.8` para diminuir. Rótulo opcional embaixo (ex.: "5 minutos").
 - **tela**: por 1 a 3 s a tela vira o fundo escuro da marca, com o elemento, um título curto e o @lunardiwell no topo, como um slide do carrossel no meio do vídeo. A voz continua. Use para a ideia principal do vídeo, uma ou duas vezes no máximo.
 
 No título e no rótulo, `*palavra*` fica na cor de destaque, como no carrossel. Uma ou duas palavras, nunca a frase inteira.
@@ -27,7 +27,8 @@ No título e no rótulo, `*palavra*` fica na cor de destaque, como no carrossel.
 
 - Elemento só onde ajuda a entender ou marcar a ideia. Um a cada 6 s no máximo (`--intervalo`); num Reels de 40 s, 3 a 5 elementos bastam.
 - O primeiro elemento no gancho (primeiros 3 s) costuma segurar a atenção.
-- Nunca em cima do rosto ou da boca. Olhe os quadros de inspeção: se o Well está alto no quadro, use `esquerda` ou `direita`, ou o modo `tela`.
+- Nunca em cima do rosto ou da boca. A posição `auto` cuida disso; o `elementos.py desenhar` mostra onde cada um ficou, e se avisar que não achou lugar, use o modo `tela` ou tire o elemento.
+- Com efeitos sonoros pedidos, cada elemento ganha o seu som (`som-e-imagem.md`).
 - Número no rótulo só se o Well falou esse número. Não invente dado, resultado nem promessa (regra da OAB vale aqui também).
 - No modo tela com título, a legenda continua aparecendo embaixo. Se o título repete exatamente a fala, tudo bem; se ficar poluído, encurte o título.
 
@@ -41,7 +42,7 @@ Mostra a lista de elementos com o momento e a palavra que chamou cada um. Revise
 
 ```json
 {"elemento": "relogio", "inicio": 7.18, "duracao": 2.0, "modo": "sobreposto",
- "posicao": "topo", "texto": "*5 minutos*", "gatilho": "cinco minutos", "fala_em": 7.30}
+ "posicao": "auto", "texto": "*5 minutos*", "gatilho": "cinco minutos", "fala_em": 7.30}
 ```
 
 - `inicio` em segundos do vídeo **já editado**. O padrão é entrar 0,12 s antes da palavra.

@@ -46,8 +46,17 @@ Duração: a que o material pede. Não estique nem corte conteúdo para caber nu
 - O vídeo final segue a ordem da lista `trechos`.
 - Para tirar um trecho, apague o objeto. Para tirar o meio de um trecho, divida em dois.
 - Ao mexer numa borda, deixe pelo menos 0,07 s antes da primeira sílaba e 0,06 s depois da última.
-- Depois de mexer, gere a legenda de novo (`legendas.py`), porque os tempos mudaram.
+- `"ganho_db": 5.0` aumenta (ou, negativo, abaixa) o volume só daquele trecho. Use o valor que a conferência sugerir quando uma tomada sai mais baixa que as outras.
+- Depois de mexer, rode de novo `rosto.py`, `camera.py planejar` (se tiver câmera) e `legendas.py`, porque os tempos mudaram.
 
 ## Conferência
 
 `conferir.py` avisa se alguma palavra ficou cortada no meio numa emenda e, com `--retranscrever`, compara a fala do resultado com o texto esperado. Abaixo de 85% de semelhança, algo sumiu ou foi engolido: procure a emenda culpada.
+
+Também falha quando:
+
+- um trecho toca de novo o pedaço do anterior (mesmo tempo do vídeo, ou começa com as mesmas 3 palavras em que o outro termina);
+- sobra silêncio sem fala acima de 0,7 s (`--pausa-max`). Pausa de efeito que fica de propósito: passe o segundo dela em `--pausas-ok 12.3`;
+- há estalo numa emenda, quadro preto, ou um trecho com volume fora do resto (ela diz o `ganho_db`).
+
+Olhe sempre as folhas de emendas (`.emendasNN.jpg`): cada linha mostra os 2 últimos quadros do trecho que sai e os 2 primeiros do que entra. Pulo de imagem grande entre a 2ª e a 3ª coluna é emenda que aparece.

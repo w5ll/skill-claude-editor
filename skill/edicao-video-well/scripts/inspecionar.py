@@ -14,9 +14,7 @@ import argparse
 import subprocess
 from pathlib import Path
 
-import numpy as np
-
-from comum import (carregar_mono, dimensoes_exibidas, envelope_db, eh_hdr, erro, exigir,
+from comum import (dimensoes_exibidas, eh_hdr, erro, exigir,
                    fluxo, fps_racional, medir_volume, rotacao, salvar_json, sondar, tempo)
 
 
@@ -63,11 +61,11 @@ def inspecionar(arquivo: Path, pasta_quadros: Path) -> dict:
     if audio is None:
         pendencias.append("sem áudio")
     else:
-        som = carregar_mono(arquivo)
-        env = envelope_db(som)
-        ruido = float(np.percentile(env, 10)) if env.size else None
-        fala = float(np.percentile(env, 95)) if env.size else None
+        from ruido import medir, medir_eco, medir_estouro
         vol = medir_volume(arquivo)
+        ruido = medir(arquivo)
+        estouro = medir_estouro(arquivo)
+        eco = medir_eco(arquivo)
         dados["audio"] = {
             "codec": audio.get("codec_name"),
             "canais": audio.get("channels"),
@@ -75,14 +73,23 @@ def inspecionar(arquivo: Path, pasta_quadros: Path) -> dict:
             "faixas_de_audio": sum(1 for s in info["streams"] if s.get("codec_type") == "audio"),
             "volume_lufs": vol["volume_lufs"],
             "pico_dbtp": vol["pico_dbtp"],
-            "nivel_ruido_db": round(ruido, 1) if ruido is not None else None,
-            "nivel_fala_db": round(fala, 1) if fala is not None else None,
-            "estourado": bool(np.mean(np.abs(som) > 0.99) > 0.0005) if som.size else False,
+            "ruido": ruido,
+            "estouro": estouro,
+            "eco": eco,
         }
-        if dados["audio"]["estourado"]:
-            pendencias.append("áudio estourado em alguns trechos (não dá para recuperar, só regravar)")
-        if ruido is not None and fala is not None and fala - ruido < 20:
-            pendencias.append("ruído de fundo alto em relação à voz")
+        if estouro["estouro"] == "certo":
+            pendencias.append("áudio estourado (distorcido) em " + ", ".join(tempo(t) for t in estouro["momentos"][:5])
+                              + ": não dá para recuperar, só regravando a frase")
+        elif estouro["estouro"] == "possível":
+            pendencias.append("talvez estourado em " + ", ".join(tempo(t) for t in estouro["momentos"][:5])
+                              + ": ouvir esses pontos")
+        if ruido["sugestao"] != "nao":
+            pendencias.append(f"ruído de fundo {ruido['diferenca_db']} dB abaixo da voz: sugiro redução de ruído "
+                              f"{ruido['sugestao']}")
+        if eco["eco"] in ("sim", "pouco"):
+            pendencias.append(f"a sala tem {'eco' if eco['eco'] == 'sim' else 'um pouco de eco'} (o som leva "
+                              f"cerca de {eco['reverberacao_s']} s para morrer): não dá para tirar na edição; "
+                              "vale gravar num lugar com mais pano ou móvel")
         if dados["audio"]["faixas_de_audio"] > 1:
             pendencias.append("mais de uma faixa de áudio: confirmar qual usar (a skill usa a primeira)")
 
@@ -117,7 +124,8 @@ def main():
         au = v["audio"] or {}
         print(f"{v['nome']}: {tempo(v['duracao'])} · {v['largura']}x{v['altura']} {v['orientacao']} · "
               f"{v['fps_aprox']} quadros/s{' (variável)' if v['taxa_variavel'] else ''} · "
-              f"{'HDR' if v['hdr'] else 'cor padrão'} · volume {au.get('volume_lufs')} LUFS")
+              f"{'HDR' if v['hdr'] else 'cor padrão'} · volume {au.get('volume_lufs')} LUFS · "
+              f"ruído {(au.get('ruido') or {}).get('diferenca_db')} dB abaixo da voz")
         for p in v["pendencias"]:
             print(f"  atenção: {p}")
     print(f"ok  {a.pasta / 'inspecao.json'}")
