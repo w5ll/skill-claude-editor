@@ -37,6 +37,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 import editar
+import revisao
 import serie as modulo_serie
 from comum import arquivo_da_fonte, carregar_marca, definir_perfil, perfis_disponiveis
 from fila import Fila
@@ -121,6 +122,12 @@ def validar_escolha(chave: str, valor) -> str:
     if chave == "legenda.palavras":
         if not (isinstance(valor, int) and not isinstance(valor, bool) and 1 <= valor <= 6):
             raise Recusa("legenda.palavras: de 1 a 6")
+        return f"{chave}={valor}"
+    if chave == "meta_duracao":
+        if valor is None:
+            return f"{chave}=null"
+        if not (isinstance(valor, int) and not isinstance(valor, bool) and 10 <= valor <= 600):
+            raise Recusa("meta_duracao: de 10 a 600 segundos")
         return f"{chave}={valor}"
     if chave == "formato":
         if not (isinstance(valor, str) and REGEX_FORMATO.match(valor)):
@@ -267,7 +274,9 @@ class Painel:
                     portao["texto"] = editar.texto_do_cartao(t, insp)
             etapas = {e.nome: {"titulo": e.titulo, "situacao": editar.situacao(t, e, pasta),
                                "resumo": (t["etapas"].get(e.nome, {}).get("resumo") or "")[:90]} for e in editar.ETAPAS}
-            base = {"serie": t.get("serie"), "perfil": t.get("perfil"), "tema": t.get("tema"), "etapas": etapas,
+            base = {"revisar": {"cortes": (pasta / "cortes.json").exists() and (pasta / "transcricoes").is_dir(),
+                                "legenda": (pasta / "legendas.json").exists()},
+                    "serie": t.get("serie"), "perfil": t.get("perfil"), "tema": t.get("tema"), "etapas": etapas,
                     "portao": portao, "escolhas": t["escolhas"], "entrega_aprovada": t.get("entrega_aprovada"),
                     "pasta_relativa": t.get("pasta_relativa")}
             self._cache[pasta.name] = (assinatura, base)
@@ -404,9 +413,95 @@ class Acoes:
         self.p.abrir(pasta)
         return {"ok": True}
 
+    # ---- revisão (Fase 6) ----
+    def _meta(self, pasta: Path):
+        return editar.carregar(pasta)["escolhas"].get("meta_duracao")
+
+    def painel_de_cortes(self, pasta: Path) -> dict:
+        if not (pasta / "cortes.json").exists():
+            raise Recusa("os cortes ainda não foram propostos", 409)
+        return revisao.painel_de_cortes(pasta, self._meta(pasta))
+
+    def cortes_alternar(self, d: dict) -> dict:
+        pasta = self.pasta(d.get("pasta"))
+        self.livre(pasta)
+        try:
+            revisao.alternar(pasta, d.get("video"), d.get("k0"), d.get("k1"), d.get("acao"))
+        except revisao.Recusado as e:
+            raise Recusa(str(e)) from e
+        return {"ok": True, "painel": self.painel_de_cortes(pasta)}
+
+    def cortes_desfazer(self, d: dict) -> dict:
+        pasta = self.pasta(d.get("pasta"))
+        self.livre(pasta)
+        if not revisao.desfazer(pasta, "cortes", pasta / "cortes.json"):
+            raise Recusa("não há o que desfazer", 409)
+        return {"ok": True, "painel": self.painel_de_cortes(pasta)}
+
+    def painel_de_legenda(self, pasta: Path) -> dict:
+        if not (pasta / "legendas.json").exists():
+            raise Recusa("a legenda ainda não foi montada", 409)
+        return revisao.painel_de_legenda(pasta)
+
+    def _atualizar_legenda(self, pasta: Path):
+        """Depois de mexer no texto, recalcula as posições e grava o .ass e o .srt (o legendas.py de sempre)."""
+        r = subprocess.run([sys.executable, str(Path(__file__).resolve().parent / "legendas.py"), "--pasta", str(pasta), "--reaproveitar"],
+                           capture_output=True, text=True, timeout=120)
+        if r.returncode != 0:
+            linhas = (r.stderr or r.stdout).strip().splitlines()
+            raise Recusa("não consegui atualizar a legenda" + (": " + linhas[-1][:120] if linhas else ""), 500)
+
+    def legenda_editar(self, d: dict) -> dict:
+        pasta = self.pasta(d.get("pasta"))
+        self.livre(pasta)
+        try:
+            revisao.editar_bloco(pasta, d.get("indice"), d.get("texto"))
+        except revisao.Recusado as e:
+            raise Recusa(str(e)) from e
+        self._atualizar_legenda(pasta)
+        return {"ok": True, "painel": self.painel_de_legenda(pasta)}
+
+    def legenda_substituir(self, d: dict) -> dict:
+        pasta = self.pasta(d.get("pasta"))
+        self.livre(pasta)
+        try:
+            n = revisao.substituir(pasta, d.get("de"), d.get("para"))
+        except revisao.Recusado as e:
+            raise Recusa(str(e)) from e
+        if n:
+            self._atualizar_legenda(pasta)
+        return {"ok": True, "mudou": n, "painel": self.painel_de_legenda(pasta)}
+
+    def legenda_desfazer(self, d: dict) -> dict:
+        pasta = self.pasta(d.get("pasta"))
+        self.livre(pasta)
+        if not revisao.desfazer(pasta, "legendas", pasta / "legendas.json"):
+            raise Recusa("não há o que desfazer", 409)
+        self._atualizar_legenda(pasta)
+        return {"ok": True, "painel": self.painel_de_legenda(pasta)}
+
+    def audio(self, pasta: Path, pedacos: list) -> Path:
+        cortes = ler(pasta / "cortes.json")
+        if cortes is None:
+            raise Recusa("os cortes ainda não foram propostos", 409)
+        try:
+            validos = revisao.pedacos_validos(cortes, pedacos)
+            destino = self.p.raiz / ".painel" / "ouvir" / f"{revisao.chave_do_audio(validos)}.m4a"
+            return revisao.audio_dos_pedacos(validos, destino)
+        except revisao.Recusado as e:
+            raise Recusa(str(e)) from e
+
+    def previa(self, pasta: Path, indice) -> Path:
+        try:
+            return revisao.previa_legenda(pasta, indice, carregar_marca(pasta=pasta), self.p.raiz / ".painel" / "previas" / pasta.name)
+        except revisao.Recusado as e:
+            raise Recusa(str(e)) from e
+
     ROTAS = {"/api/novo": "novo", "/api/aprovar": "aprovar", "/api/iniciar": "iniciar", "/api/cancelar": "cancelar",
              "/api/ajustar": "ajustar", "/api/refazer": "refazer", "/api/aprovar-entrega": "aprovar_entrega",
-             "/api/abrir-pasta": "abrir_pasta"}
+             "/api/abrir-pasta": "abrir_pasta", "/api/cortes/alternar": "cortes_alternar", "/api/cortes/desfazer": "cortes_desfazer",
+             "/api/legenda/editar": "legenda_editar", "/api/legenda/substituir": "legenda_substituir",
+             "/api/legenda/desfazer": "legenda_desfazer"}
 
 
 PAGINA_SEM_SESSAO = PASTA_SKILL / "templates" / "painel-sessao.html"
@@ -525,6 +620,30 @@ def criar_handler(painel: Painel, marca: dict):
             elif url.path == "/api/estado":
                 if self._permitido(False):
                     self._json(painel.estado())
+            elif url.path in ("/api/cortes", "/api/legenda", "/api/ouvir", "/api/legenda/previa"):
+                if not self._permitido(False):
+                    return
+                try:
+                    pasta = acoes.pasta((q.get("pasta") or [""])[0])
+                    if url.path == "/api/cortes":
+                        self._json(acoes.painel_de_cortes(pasta))
+                    elif url.path == "/api/legenda":
+                        self._json(acoes.painel_de_legenda(pasta))
+                    elif url.path == "/api/ouvir":
+                        pedacos = []
+                        for p in q.get("p", []):
+                            partes = p.split(":")
+                            if len(partes) != 3:
+                                raise Recusa("pedaço inválido")
+                            pedacos.append({"video": partes[0], "inicio": partes[1], "fim": partes[2]})
+                        self._arquivo(acoes.audio(pasta, pedacos), "audio/mp4")
+                    else:
+                        indice = (q.get("i") or [""])[0]
+                        self._arquivo(acoes.previa(pasta, int(indice) if indice.isdigit() else -1), "image/jpeg")
+                except Recusa as e:
+                    self._json({"erro": str(e)}, e.status)
+                except Exception as e:  # noqa: BLE001
+                    self._json({"erro": f"erro inesperado: {str(e)[:120]}"}, 500)
             elif url.path == "/arquivo":
                 if not self._permitido(False):
                     return

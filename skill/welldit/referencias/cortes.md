@@ -60,3 +60,7 @@ Também falha quando:
 - há estalo numa emenda, quadro preto, ou um trecho com volume fora do resto (ela diz o `ganho_db`).
 
 Olhe sempre as folhas de emendas (`.emendasNN.jpg`): cada linha mostra os 2 últimos quadros do trecho que sai e os 2 primeiros do que entra. Pulo de imagem grande entre a 2ª e a 3ª coluna é emenda que aparece.
+
+## Revisão na tela
+
+Se a pessoa usa o painel, os cortes podem ser revisados na tela (`referencias/painel.md`): a fala em frases que ficam ou saem, as suspeitas marcadas e o áudio das emendas. As suspeitas são as mesmas que você olha aqui: palavra duvidosa, fala não reconhecida, repetição, fim da gravação e frase cortada ao meio. Cortes feitos na tela e à mão no `cortes.json` valem igual.

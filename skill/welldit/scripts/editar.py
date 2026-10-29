@@ -56,6 +56,7 @@ ESCOLHAS_PADRAO = {
     "elementos": {"ligado": True, "modo": "sobreposto", "intervalo": 6, "permitidos": [], "proibidos": [], "gerados": True},
     "camera": "nenhum", "som": {"musica": "nenhuma", "efeitos": False}, "volume": -14.0,
     "amostra": "conferir", "fatos": True, "gancho_olhar": True,
+    "meta_duracao": None,       # segundos; só uma referência na tela de revisão dos cortes
 }
 
 

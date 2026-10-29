@@ -185,7 +185,8 @@ class TestSeguranca(Base):
             self.assertEqual(self.s.post(rota, {"comando": "ls", "args": ["-la"]})[0], 404, rota)
         self.assertEqual(self.s.pedir("OPTIONS", "/api/novo")[0], 501)                 # sem CORS: nada de outros sites
         self.assertEqual(sorted(modulo_painel.Acoes.ROTAS.values()),
-                         sorted(["novo", "aprovar", "iniciar", "cancelar", "ajustar", "refazer", "aprovar_entrega", "abrir_pasta"]))
+                         sorted(["novo", "aprovar", "iniciar", "cancelar", "ajustar", "refazer", "aprovar_entrega", "abrir_pasta",
+                                 "cortes_alternar", "cortes_desfazer", "legenda_editar", "legenda_substituir", "legenda_desfazer"]))
 
     def test_corpo_invalido_ou_grande(self):
         self.assertEqual(self.s.pedir("POST", "/api/novo", b"{nao json", CABECALHOS_OK)[0], 400)

@@ -10,6 +10,20 @@
 4. **Fila**: uma edição por vez; as outras ficam "na fila, posição N". **Cancelar** para o processo e deixa a etapa interrompida; **Retomar** continua de onde parou.
 5. **Entrega**: versões, folhas de quadros, conferência, **Aprovar entrega** (grava qual versão está aprovada em `trabalho.json`, campo `entrega_aprovada`) e **Abrir a pasta**.
 
+## Revisão de cortes e legenda (os dois portões que mais dão trabalho)
+
+Nos portões `cortes` e `legenda` (e pelo botão **Revisar cortes** / **Revisar legenda** sempre que houver o que revisar), o painel abre uma tela de revisão por cima da edição. Só funciona com a edição parada (nem rodando, nem na fila).
+
+**Cortes.** A fala de cada vídeo em frases clicáveis: normal = fica, riscada = sai. Um clique alterna; nada é cortado no meio de uma palavra (o corte cai no silêncio entre as palavras). **▶** toca a frase e **✂** toca a emenda, ou seja, o fim de um trecho seguido do começo do próximo, como o espectador vai ouvir. No topo: a duração final ao vivo (com a **meta** em segundos, se a pessoa pôs uma), **Desfazer** (quantas vezes quiser), **só suspeitas** e **Aprovar os cortes e seguir**.
+
+A lista **"pontos para olhar"** diz o vídeo, o minuto, o motivo e o trecho, em ordem. Os motivos são: palavra duvidosa (palavras pequenas como "e" e "um" não entram, porque a confiança delas é sempre baixa), palavra longa demais, fala que a transcrição não reconheceu, frase que saiu por repetição, a mesma frase em dois trechos, frase que pode ter sido cortada ao meio e o fim da gravação (onde costuma estar o fecho).
+
+Tirar e voltar mexem no `cortes.json` e guardam o anterior em `revisao/cortes-NNN.json`. Como o `cortes.json` é entrada das etapas seguintes, mudar os cortes depois do portão faz o orquestrador refazer rosto, elementos, legenda e amostra.
+
+**Legenda.** Um cartão por bloco, com a **prévia** (o quadro do vídeo, no formato final, com a legenda desenhada pelo mesmo código do render, no lugar em que ela vai ficar; clique para ampliar) e o texto editável. Marcas para olhar: **número**, **nome próprio** e **movida** (subiu ou desceu para não cobrir o rosto). **Corrigir em todos** troca uma palavra inteira em todos os blocos (grafia de marca, termo difícil). Salvar roda o `legendas.py --reaproveitar`, que recalcula as posições e grava `legendas.json`, `.ass` e `.srt`. Se o número de palavras de um bloco muda, ele perde o destaque da palavra falada.
+
+Na conversa, o mesmo é editar `cortes.json` e `legendas.json` à mão (veja `cortes.md` e `legendas.md`).
+
 ## Conversa e painel juntos
 
 Os dois leem e escrevem o `trabalho.json`. Se a pessoa pedir para revisar um portão na conversa, o orquestrador já gravou `pedidos/<portao>.json`: leia, faça a revisão (`referencias/cortes.md`, `legendas.md`, `elementos-3d.md`...) e aprove com `editar.py aprovar --pasta ... PORTAO --seguir`. Enquanto uma edição está rodando ou na fila no painel, **não** rode `editar.py` nela por fora (o painel recusa o contrário com 409): espere terminar ou cancele.
@@ -26,5 +40,6 @@ Como o painel executa, tem defesas:
 ## Limites
 
 - A fila e o processo de uma etapa não sobrevivem a fechar o painel; a edição, sim (`trabalho.json`): abra o painel de novo e clique em **Retomar**.
-- A revisão detalhada de cortes e legenda na tela é da Fase 6; elementos, zoom e som na tela e os botões de correção, da Fase 7.
+- A revisão de elementos, zoom e som na tela e os botões de correção da conferência são da Fase 7. Na tela de cortes não há "refazer" (só desfazer) nem arrastar para ajustar o tempo: a escolha é sempre por frase.
+- A prévia da legenda mostra o enquadramento original (sem o zoom da câmera) e não mostra os elementos 3D.
 - O painel não substitui a conversa para o que exige julgamento: ele grava o "ok" da pessoa, não decide.

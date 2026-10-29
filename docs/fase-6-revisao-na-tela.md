@@ -1,5 +1,7 @@
 # Fase 6. Revisão de cortes e legenda na tela
 
+> **Status: implementada** (29/10/2026) e testada com os dados reais do vídeo de planejamento (dois vídeos 4K HDR de 1 GB, 52 trechos, 230 blocos de legenda), numa tela de navegador de verdade. As decisões que mudaram estão em [Como ficou](#como-ficou).
+
 Terceira fase da trilha A. Os dois portões em que a edição real mais deu trabalho, **cortes** e **legenda**, ganham uma tela de revisão no painel: a pessoa vê o texto da fala com o que fica e o que sai, clica para mudar, ouve o que quiser e aprova, sem abrir um arquivo nem uma conversa. É a tela mais valiosa do painel.
 
 ## Objetivo
@@ -84,3 +86,19 @@ Uma lista dos blocos (o que aparece de cada vez na tela): tempo, texto editável
 
 ## Fora desta fase
 Revisão de elementos, zoom e som na tela e os botões de correção da conferência (Fase 7), e Claude por trás, que sugere cortes e grafia (Fase 8). Arrastar para ajustar o tempo de um corte (a escolha é sempre por unidade de fala).
+
+## Como ficou
+
+- **As suspeitas foram afinadas com dados reais.** Na primeira versão, o vídeo real dava 32 pontos, quase todos "palavra duvidosa: E / os / um" (palavras pequenas têm confiança baixa sempre), sem dizer onde nem o trecho, e com instruções de linha de comando ("rode transcrever.py --trecho 54 57"). Agora: palavras pequenas só entram com confiança muito baixa, as duvidosas da mesma frase viram um ponto só, a lista vem **em ordem de tempo**, cada ponto diz o vídeo, o minuto e o trecho, e as mensagens falam em "ouça". Caiu para 25 pontos, todos úteis.
+- **▶ fora da área de clique**: o botão de ouvir ficava dentro da frase clicável, e clicar no meio da frase tocava o áudio em vez de tirá-la. Um teste de tela pegou isso.
+- **✂ discreto**: com cortes naturais (cada pausa é uma emenda), o vídeo real tinha 50 emendas, e o botão "emenda N ▶" poluía a leitura. Ficou só o ícone, apagado até o mouse chegar.
+- **Legenda em grade de duas colunas**, com prévia pequena (clique para ampliar): com a prévia de quadro inteiro, cada linha tinha 290 px e 230 blocos viravam uma rolagem enorme.
+- **A prévia usa o código do render**: o ASS é gerado por `legendas.gerar_ass` e desenhado pelo filtro `ass` do ffmpeg, com a fonte do perfil e a conversão de HDR para cor padrão. Um teste compara pixels com e sem legenda.
+- **Salvar a legenda roda o `legendas.py --reaproveitar` de verdade** (não uma cópia da lógica), então as posições, o `.ass` e o `.srt` ficam exatamente como o render espera.
+- **Tempos no vídeo real**: os cortes (62 KB) em 10 ms, o áudio de qualquer frase em 0,16 s mesmo de um 4K de 1 GB, a prévia de um bloco em 0,65 s com a conversão de HDR.
+- **Meta de duração**: `meta_duracao` (10 a 600 s) é uma escolha comum, definida pela tela (`ajustar`). Não faz parte das etapas, então não refaz nada.
+
+## Não coberto
+- Arrastar para ajustar o tempo de um corte, refazer (só desfazer) e revisar com dois vídeos lado a lado.
+- A prévia da legenda mostra o enquadramento original (sem o zoom da câmera) e não mostra os elementos 3D.
+- A pessoa revisando as suspeitas no vídeo de teste foi o autor da fase: falta alguém que não conhece o código usar a tela.
