@@ -187,11 +187,16 @@ PERGUNTAS = {
 
 def marcar_transcricoes(videos: dict[int, list[dict]], tudo: bool = False) -> list[dict]:
     itens = []
+    # Palavra que aparece também em minúscula não é nome próprio ("Seu" no começo de uma frase sem ponto).
+    minusculas = {norm(w["p"]) for ws in videos.values() for w in ws
+                  if re.sub(r"^[^\w]+|[^\w]+$", "", w["p"]) == re.sub(r"^[^\w]+|[^\w]+$", "", w["p"]).lower()}
     for vid, palavras in sorted(videos.items()):
         for frase in frases(palavras):
             texto = " ".join(w["p"].strip() for w in frase)
             for m in achar_na_frase(frase):
                 if m["gravidade"] == BAIXA and not tudo:
+                    continue
+                if m["tipo"] == "nome" and norm(m["trecho"]) in minusculas:
                     continue
                 itens.append({"tipo": m["tipo"], "gravidade": m["gravidade"], "video": vid, "tempo": round(m["i"], 2),
                               "frase": texto, "trecho": m["trecho"], "motivo": MOTIVOS[m["tipo"]],

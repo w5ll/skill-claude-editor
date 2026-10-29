@@ -126,6 +126,12 @@ class TestFatos(unittest.TestCase):
         tipos_tudo = {i["tipo"] for i in fatos.marcar_transcricoes(videos, tudo=True)}
         self.assertEqual(tipos_tudo, {"numero", "nome"})
 
+    def test_palavra_comum_com_maiuscula_nao_e_nome(self):
+        # "Seu" abre a frase mas "seu" aparece em minúscula: não é nome próprio. "Instagram" só aparece maiúsculo.
+        videos = {0: frase("Vamos supor que o seu objetivo é grande Seu objetivo é postar no Instagram", 1.0)}
+        nomes = [i["trecho"] for i in fatos.marcar_transcricoes(videos, tudo=True) if i["tipo"] == "nome"]
+        self.assertEqual(nomes, ["Instagram"])
+
     def test_status_fora_do_corte_e_pendentes(self):
         videos = {0: frase("Pago cinco mil reais.", 1.0) + frase("Depois foram 2024 anos.", 20.0)}
         itens = fatos.mesclar(fatos.marcar_transcricoes(videos), [])
