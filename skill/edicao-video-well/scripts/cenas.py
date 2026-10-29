@@ -225,6 +225,48 @@ def listas(palavras: list[dict]) -> list[dict]:
     return saida
 
 
+ABERTURA = 3                # palavras da abertura que se repete ("Seu objetivo é...")
+MAX_PASSO_REPETIDO = 8      # palavras entre uma abertura e a seguinte
+ARTIGOS = {"a", "o", "as", "os", "de", "do", "da", "que", "e", "um", "uma", "eu", "se", "em", "no", "na", "para",
+           "com", "nao", "mais", "ser", "tem", "gente", "voce", "isso", "como", "mas", "por"}
+
+
+def repetidas(palavras: list[dict]) -> list[dict]:
+    """Lista dita sem ordinais: a mesma abertura 3 ou mais vezes, cada vez seguida de um item curto.
+
+    Exemplo: "Seu objetivo é aposentar seus pais. Seu objetivo é comprar uma casa. Seu objetivo é ter..."
+    """
+    toks = [norm(w["p"]) for w in palavras]
+    saida, usados = [], set()
+    for k in range(len(toks) - ABERTURA):
+        gram = tuple(toks[k:k + ABERTURA])
+        if k in usados or not all(gram) or all(g in ARTIGOS for g in gram) or sum(g not in ARTIGOS for g in gram) < 2:
+            continue
+        pos, j = [k], k + ABERTURA
+        while j + ABERTURA <= len(toks) and palavras[j]["i"] - palavras[k]["i"] <= MAX_ORDENS:
+            if tuple(toks[j:j + ABERTURA]) == gram:
+                pos.append(j)
+                j += ABERTURA
+            else:
+                j += 1
+        if len(pos) < 3:
+            continue
+        pos = pos[:PASSOS[1]]
+        passos, ok = [], True
+        for n, a in enumerate(pos):
+            ini = a + ABERTURA
+            fim = (pos[n + 1] - 1) if n + 1 < len(pos) else fim_de_trecho(palavras, ini)
+            if fim - ini + 1 < 1 or fim - ini + 1 > MAX_PASSO_REPETIDO:
+                ok = False
+                break
+            passos.append({"texto": texto_de(palavras, ini, min(fim, ini + LIMITE_PALAVRAS["texto"] - 1)),
+                           "gatilho": limpo(palavras[ini]["p"]).lower(), "fala_em": round(palavras[ini]["i"], 2)})
+        if ok:
+            usados.update(pos)
+            saida.append({"tipo": "lista", "cena": {"titulo": "", "passos": passos}})
+    return saida
+
+
 def antes_depois(palavras: list[dict]) -> list[dict]:
     toks = [norm(w["p"]) for w in palavras]
     saida = []
@@ -314,7 +356,12 @@ def montar_item(tipo: str, cena: dict, modo: str = "sobreposto") -> dict:
 def sugerir(palavras: list[dict]) -> list[dict]:
     numeros, de_para = numeros_e_de_para(palavras)
     propostas = []
-    for p in listas(palavras) + antes_depois(palavras) + de_para + numeros:
+    em_lista = listas(palavras)
+    # lista sem ordinais só entra se não repetir uma que os ordinais já acharam
+    ocupados = [(c["cena"]["passos"][0]["fala_em"], c["cena"]["passos"][-1]["fala_em"]) for c in em_lista]
+    sem_ordem = [c for c in repetidas(palavras)
+                 if not any(a - 1 <= c["cena"]["passos"][0]["fala_em"] <= b + 1 for a, b in ocupados)]
+    for p in em_lista + sem_ordem + antes_depois(palavras) + de_para + numeros:
         item = montar_item(p["tipo"], p["cena"])
         propostas.append({"tipo": p["tipo"], "item": item})
     return sorted(propostas, key=lambda p: p["item"]["inicio"])

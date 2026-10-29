@@ -73,6 +73,24 @@ class TestSugerir(unittest.TestCase):
         self.assertAlmostEqual(item["inicio"], 2.0 - cenas.ENTRADA, places=2)
         self.assertGreaterEqual(item["duracao"], 10.0 + cenas.LEITURA - item["inicio"] - 1e-6)
 
+    def test_lista_dita_sem_ordinais_pela_abertura_repetida(self):
+        p = fala("Vamos supor que o seu objetivo é aposentar seus pais Seu objetivo é comprar uma casa "
+                 "Seu objetivo é ter uma vida desprendida de horários e agendas", 1.0)
+        props = [x for x in cenas.sugerir(p) if x["tipo"] == "lista"]
+        self.assertEqual(len(props), 1)
+        passos = props[0]["item"]["cena"]["passos"]
+        self.assertEqual([x["texto"] for x in passos], ["Aposentar seus pais", "Comprar uma casa",
+                                                          "Ter uma vida desprendida de horários"])
+        self.assertEqual(passos[0]["gatilho"], "aposentar")
+        self.assertGreater(passos[1]["fala_em"], passos[0]["fala_em"])
+        itens = [props[0]["item"]]
+        self.assertEqual(cenas.validar(itens, p), [])           # os gatilhos existem na fala
+
+    def test_frase_comum_repetida_nao_vira_lista(self):
+        fala_solta = ("a gente tem que entender e ser disciplinado quando a gente tem vontade ou a gente tem que "
+                      "seguir os planos e depois a gente tem que ajustar tudo isso com calma")
+        self.assertNotIn("lista", [x["tipo"] for x in cenas.sugerir(fala(fala_solta, 1.0))])
+
     def test_ordem_sozinha_ou_tempo_nao_e_lista(self):
         self.assertEqual(self.tipos(fala("Primeiro eu fui ao mercado e comprei pão.")), [])
         self.assertNotIn("lista", self.tipos(fala("Eu fiz isso em um segundo e depois voltei. Primeiro eu saí.")))
