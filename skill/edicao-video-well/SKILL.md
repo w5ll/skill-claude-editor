@@ -66,11 +66,11 @@ Vou juntar os 2 vídeos num Reels vertical, ritmo natural, com legenda.
 - 🎥 **Câmera**: parada, sem zoom _(sugerido)_
 - 🔊 **Som**: voz no volume padrão das redes, com redução de ruído leve · sem música, sem efeito _(sugerido)_
 - 🎨 **Imagem**: cor original, sem filtro _(sugerido)_
-- 📐 **Formato**: vertical 9:16, mesmo tamanho e fluidez do original _(do seu vídeo)_
+- 📐 **Formato**: vertical 9:16, mesma fluidez do original _(do seu vídeo)_ · reduzido de 4K para 1080x1920, o tamanho do Instagram _(sugerido)_
 - 👀 **Revisão**: eu confiro uma amostra de 8 a 15 s antes de fazer o vídeo inteiro _(sugerido)_
 - 📁 **Entrega**: `saida/2026-10-22_lead-curioso/2026-10-22_lead-curioso-v001.mp4` _(sugerido)_
 
-⚙️ 1080x1920 · 29,97 quadros/s fixos · MP4 · voz em -14 LUFS, pico até -1 dBTP
+⚙️ 2160x3840 → 1080x1920 · 29,97 quadros/s fixos · MP4 · voz em -14 LUFS, pico até -1 dBTP
 
 👉 Responda **A** e **C** para começar, ou diga o que mudar, por exemplo "ritmo mais rápido", "com zoom", "põe uma música calma", "deixa a pausa do 0:42".
 ```
@@ -85,6 +85,8 @@ Regras do cartão:
 - Zoom de ênfase só entra se o Well pedir ("com zoom", "dá uns cortes de câmera", "aproxima nas partes fortes") ou aceitar quando você oferecer. "Deixa dinâmico" pode virar uma oferta no cartão, nunca um zoom ligado por conta própria.
 - Redução de ruído: com chiado medido (diferença de 30 dB ou menos), vai como pendência ⚠️ com a sugestão da inspeção (leve ou forte). Gravação limpa: "sem redução de ruído (gravação limpa)".
 - Áudio estourado ou sala com eco: vão em ⚠️ como aviso (não têm conserto na edição), com a opção de seguir assim ou regravar a frase.
+
+- Tamanho: o Instagram mostra no máximo 1080x1920. Bruto maior que isso (4K do iPhone): proponha "reduzido para 1080x1920, o tamanho do Instagram" e use `--formato original@1080` (ou `9:16@1080`) em todos os scripts que recebem `--formato`. Fica bem mais rápido e o arquivo final, bem menor. Mantenha os quadros por segundo do original.
 
 Padrões propostos: ritmo natural, legenda ligada fora do rosto, elementos 3D nas palavras que combinam (um a cada 6 s no máximo; liste quais no cartão depois de uma transcrição rápida, ou diga "nos momentos certos" se ainda não transcreveu), câmera parada, voz em -14 LUFS, redução de ruído só com chiado medido, cor e formato do original, sem música, sem efeito, amostra conferida por você.
 

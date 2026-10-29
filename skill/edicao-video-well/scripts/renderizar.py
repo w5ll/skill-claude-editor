@@ -3,7 +3,7 @@
 Uso:
     python renderizar.py --pasta saida/2026-10-22_tema --amostra 0 12     (amostra de 8 a 15 s)
     python renderizar.py --pasta saida/2026-10-22_tema                    (vídeo inteiro)
-      [--formato original|9:16|4:5|1:1] [--sem-legenda] [--hdr sdr|manter]
+      [--formato original|9:16|4:5|1:1, com @1080 para reduzir] [--sem-legenda] [--hdr sdr|manter]
       [--ruido nao|leve|forte] [--volume -14] [--sem-normalizar] [--sem-elementos] [--sem-som]
 
 O que faz:

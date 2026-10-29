@@ -175,16 +175,31 @@ FORMATOS = {"9:16": (9, 16), "4:5": (4, 5), "1:1": (1, 1), "16:9": (16, 9)}
 
 
 def dimensoes_saida(largura: int, altura: int, formato: str) -> tuple[int, int]:
-    """Tamanho final. 'original' mantém; os outros cortam o centro sem esticar."""
-    if formato == "original":
-        return largura - largura % 2, altura - altura % 2
-    if formato not in FORMATOS:
-        erro(f"formato desconhecido: {formato} (use original, {', '.join(FORMATOS)})")
-    rw, rh = FORMATOS[formato]
-    if largura * rh > altura * rw:          # sobra largura: corta as laterais
-        h = altura
-        w = altura * rw // rh
-    else:                                   # sobra altura: corta em cima e embaixo
-        w = largura
-        h = largura * rh // rw
+    """Tamanho final.
+
+    formato = proporção, com tamanho opcional depois de '@':
+      'original'       mantém a proporção e o tamanho do vídeo bruto
+      '9:16', '4:5'... corta o centro na proporção pedida, sem esticar
+      'original@1080'  mesma proporção, reduzida para 1080 de largura (o que o Instagram usa)
+      '9:16@1080'      corta em 9:16 e reduz para 1080x1920
+    Nunca aumenta: se o bruto já for menor que o tamanho pedido, fica o do bruto.
+    """
+    proporcao, _, limite = formato.partition("@")
+    if proporcao == "original":
+        w, h = largura, altura
+    elif proporcao in FORMATOS:
+        rw, rh = FORMATOS[proporcao]
+        if largura * rh > altura * rw:          # sobra largura: corta as laterais
+            w, h = altura * rw // rh, altura
+        else:                                   # sobra altura: corta em cima e embaixo
+            w, h = largura, largura * rh // rw
+    else:
+        erro(f"formato desconhecido: {formato} (use original, {', '.join(FORMATOS)}, com @1080 se quiser reduzir)")
+    if limite:
+        if not limite.isdigit():
+            erro(f"tamanho inválido em {formato}: use, por exemplo, 9:16@1080")
+        alvo = int(limite)
+        menor = min(w, h)  # vertical: a largura; horizontal: a altura
+        if alvo < menor:
+            w, h = round(w * alvo / menor), round(h * alvo / menor)
     return w - w % 2, h - h % 2

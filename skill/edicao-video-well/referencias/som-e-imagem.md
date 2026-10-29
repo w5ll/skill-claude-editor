@@ -47,6 +47,7 @@ python scripts/som.py planejar --pasta saida/... --musica batida --efeitos
 
 - Padrão: cor original, sem filtro, sem "melhorar". Nenhuma correção de cor automática.
 - Tamanho e fluidez (quadros por segundo) do original. A saída é sempre em taxa fixa, mesmo que o celular tenha gravado em taxa variável.
+- Tamanho: com `@1080` no formato (`original@1080`, `9:16@1080`), o vídeo é reduzido para 1080 de largura (1080x1920 no vertical), que é o máximo que o Instagram mostra. Use sempre que o bruto vier em 4K: a edição fica várias vezes mais rápida e o arquivo final, bem menor. Nunca aumenta um vídeo menor. Passe o mesmo `--formato` para `rosto.py`, `legendas.py`, `elementos.py` e `renderizar.py`.
 - `--formato 9:16` (ou `4:5`, `1:1`, `16:9`) corta o centro da imagem, sem esticar. Use quando o bruto veio em outro formato. Confira nos quadros se o rosto continua dentro.
 - Vídeos de tamanhos diferentes são ajustados ao tamanho do primeiro, cortando o centro.
 
