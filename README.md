@@ -20,6 +20,12 @@ Para instalar no seu Mac, veja [Instalar no seu Mac, com o VS Code](#instalar-no
 12. Confere uma amostra de 8 a 15 segundos, depois faz o vídeo inteiro e confere de novo: toca até o fim, volume, nenhuma palavra cortada, nenhum estalo, trecho repetido, silêncio sobrando ou quadro preto, fala completa, e uma folha com os quadros de cada emenda.
 13. Entrega o MP4, sem nunca apagar os originais nem as versões anteriores.
 
+Também, quando você pedir:
+
+- **Série**: um arquivo em `series/` guarda o jeito de editar de um conjunto de vídeos (ritmo, legenda, elementos, zoom, música, avisos e hashtags do post), e todo vídeo da série o segue. O cartão mostra cada escolha com "(da série ...)".
+- **Conferência de fatos**: antes do render, a skill marca na sua fala os números, datas, fontes e referências de lei, e pergunta se estão certos. Ela nunca decide o que é verdade: só marca e pergunta.
+- **Imagens de apoio**: uma biblioteca local de imagens de uso livre, com a licença, a origem e o crédito registrados, que entram no vídeo como os elementos 3D (cartão ou tela cheia).
+
 ## Fases do projeto
 
 O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de edição para qualquer pessoa com acesso ao repositório**, com a marca configurável e um painel que roda a edição inteira sem abrir uma conversa. O nome novo é **welldit**, e o visual padrão segue a marca ARVEN (**elementos base ARVEN**). O plano completo, as dependências, a divisão entre as duas pessoas e as regras de trabalho em dupla estão em [docs/roadmap.md](docs/roadmap.md).
@@ -220,6 +226,9 @@ skill/edicao-video-well/         ← a skill (é isso que vira o arquivo .skill)
     elementos-3d.md              catálogo dos elementos 3D, modos, critério e como desenhar elementos novos
     rosto-e-camera.md            rosto (legenda e elementos fora dele) e zoom de ênfase
     som-e-imagem.md              volume, ruído, estouro, eco, música, efeitos, HDR, formato, cor
+    series.md                    séries: o jeito de editar de um conjunto de vídeos
+    fatos.md                     números, datas, fontes e afirmações a confirmar
+    imagens.md                   imagens de apoio: licenças, registro e créditos
     gravacao.md                  dicas para gravar de um jeito que edita melhor
     instalacao.md                o que precisa estar instalado
   marca.json                     cores da marca (as mesmas do carrossel)

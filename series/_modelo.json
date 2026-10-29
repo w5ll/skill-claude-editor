@@ -1,0 +1,13 @@
+{
+  "nome": "modelo",
+  "descricao": "Copie este arquivo para series/<nome>.json e ajuste. Todo campo é opcional.",
+  "ritmo": "natural",
+  "formato": "9:16@1080",
+  "legenda": {"ligada": true, "palavras": 3, "posicao": "auto", "tamanho": 0.046, "maiusculas": false, "destaque": true},
+  "elementos": {"ligado": true, "modo": "sobreposto", "intervalo": 6, "permitidos": [], "proibidos": [], "gerados": true},
+  "camera": {"zoom": "nenhum"},
+  "som": {"musica": "nenhuma", "efeitos": false, "volume": -14},
+  "ruido": "auto",
+  "termos": [],
+  "publicacao": {"hashtags_fixas": [], "avisos_obrigatorios": [], "chamada": ""}
+}

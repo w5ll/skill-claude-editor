@@ -18,7 +18,7 @@ Terceira fase da trilha B. Três scripts novos (`serie.py`, `fatos.py`, `imagens
 
 ## Parte 1. Série (`serie.py`)
 
-Os arquivos ficam em `series/<nome>.json`, **na raiz do projeto, fora da skill** (são da pessoa, não vão para o `.skill`). `series/_modelo.json` é o exemplo comentado para copiar. O formato é o mesmo que os **modelos de edição** da Fase 4 vão usar.
+Os arquivos ficam em `series/<nome>.json`, **na raiz do projeto, fora da skill** (são da pessoa, não vão para o `.skill`). `series/_modelo.json` é o exemplo para copiar (as explicações de cada campo estão em `referencias/series.md`). O formato é o mesmo que os **modelos de edição** da Fase 4 vão usar.
 
 ```json
 {
