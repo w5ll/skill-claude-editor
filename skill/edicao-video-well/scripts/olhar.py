@@ -31,8 +31,8 @@ from comum import aviso, dimensoes_saida, erro, exigir, fps_racional, ler_json, 
 PASSO = 0.1
 MIN_DURACAO = 1.2        # menos que isso é só olhar de relance
 JUNTA = 0.3              # desvios separados por até isso viram um só
-LIMIAR_INCLINACAO = 0.07  # a partir da mediana do vídeo (cerca de 12 graus)
-LIMIAR_GIRO = 0.25        # cerca de 15 graus
+LIMIAR_INCLINACAO = 0.05  # a partir da mediana do vídeo (calibrado em vídeo real; veja referencias/gancho-e-olhar.md)
+LIMIAR_GIRO = 0.12        # idem: abaixo disso é a cabeça se mexendo ao falar
 SIGMAS = 3.0
 ZOOM_MAX = 1.3
 BLOCO_MIN = 2.5          # a câmera não muda de novo antes disso (como em camera.py)
