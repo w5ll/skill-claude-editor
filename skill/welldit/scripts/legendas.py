@@ -31,7 +31,7 @@ from pathlib import Path
 
 import unicodedata
 
-from comum import (arquivo_da_fonte, assinatura_da_marca, carregar_marca, definir_perfil,
+from comum import (arquivo_da_fonte, assinatura_da_marca, assinatura_dos_cortes, carregar_marca, definir_perfil,
                    dimensoes_saida, erro, fps_racional, ler_json, salvar_json, trechos_no_quadro)
 
 PAUSA_QUEBRA = 0.30   # pausa que fecha um bloco de legenda
@@ -318,6 +318,8 @@ def main():
     from camera import assinatura_camera
     avisos = posicionar(blocos, estilo, a.pasta.resolve(), Medidor(altura * estilo["tamanho"], fonte))
     estilo["camera"] = assinatura_camera(a.pasta.resolve())
+    if not a.reaproveitar:
+        estilo["cortes"] = assinatura_dos_cortes(cortes)      # o editar.py só reaproveita o texto se os cortes forem os mesmos
     estilo["perfil"] = {"nome": marca["perfil"], "assinatura": assinatura_da_marca(marca)}
     salvar_json(destino, {"estilo": estilo, "blocos": blocos})
 

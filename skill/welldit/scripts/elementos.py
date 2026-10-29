@@ -742,12 +742,16 @@ def quadro_do_video(pasta: Path, cortes: dict, insp: list, fps, largura: int, al
     return False
 
 
-def previa(pasta: Path, largura: int, altura: int, fps) -> Path:
-    """Folha elementos-previa.jpg: cada elemento aos 0,2 s, 0,6 s e 1,4 s, sobre o fundo da marca e sobre o vídeo."""
+def previa(pasta: Path, largura: int, altura: int, fps, indices: list[int] | None = None, saida: Path | None = None,
+           compacta: bool = False) -> Path:
+    """Folha elementos-previa.jpg: cada elemento aos 0,2 s, 0,6 s e 1,4 s, sobre o fundo da marca e sobre o vídeo.
+    Com `indices`, só esses itens do elementos.json; `saida` escolhe o arquivo; `compacta` tira o texto do lado e deixa
+    um só instante sobre o fundo (é a versão que o painel mostra em cada linha da lista)."""
     arq = pasta / "elementos.json"
     if not arq.exists():
         erro("não há elementos.json: rode elementos.py sugerir antes")
-    itens = [i for i in ler_json(arq).get("itens", []) if not eh_cena(i)]   # cenas: cenas.py previa
+    todos = ler_json(arq).get("itens", [])
+    itens = [i for k, i in enumerate(todos) if not eh_cena(i) and (indices is None or k in indices)]   # cenas: cenas.py previa
     if not itens:
         erro("o elementos.json está vazio (as cenas têm a prévia em cenas.py previa)")
     marca = carregar_marca(pasta=pasta)
@@ -759,7 +763,7 @@ def previa(pasta: Path, largura: int, altura: int, fps) -> Path:
     rostos = Rostos.carregar(pasta, largura, altura)
     camera = Camera.carregar(pasta, largura, altura)
     fonte = arquivo_da_fonte(marca).as_uri()
-    tmp = pasta / "previa-tmp"
+    tmp = pasta / (f"previa-tmp-{saida.stem}" if saida else "previa-tmp")
     shutil.rmtree(tmp, ignore_errors=True)
     tmp.mkdir()
     atexit.register(shutil.rmtree, tmp, True)      # some mesmo se algo der errado no meio
@@ -822,13 +826,13 @@ def previa(pasta: Path, largura: int, altura: int, fps) -> Path:
         if it.get("texto"):
             info.append(f'<div class="peq">rótulo: {esc(it["texto"])}</div>')
         escuras = "".join(f'<div class="cel escura"><img src="data:image/png;base64,{c["png"]}"><span>{c["t"]:.1f} s</span></div>'
-                          for c in ln["celulas"])
+                          for c in (ln["celulas"][len(ln["celulas"]) // 2:][:1] if compacta else ln["celulas"]))
         quadros = "".join(
             '<div class="cel quadro"' + (f' style="background-image:url(data:image/jpeg;base64,{c["jpg"]})"' if c["jpg"] else "") + '>'
             f'<img class="el" style="left:{ln["x"] / largura * 100:.2f}%;top:{ln["y"] / altura * 100:.2f}%;'
             f'width:{ln["w"] / largura * 100:.2f}%;height:{ln["h"] / altura * 100:.2f}%" src="data:image/png;base64,{c["png"]}">'
             f'<span>{c["t"]:.1f} s</span></div>' for c in ln["celulas"])
-        corpo.append(f'<div class="linha"><div class="info">{"".join(info)}</div>{escuras}{quadros}</div>')
+        corpo.append(f'<div class="linha">{"" if compacta else "<div class=info>" + "".join(info) + "</div>"}{escuras}{quadros}</div>')
     html = f"""<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><style>
 @font-face {{ font-family: "FontePerfil"; src: url("{fonte}"); }}
 body {{ margin: 0; padding: 24px; background: {cores['fundo_profundo']}; color: {cores['texto']};
@@ -852,15 +856,14 @@ h1 {{ font: 22px "FontePerfil"; margin: 0 0 4px; }}
 .quadro {{ width: 216px; height: 384px; background: #333 center/cover; }}
 .quadro .el {{ position: absolute; }}
 </style></head><body>
-<h1>Prévia dos elementos 3D</h1>
-<div class="sub">Cada elemento aos 0,2 s, 0,6 s e 1,4 s: à esquerda sobre o fundo da marca, à direita sobre o próprio vídeo. Tempos no vídeo editado.</div>
+{"" if compacta else "<h1>Prévia dos elementos 3D</h1><div class=sub>Cada elemento aos 0,2 s, 0,6 s e 1,4 s: à esquerda sobre o fundo da marca, à direita sobre o próprio vídeo. Tempos no vídeo editado.</div>"}
 {"".join(corpo)}</body></html>"""
-    pagina_html = pasta / "previa-tmp" / "previa.html"
+    pagina_html = tmp / "previa.html"
     pagina_html.write_text(html, encoding="utf-8")
-    saida = pasta / "elementos-previa.jpg"
+    saida = saida or pasta / "elementos-previa.jpg"
     with sync_playwright() as pw:
         nav = abrir_navegador(pw)
-        pg = nav.new_page(viewport={"width": 1900, "height": 600}, device_scale_factor=1)
+        pg = nav.new_page(viewport={"width": 1000 if compacta else 1900, "height": 400 if compacta else 600}, device_scale_factor=1)
         pg.goto(pagina_html.resolve().as_uri())
         pg.evaluate("document.fonts.ready")
         pg.screenshot(path=str(saida), type="jpeg", quality=92, full_page=True)

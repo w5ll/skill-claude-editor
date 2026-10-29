@@ -1,6 +1,6 @@
 # Fase 7. Elementos, zoom e som no painel
 
-> **Status: em andamento.** Quarta fase da trilha A. Usa o painel que executa (Fase 5) e a tela de revisão (Fase 6). Nenhuma etapa nova de edição: a tela mexe nos mesmos arquivos que a conversa já edita à mão (`elementos.json`, `camera.json`, `som.json`, `cortes.json`).
+> **Status: implementada** (29/10/2026), com 46 testes novos em `tests/test_fase7.py` (lógica, orquestrador, conferência de verdade, API, prévias e a tela num navegador). As decisões que mudaram estão em [Como ficou](#como-ficou). Quarta fase da trilha A. Usa o painel que executa (Fase 5) e a tela de revisão (Fase 6). Nenhuma etapa nova de edição: a tela mexe nos mesmos arquivos que a conversa já edita à mão (`elementos.json`, `camera.json`, `som.json`, `cortes.json`).
 
 ## Objetivo
 
@@ -88,3 +88,22 @@ Escritas (`POST`, JSON): `/api/elementos/tirar`, `/trocar`, `/rotulo`, `/tempo`,
 ## Fora desta fase
 
 Arrastar elementos na prévia, desenhar elementos novos pela tela (a Fase 8 faz isso com o Claude), música de fora, mistura final de som ouvida na tela, e escolher onde cada efeito cai no tempo (ele cai junto do elemento).
+
+## Como ficou
+
+- **A escolha e o plano são coisas separadas.** Mudar a intensidade do zoom, a música ou o efeito em cada elemento só grava a **escolha**; o plano novo (`camera.json`, `som.json`) sai quando a edição roda a etapa. As abas de zoom e de som dizem isso e têm **Continuar a edição agora**. Já os ajustes bloco a bloco e efeito a efeito mexem direto no plano, com desfazer.
+- **A prévia do elemento é a folha que já existia**, em versão compacta (um instante sobre o fundo da marca e três sobre o quadro do vídeo), uma por elemento, guardada por conteúdo: só é refeita quando o elemento, o rosto, a câmera, o corte ou a marca mudam. Uma por vez, porque cada uma abre um navegador.
+- **Dois elementos nunca ficam juntos na tela**, e nenhum passa do fim do vídeo (regra nova, não estava na proposta): o gerador já mantinha esse espaço, e a tela passou a exigir.
+- **O zoom do bloco é recusado se mudar com um elemento na tela**, dizendo o momento do elemento. A conferência de elementos só olha os blocos que o ajuste toca, para não bloquear quem já tinha um plano manual.
+- **O hash do `cortes.json` ignora o `ganho_db`** nas etapas que não dependem dele. Sem isso, "aplicar o ganho sugerido" refazia o rosto e os elementos e apagava o que a pessoa tinha ajustado.
+- **A legenda reaproveita o texto** quando só a câmera mudou. Sem isso, qualquer ajuste de zoom apagava a revisão da legenda da Fase 6.
+- **As correções da conferência saem do próprio `conferir.py`**, com os números (início da pausa, trecho e ganho sugerido), e o painel só aceita aquelas que a conferência achou. Um valor diferente do sugerido é recusado.
+- **Uma classe do formulário do cartão (`campos`) quase foi sobrescrita** pela tela nova; a tela de ajustes usa a sua (`aj-campos`). Achado olhando a captura da tela, não pelos testes.
+
+## Não coberto
+
+- Arrastar na prévia, e desenhar elementos novos pela tela (Fase 8).
+- A mistura final de som na tela. A tela ouve cada som sozinho.
+- A prévia da legenda e a renderização completa dependem do filtro de legenda (`libass`) do ffmpeg. Nesta máquina o ffmpeg do Homebrew não o tem: os 3 testes de prévia de legenda da Fase 6 já falhavam antes desta fase e continuam falhando (nenhum teste da Fase 7 depende dele).
+- Ajustes manuais de zoom e de som se perdem quando os elementos mudam (o zoom e os efeitos são planejados de novo). É dito na tela, e a ordem recomendada é elementos, zoom, som.
+- Falta alguém que não conhece o código usar as telas.

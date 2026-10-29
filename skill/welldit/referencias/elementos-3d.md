@@ -135,3 +135,7 @@ python scripts/elementos.py promover bussola --pasta saida/... --palavras "busso
 - **previa** desenha cada elemento do `elementos.json` (prontos e gerados) e monta `elementos-previa.jpg`: uma linha por elemento, com a ideia, o tempo no vídeo e a palavra que chamou, mostrando-o aos 0,2 s, 0,6 s e 1,4 s sobre o fundo escuro da marca e sobre um quadro do próprio vídeo naquele instante (na posição em que ele vai entrar, sem o zoom da câmera). Use o `--formato` do renderizar.
 - **promover** copia o desenho aprovado para `templates/gerados/` e registra em `templates/gerados/catalogo.json` o nome, a animação, a ideia, as palavras que o chamam e o som. `--palavras` é o começo das palavras, sem acento ("bussol" pega bússola). Escolha palavras que não chamam um elemento pronto: o `promover` avisa quando chamam.
 - O `sugerir` procura primeiro no catálogo e depois nos 12 prontos. Elemento do catálogo entra no `elementos.json` já com `svg`, `animacao` e `ideia`, e o desenho é copiado para a pasta do trabalho.
+
+## No painel
+
+A tela de ajustes (aba Elementos) faz sem abrir o JSON: tirar, trocar, mudar o rótulo, o momento, a duração, o modo e a posição, adicionar e guardar no catálogo, com prévia e desfazer. Dois elementos não ficam juntos na tela. O que ela grava é o `elementos.json` de sempre. Depois de mexer nos elementos, o zoom e os efeitos de som são planejados de novo. Veja `painel.md`.

@@ -59,11 +59,11 @@ Elementos novos desenhados para as ideias que nenhum dos 12 prontos representa, 
 - Legenda editável por bloco, com prévia.
 - Depende da Fase 5. É a tela mais valiosa: foi onde a edição real deu mais trabalho.
 
-### Fase 7. Elementos, zoom e som no painel · médio
+### Fase 7 ✅ Elementos, zoom e som no painel · médio
 - Elementos: lista com tempo e prévia, trocar, tirar, mudar o rótulo, catálogo (promover o que gostou).
 - Zoom: intensidade e aproximações. Som: música e efeitos com escuta.
 - Conferência com **botões de correção** ("aceitar essa pausa", "aplicar o ganho sugerido", "refazer").
-- Depende da Fase 5.
+- Depende da Fase 5. Especificação e decisões: [fase-7-ajustes-no-painel.md](fase-7-ajustes-no-painel.md).
 
 ### Fase 8. Claude por trás, opcional · médio
 - Botões "pedir ao Claude" nas decisões que são de julgamento: primeira revisão dos cortes, escolha das ideias-chave e desenho de elementos novos, correção de grafia da legenda.

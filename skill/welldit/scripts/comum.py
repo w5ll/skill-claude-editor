@@ -46,6 +46,15 @@ def ler_json(caminho) -> dict:
     return json.loads(Path(caminho).read_text(encoding="utf-8"))
 
 
+def assinatura_dos_cortes(cortes: dict) -> str:
+    """Identifica o que o cortes.json diz sobre o tempo (trechos e palavras), sem o ganho de volume de cada trecho.
+    Mudar só o ganho não muda o rosto, os elementos, a câmera nem o texto da legenda."""
+    limpo = json.loads(json.dumps(cortes))
+    for t in limpo.get("trechos", []):
+        t.pop("ganho_db", None)
+    return hashlib.sha1(json.dumps(limpo, sort_keys=True, ensure_ascii=False).encode()).hexdigest()[:12]
+
+
 def salvar_json(caminho, dados):
     caminho = Path(caminho)
     caminho.parent.mkdir(parents=True, exist_ok=True)

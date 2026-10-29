@@ -27,6 +27,9 @@ Cada etapa guarda um hash de: as escolhas que a afetam, o conteúdo dos arquivos
 - Mexer no `cortes.json` depois da revisão refaz rosto, elementos, legenda e a amostra, mas **não** a etapa `cortes` (a revisão é entrada das seguintes).
 - `ajustar legenda.palavras=2` refaz só legenda e amostra (e depois o vídeo e a conferência).
 - Refazer uma etapa reabre o portão dela, porque a aprovação vale para o hash que foi aprovado.
+- O `ganho_db` de cada trecho do `cortes.json` **não entra** no hash do rosto, dos elementos, da câmera e da legenda: mudar só o ganho refaz a amostra, o vídeo e a conferência, nada antes.
+- A legenda **reaproveita o texto revisado** (roda `legendas.py --reaproveitar`) quando só a câmera mudou, isto é, quando os cortes e o estilo da legenda são os mesmos de quando ela foi montada (o `legendas.json` guarda uma assinatura dos cortes). Mudou o tempo dos cortes ou o estilo, ela é refeita do zero.
+- `pausas_ok` (segundos de pausas que a pessoa aceitou na conferência) é uma escolha: a etapa de conferir a repassa ao `conferir.py` e é refeita quando ela muda.
 - Uma etapa `rodando` cujo processo sumiu vira `interrompida` e é refeita no próximo `proximo`.
 
 ## O cartão

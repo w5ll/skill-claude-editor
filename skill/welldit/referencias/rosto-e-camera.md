@@ -49,3 +49,7 @@ Limites:
 - Não funciona com `--hdr manter` (use `--hdr sdr`).
 - Ênfase demais cansa. Num Reels de 40 s, 3 a 5 aproximações bastam; se o script sugerir mais, apague as mais fracas.
 - Olhe a folha de emendas da conferência: zoom que muda junto com um corte deve parecer troca de câmera, não pulo.
+
+## No painel
+
+A aba Zoom da tela de ajustes muda o nível de cada bloco (aberto, mais perto, ênfase), tira uma ênfase e mostra o quadro já com o zoom. O painel recusa qualquer mudança que faça o zoom mudar com um elemento 3D na tela. O que ela grava é o `camera.json` de sempre. Mudar o zoom refaz as posições da legenda sem perder o texto revisado. Veja `painel.md`.

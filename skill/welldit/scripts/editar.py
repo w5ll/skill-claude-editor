@@ -35,7 +35,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
-from comum import PASTA_SKILL, erro, ler_json, salvar_json_atomico, tempo
+from comum import PASTA_SKILL, assinatura_dos_cortes, erro, ler_json, salvar_json_atomico, tempo
 
 PASTA_RAIZ = PASTA_SKILL.parent.parent
 SCRIPTS = Path(__file__).resolve().parent
@@ -57,6 +57,7 @@ ESCOLHAS_PADRAO = {
     "camera": "nenhum", "som": {"musica": "nenhuma", "efeitos": False}, "volume": -14.0,
     "amostra": "conferir", "fatos": True, "gancho_olhar": True,
     "meta_duracao": None,       # segundos; só uma referência na tela de revisão dos cortes
+    "pausas_ok": [],            # segundos (no vídeo editado) de pausas que a pessoa aceitou na conferência
 }
 
 
@@ -147,8 +148,22 @@ def _c_elementos(t, p):
     return cmds
 
 
+def _legenda_reaproveitavel(t, p) -> bool:
+    """A legenda já existe, foi feita para estes cortes e com este estilo: só as posições precisam ser recalculadas."""
+    arq, cortes = p / "legendas.json", p / "cortes.json"
+    if not (arq.exists() and cortes.exists()):
+        return False
+    leg, estilo = _v(t, "legenda", {}), ler_json(arq).get("estilo", {})
+    return (estilo.get("cortes") == assinatura_dos_cortes(ler_json(cortes)) and estilo.get("formato") == _formato(t)
+            and estilo.get("palavras") == leg.get("palavras", 3) and estilo.get("posicao") == leg.get("posicao", "auto")
+            and estilo.get("tamanho") == leg.get("tamanho", 0.046) and bool(estilo.get("maiusculas")) == bool(leg.get("maiusculas"))
+            and estilo.get("destaque", True) == (leg.get("destaque") is not False))
+
+
 def _c_legenda(t, p):
     leg = _v(t, "legenda", {})
+    if _legenda_reaproveitavel(t, p):           # mudou só a câmera: o texto revisado fica
+        return [("legendas.py", ["--pasta", str(p), "--reaproveitar"], False)]
     a = ["--pasta", str(p), "--formato", _formato(t), "--palavras", str(leg.get("palavras", 3)),
          "--posicao", leg.get("posicao", "auto"), "--tamanho", str(leg.get("tamanho", 0.046))]
     if leg.get("maiusculas"):
@@ -184,7 +199,12 @@ def _ultimo_video(p: Path) -> Path | None:
 
 def _c_conferir(t, p):
     v = _ultimo_video(p)
-    return [("conferir.py", ["--pasta", str(p), "--video", str(v), "--retranscrever"], False)] if v else []
+    if not v:
+        return []
+    a = ["--pasta", str(p), "--video", str(v), "--retranscrever"]
+    if _v(t, "pausas_ok"):
+        a += ["--pausas-ok", *(str(x) for x in _v(t, "pausas_ok"))]
+    return [("conferir.py", a, False)]
 
 
 def _portao_fatos(t, p):
@@ -259,11 +279,11 @@ ETAPAS = [
           pulada=lambda t: _v(t, "som", {}).get("musica", "nenhuma") == "nenhuma" and not _v(t, "som", {}).get("efeitos")),
     Etapa("amostra", "amostra", ("cortes", "legenda", "camera", "som", "elementos"),
           ("formato", "hdr", "ruido", "volume", "legenda", "elementos", "som"),
-          ("cortes.json", "legendas.json", "camera.json", "som.json", "elementos.json"), ("@amostra",),
+          ("@cortes-completo", "legendas.json", "camera.json", "som.json", "elementos.json"), ("@amostra",),
           _c_amostra, portao=_portao_amostra),
     Etapa("video", "vídeo inteiro", ("amostra",), ("formato", "hdr", "ruido", "volume"),
-          ("cortes.json", "legendas.json", "camera.json", "som.json", "elementos.json"), ("@video",), _c_video),
-    Etapa("conferir", "conferir", ("video",), (), (), ("@conferencia",), _c_conferir, portao=_portao_conferir),
+          ("@cortes-completo", "legendas.json", "camera.json", "som.json", "elementos.json"), ("@video",), _c_video),
+    Etapa("conferir", "conferir", ("video",), ("pausas_ok",), (), ("@conferencia",), _c_conferir, portao=_portao_conferir),
     Etapa("entrega", "entrega", ("conferir",), (), (), (), lambda t, p: []),
 ]
 POR_NOME = {e.nome: e for e in ETAPAS}
@@ -318,6 +338,13 @@ def _hash_arquivo(pasta: Path, nome: str, t: dict) -> str:
             partes.append([v, s.st_size if s else 0, s.st_mtime_ns if s else 0])
         return hashlib.sha1(json.dumps(partes).encode()).hexdigest()[:12]
     f = pasta / nome
+    if nome == "@cortes-completo":       # com o ganho de cada trecho: a amostra e o vídeo dependem dele
+        f = pasta / "cortes.json"
+    elif nome == "cortes.json" and f.is_file():     # sem o ganho: rosto, elementos, câmera e legenda não dependem dele
+        try:
+            return assinatura_dos_cortes(json.loads(f.read_text(encoding="utf-8")))
+        except ValueError:
+            pass
     return hashlib.sha1(f.read_bytes()).hexdigest()[:12] if f.is_file() else "-"
 
 

@@ -36,6 +36,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+import ajustes
 import editar
 import revisao
 import serie as modulo_serie
@@ -276,6 +277,9 @@ class Painel:
                                "resumo": (t["etapas"].get(e.nome, {}).get("resumo") or "")[:90]} for e in editar.ETAPAS}
             base = {"revisar": {"cortes": (pasta / "cortes.json").exists() and (pasta / "transcricoes").is_dir(),
                                 "legenda": (pasta / "legendas.json").exists()},
+                    "ajustar": {"elementos": (pasta / "elementos.json").exists(), "zoom": (pasta / "cortes.json").exists(),
+                                "som": (pasta / "elementos.json").exists() or (pasta / "som.json").exists(),
+                                "conferencia": bool(ajustes._ultimo_video(pasta) and ajustes._ultimo_video(pasta).with_suffix(".conferencia.json").exists())},
                     "serie": t.get("serie"), "perfil": t.get("perfil"), "tema": t.get("tema"), "etapas": etapas,
                     "portao": portao, "escolhas": t["escolhas"], "entrega_aprovada": t.get("entrega_aprovada"),
                     "pasta_relativa": t.get("pasta_relativa")}
@@ -497,13 +501,126 @@ class Acoes:
         except revisao.Recusado as e:
             raise Recusa(str(e)) from e
 
+    # ---- ajustes de elementos, zoom, som e conferência (Fase 7) ----
+    def _tentar(self, funcao, *args):
+        try:
+            return funcao(*args)
+        except revisao.Recusado as e:
+            raise Recusa(str(e)) from e
+
+    def _escolhas(self, pasta: Path) -> dict:
+        return editar.carregar(pasta)["escolhas"]
+
+    def painel_de_elementos(self, pasta: Path, q=None) -> dict:
+        return self._tentar(ajustes.painel_de_elementos, pasta)
+
+    def painel_de_zoom(self, pasta: Path, q=None) -> dict:
+        d = self._tentar(ajustes.painel_de_zoom, pasta)
+        return {**d, "escolha": self._escolhas(pasta).get("camera", "nenhum")}
+
+    def painel_de_som(self, pasta: Path, q=None) -> dict:
+        d = self._tentar(ajustes.painel_de_som, pasta)
+        som = self._escolhas(pasta).get("som", {})
+        return {**d, "escolha": {"musica": som.get("musica", "nenhuma"), "efeitos": bool(som.get("efeitos"))}}
+
+    def painel_de_conferencia(self, pasta: Path, q=None) -> dict:
+        return self._tentar(ajustes.painel_de_conferencia, pasta, self._escolhas(pasta).get("pausas_ok"))
+
+    def previa_de_elemento(self, pasta: Path, q) -> Path:
+        return self._tentar(ajustes.previa_do_elemento, pasta, (q.get("id") or [""])[0], self._escolhas(pasta).get("formato", "original"),
+                            self.p.raiz / ".painel" / "previas-elementos" / pasta.name)
+
+    def previa_de_zoom(self, pasta: Path, q) -> Path:
+        i = (q.get("i") or [""])[0]
+        return self._tentar(ajustes.previa_do_zoom, pasta, int(i) if i.isdigit() else -1, self._escolhas(pasta).get("formato", "original"),
+                            self.p.raiz / ".painel" / "previas-zoom" / pasta.name)
+
+    def som_para_ouvir(self, pasta: Path, q) -> Path:
+        return self._tentar(ajustes.som_para_ouvir, (q.get("tipo") or [""])[0], (q.get("nome") or [""])[0],
+                            self.p.raiz / ".painel" / "ouvir")
+
+    def _ajuste(self, d: dict, funcao, painel, *chaves) -> dict:
+        pasta = self.pasta(d.get("pasta"))
+        self.livre(pasta)
+        self._tentar(funcao, pasta, *(d.get(c) for c in chaves))
+        return {"ok": True, "painel": painel(pasta)}
+
+    def _desfazer(self, d: dict, funcao, painel) -> dict:
+        pasta = self.pasta(d.get("pasta"))
+        self.livre(pasta)
+        if not funcao(pasta):
+            raise Recusa("não há o que desfazer", 409)
+        return {"ok": True, "painel": painel(pasta)}
+
+    def elementos_tirar(self, d): return self._ajuste(d, ajustes.tirar_elemento, self.painel_de_elementos, "id")
+    def elementos_trocar(self, d): return self._ajuste(d, ajustes.trocar_elemento, self.painel_de_elementos, "id", "elemento")
+    def elementos_rotulo(self, d): return self._ajuste(d, ajustes.mudar_rotulo, self.painel_de_elementos, "id", "texto")
+    def elementos_tempo(self, d): return self._ajuste(d, ajustes.mudar_tempo, self.painel_de_elementos, "id", "inicio", "duracao")
+    def elementos_modo(self, d): return self._ajuste(d, ajustes.mudar_modo, self.painel_de_elementos, "id", "modo", "posicao")
+    def elementos_adicionar(self, d): return self._ajuste(d, ajustes.adicionar_elemento, self.painel_de_elementos, "elemento", "inicio", "modo")
+    def elementos_desfazer(self, d): return self._desfazer(d, ajustes.desfazer_elementos, self.painel_de_elementos)
+
+    def elementos_promover(self, d: dict) -> dict:
+        pasta = self.pasta(d.get("pasta"))
+        self.livre(pasta)
+        entrada = self._tentar(ajustes.promover_elemento, pasta, d.get("id"), d.get("palavras"))
+        return {"ok": True, "entrada": entrada, "painel": self.painel_de_elementos(pasta)}
+
+    def zoom_nivel(self, d): return self._ajuste(d, ajustes.definir_nivel_do_zoom, self.painel_de_zoom, "indice", "nivel")
+    def zoom_tirar_enfase(self, d): return self._ajuste(d, ajustes.tirar_enfase, self.painel_de_zoom, "indice")
+    def zoom_desfazer(self, d): return self._desfazer(d, ajustes.desfazer_zoom, self.painel_de_zoom)
+
+    def som_musica(self, d): return self._ajuste(d, ajustes.nivel_da_musica, self.painel_de_som, "abaixo", "sobe")
+    def som_ganho(self, d): return self._ajuste(d, ajustes.ganho_do_efeito, self.painel_de_som, "indice", "ganho_db")
+    def som_trocar(self, d): return self._ajuste(d, ajustes.trocar_som_do_efeito, self.painel_de_som, "indice", "som")
+    def som_tirar(self, d): return self._ajuste(d, ajustes.tirar_efeito, self.painel_de_som, "indice")
+    def som_desfazer(self, d): return self._desfazer(d, ajustes.desfazer_som, self.painel_de_som)
+
+    def conferencia_aceitar_pausa(self, d: dict) -> dict:
+        pasta = self.pasta(d.get("pasta"))
+        self.livre(pasta)
+        inicio = self._tentar(ajustes.pausa_aceitavel, pasta, d.get("inicio"))
+        aceitas = list(self._escolhas(pasta).get("pausas_ok") or [])
+        if inicio not in aceitas:
+            aceitas.append(inicio)
+        try:
+            editar.ajustar(pasta, "pausas_ok=" + json.dumps(aceitas))
+            editar.refazer(pasta, "conferir")
+        except editar.PedidoRecusado as e:
+            raise Recusa(str(e)) from e
+        return {"ok": True, "fila": self.p.fila.enfileirar(pasta)}
+
+    def conferencia_aplicar_ganho(self, d: dict) -> dict:
+        pasta = self.pasta(d.get("pasta"))
+        self.livre(pasta)
+        self._tentar(ajustes.aplicar_ganho, pasta, d.get("trecho"), d.get("ganho_db"))
+        try:
+            editar.refazer(pasta, "video")
+        except editar.PedidoRecusado as e:
+            raise Recusa(str(e)) from e
+        return {"ok": True, "fila": self.p.fila.enfileirar(pasta)}
+
+    LEITURAS = {"/api/elementos": "painel_de_elementos", "/api/zoom": "painel_de_zoom", "/api/som": "painel_de_som",
+                "/api/conferencia": "painel_de_conferencia", "/api/elementos/previa": "previa_de_elemento",
+                "/api/zoom/previa": "previa_de_zoom", "/api/som/ouvir": "som_para_ouvir"}
+
     ROTAS = {"/api/novo": "novo", "/api/aprovar": "aprovar", "/api/iniciar": "iniciar", "/api/cancelar": "cancelar",
              "/api/ajustar": "ajustar", "/api/refazer": "refazer", "/api/aprovar-entrega": "aprovar_entrega",
              "/api/abrir-pasta": "abrir_pasta", "/api/cortes/alternar": "cortes_alternar", "/api/cortes/desfazer": "cortes_desfazer",
              "/api/legenda/editar": "legenda_editar", "/api/legenda/substituir": "legenda_substituir",
-             "/api/legenda/desfazer": "legenda_desfazer"}
+             "/api/legenda/desfazer": "legenda_desfazer",
+             "/api/elementos/tirar": "elementos_tirar", "/api/elementos/trocar": "elementos_trocar",
+             "/api/elementos/rotulo": "elementos_rotulo", "/api/elementos/tempo": "elementos_tempo",
+             "/api/elementos/modo": "elementos_modo", "/api/elementos/adicionar": "elementos_adicionar",
+             "/api/elementos/promover": "elementos_promover", "/api/elementos/desfazer": "elementos_desfazer",
+             "/api/zoom/nivel": "zoom_nivel", "/api/zoom/tirar-enfase": "zoom_tirar_enfase", "/api/zoom/desfazer": "zoom_desfazer",
+             "/api/som/musica": "som_musica", "/api/som/ganho": "som_ganho", "/api/som/trocar": "som_trocar",
+             "/api/som/tirar": "som_tirar", "/api/som/desfazer": "som_desfazer",
+             "/api/conferencia/aceitar-pausa": "conferencia_aceitar_pausa",
+             "/api/conferencia/aplicar-ganho": "conferencia_aplicar_ganho"}
 
 
+TIPOS_DE_AJUSTE = {".jpg": "image/jpeg", ".m4a": "audio/mp4", ".wav": "audio/wav", ".mp3": "audio/mpeg"}
 PAGINA_SEM_SESSAO = PASTA_SKILL / "templates" / "painel-sessao.html"
 MAX_CORPO = 64 * 1024
 
@@ -640,6 +757,20 @@ def criar_handler(painel: Painel, marca: dict):
                     else:
                         indice = (q.get("i") or [""])[0]
                         self._arquivo(acoes.previa(pasta, int(indice) if indice.isdigit() else -1), "image/jpeg")
+                except Recusa as e:
+                    self._json({"erro": str(e)}, e.status)
+                except Exception as e:  # noqa: BLE001
+                    self._json({"erro": f"erro inesperado: {str(e)[:120]}"}, 500)
+            elif url.path in Acoes.LEITURAS:
+                if not self._permitido(False):
+                    return
+                try:
+                    pasta = acoes.pasta((q.get("pasta") or [""])[0])
+                    resultado = getattr(acoes, Acoes.LEITURAS[url.path])(pasta, q)
+                    if isinstance(resultado, Path):
+                        self._arquivo(resultado, TIPOS_DE_AJUSTE.get(resultado.suffix.lower()))
+                    else:
+                        self._json(resultado)
                 except Recusa as e:
                     self._json({"erro": str(e)}, e.status)
                 except Exception as e:  # noqa: BLE001

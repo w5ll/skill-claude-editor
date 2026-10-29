@@ -101,7 +101,7 @@
   button.primario:hover { color: var(--fundo-profundo); filter: brightness(1.08); }
   button:disabled { opacity: .45; cursor: default; }
   button.perigo:hover { border-color: var(--falha); color: var(--falha); }
-  select, input[type=text] { font: inherit; color: var(--texto); background: var(--fundo); border: 1px solid var(--linha);
+  select, input[type=text], input[type=number] { font: inherit; color: var(--texto); background: var(--fundo); border: 1px solid var(--linha);
     border-radius: 8px; padding: 7px 9px; width: 100%; }
   .campos, .rapido .grade2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; margin-top: 12px; }
   .campos label, .rapido label.c { display: block; font-size: 13px; color: var(--rotulo); margin-bottom: 4px; }
@@ -161,6 +161,41 @@
   .marca { font-size: 11px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--linha); color: var(--aviso); margin-left: 6px; }
   .troca { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 14px 0; }
   .troca input { width: 160px; }
+  .abas { display: flex; gap: 4px; flex-wrap: wrap; }
+  .abas button.ativa { background: var(--linha); color: var(--texto); border-color: var(--destaque); }
+  .abas button:disabled { opacity: .45; cursor: default; }
+  .aj-aviso { color: var(--apoio); font-size: 13px; margin: 10px 0; padding: 8px 12px; border-radius: 10px; background: var(--fundo); border: 1px solid var(--linha); }
+  .aj-aviso b { color: var(--aviso); font-weight: 600; }
+  .aj-linha { display: grid; grid-template-columns: minmax(200px, 440px) 1fr; gap: 14px; padding: 12px; margin: 10px 0; border: 1px solid var(--linha); border-radius: 12px; background: var(--fundo); align-items: start; }
+  .aj-linha.sem-previa { grid-template-columns: 1fr; }
+  .aj-linha img { width: 100%; border-radius: 8px; background: var(--linha); min-height: 80px; cursor: zoom-in; }
+  .aj-linha .nome { font-family: "FontePerfil", sans-serif; font-size: 17px; }
+  .aj-linha .nome .tipo { font: 11px -apple-system, sans-serif; margin-left: 8px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--linha); color: var(--destaque); }
+  .aj-linha .fala { color: var(--rotulo); font-size: 13px; margin: 2px 0 8px; }
+  .aj-campos { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: end; margin: 6px 0; }
+  .aj-campos label { display: flex; flex-direction: column; font-size: 12px; color: var(--rotulo); gap: 2px; }
+  .aj-campos input[type=number] { width: 84px; }
+  .aj-campos input[type=text] { width: 190px; }
+  .aj-campos select { max-width: 190px; }
+  .aj-campos label.sel { flex-direction: row; align-items: center; gap: 8px; font-size: 14px; color: var(--apoio); }
+  .troca select { width: auto; max-width: 220px; }
+  .troca input[type=number] { width: 84px; }
+  .aj-erro { color: var(--falha); font-size: 13px; margin-top: 6px; }
+  .zoom-grade { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 12px; }
+  .zoom-bloco { border: 1px solid var(--linha); border-radius: 12px; padding: 10px; background: var(--fundo); }
+  .zoom-bloco img { width: 100%; max-width: 150px; border-radius: 8px; background: var(--linha); min-height: 120px; display: block; margin: 6px 0; cursor: zoom-in; }
+  .zoom-bloco .tempo { font-variant-numeric: tabular-nums; color: var(--apoio); font-size: 13px; }
+  .zoom-bloco .motivo { color: var(--rotulo); font-size: 12px; }
+  .musicas { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; margin: 10px 0; }
+  .musica { border: 1px solid var(--linha); border-radius: 12px; padding: 10px 12px; background: var(--fundo); }
+  .musica.escolhida { border-color: var(--destaque); }
+  .musica .nome { font-family: "FontePerfil", sans-serif; font-size: 15px; }
+  .musica small { display: block; color: var(--rotulo); margin: 2px 0 6px; }
+  .conf-itens { list-style: none; padding: 0; margin: 10px 0; }
+  .conf-itens li { padding: 6px 0; border-bottom: 1px solid var(--linha); font-size: 14px; }
+  .conf-itens li.f { color: var(--falha); }
+  .correcao { display: flex; gap: 10px 14px; align-items: center; flex-wrap: wrap; padding: 10px 12px; margin: 8px 0; border: 1px solid var(--linha); border-left: 3px solid var(--aviso); border-radius: 10px; background: var(--fundo); }
+  .correcao .texto { flex: 1; min-width: 220px; }
   @media (max-width: 560px) {
     .versao { grid-template-columns: 1fr; }
     .versao .acoes { justify-content: flex-start; }
@@ -228,6 +263,18 @@
   </div>
   <div class="rev-corpo" id="rev-corpo"></div>
   <audio id="rev-audio" preload="none"></audio>
+</div>
+<div class="revisao" id="ajustes">
+  <div class="rev-topo">
+    <b id="aj-titulo"></b>
+    <nav class="abas" id="aj-abas"></nav>
+    <span class="espaco"></span>
+    <button id="aj-desfazer">Desfazer</button>
+    <button class="primario" id="aj-aprovar" style="display:none"></button>
+    <button id="aj-fechar">Fechar</button>
+  </div>
+  <div class="rev-corpo" id="aj-corpo"></div>
+  <audio id="aj-audio" preload="none"></audio>
 </div>
 <div class="aviso-copiado" id="copiado">Pedido copiado. Cole no Claude Code.</div>
 
@@ -499,6 +546,256 @@ document.addEventListener("keydown", (ev) => {
   if (ev.key === "Escape" && $("#revisao").classList.contains("aberto")) fecharRevisao();
 });
 
+/* ---------- ajustes: elementos, zoom, som e conferência (Fase 7) ---------- */
+const aj = {pasta: null, aba: null, dados: {}, erros: {}, ocupado: false};
+const ABAS = [["elementos", "Elementos"], ["zoom", "Zoom"], ["som", "Som"], ["conferencia", "Conferência"]];
+const PORTAO_DA_ABA = {elementos: "elementos", conferencia: "problemas"};
+const tempoFino = (s) => { s = Math.max(0, s); const m = Math.floor(s / 60); return `${m}:${(s - m * 60).toFixed(1).padStart(4, "0").replace(".", ",")}`; };
+const num = (n) => String(n).replace(".", ",");
+const qs = () => encodeURIComponent(aj.pasta);
+
+function trabalhoAj() { return ultimoEstado && ultimoEstado.trabalhos.find((x) => x.nome === aj.pasta); }
+function portaoAbertoEm(nome) {
+  const t = trabalhoAj();
+  return !!(t && t.orq && t.orq.portao && t.orq.portao.nome === nome && t.orq.posicao === null);
+}
+function botoesDoAjuste() {
+  const nome = PORTAO_DA_ABA[aj.aba], b = $("#aj-aprovar");
+  b.style.display = nome && portaoAbertoEm(nome) ? "" : "none";
+  b.textContent = aj.aba === "elementos" ? "Aprovar os elementos e seguir" : "Aceitar assim mesmo e seguir";
+  const n = (aj.dados[aj.aba] || {}).desfazer || 0;
+  $("#aj-desfazer").style.display = aj.aba === "conferencia" ? "none" : "";
+  $("#aj-desfazer").disabled = !n;
+  $("#aj-desfazer").textContent = n ? `Desfazer (${n})` : "Desfazer";
+}
+async function abrirAjustes(aba, pasta) {
+  aj.pasta = pasta; aj.dados = {}; aj.erros = {};
+  $("#ajustes").classList.add("aberto");
+  $("#aj-titulo").textContent = "Ajustes · " + pasta;
+  await trocarAba(aba);
+}
+function fecharAjustes() { $("#ajustes").classList.remove("aberto"); $("#aj-audio").pause(); aj.aba = null; atualizar(); }
+async function trocarAba(aba) {
+  aj.aba = aba;
+  $("#aj-corpo").innerHTML = `<p class="vazio">Carregando...</p>`;
+  desenharAbas();
+  try { aj.dados[aba] = await pegar(`/api/${aba}?pasta=${qs()}`); aj.erros[aba] = null; }
+  catch (e) { aj.dados[aba] = null; aj.erros[aba] = e.message; }
+  if (aj.aba === aba) desenharAjustes();
+}
+function desenharAbas() {
+  $("#aj-abas").innerHTML = ABAS.map(([k, nome]) => `<button data-aba="${k}" class="${aj.aba === k ? "ativa" : ""}">${nome}</button>`).join("");
+}
+function desenharAjustes() {
+  const corpo = $("#aj-corpo"), rolagem = corpo.scrollTop;
+  desenharAbas(); botoesDoAjuste();
+  const d = aj.dados[aj.aba];
+  if (!d) corpo.innerHTML = `<p class="vazio">${esc(aj.erros[aj.aba] || "Sem dados.")}</p>`;
+  else corpo.innerHTML = {elementos: htmlElementos, zoom: htmlZoom, som: htmlSom, conferencia: htmlConferencia}[aj.aba](d);
+  corpo.scrollTop = rolagem;
+}
+async function agirAj(rota, corpo, ok) {
+  if (aj.ocupado) return null;
+  aj.ocupado = true;
+  const aba = aj.aba;
+  try {
+    const d = await api(rota, {pasta: aj.pasta, ...corpo});
+    if (d.painel) aj.dados[aba] = d.painel;
+    if (ok) aviso(ok(d));
+    return d;
+  } catch (e) { aviso(e.message); return null; }
+  finally { aj.ocupado = false; }
+}
+const AVISO_REPLANEJA = `Ao salvar, o <b>zoom</b> e os <b>efeitos de som</b> são planejados de novo quando a edição continua. Por isso, acerte os elementos primeiro, depois o zoom, depois o som.`;
+
+/* ---- elementos ---- */
+function htmlElementos(d) {
+  const opcoes = (atual) => d.prontos.map((n) => `<option value="${esc(n)}" ${n === atual ? "selected" : ""}>${esc(n)}</option>`).join("") +
+    d.catalogo.map((c) => `<option value="gerado:${esc(c.nome)}" ${"gerado:" + c.nome === atual ? "selected" : ""}>${esc(c.nome)} (catálogo)</option>`).join("");
+  const posicoes = (atual) => d.posicoes.map((x) => `<option ${x === atual ? "selected" : ""}>${x}</option>`).join("");
+  const linha = (i) => {
+    const max = i.modo === "tela" ? d.duracao_tela[1] : d.duracao[1];
+    const tipo = {gerado: "desenhado na hora", cena: "cena", imagem: "imagem de apoio", pronto: ""}[i.tipo];
+    const campos = i.editavel ? `
+      <div class="aj-campos">
+        <label>Entra em (s)<input type="number" step="0.1" min="0" value="${i.inicio}" data-el="tempo" data-id="${esc(i.id)}" data-campo="inicio"></label>
+        <label>Dura (s)<input type="number" step="0.1" min="${d.duracao[0]}" max="${max}" value="${i.duracao}" data-el="tempo" data-id="${esc(i.id)}" data-campo="duracao"></label>
+        <label>Rótulo<input type="text" maxlength="${d.max_rotulo}" value="${esc(i.texto)}" data-el="rotulo" data-id="${esc(i.id)}" placeholder="sem rótulo"></label>
+      </div>
+      <div class="aj-campos">
+        <label>Modo<select data-el="modo" data-id="${esc(i.id)}"><option value="sobreposto" ${i.modo === "sobreposto" ? "selected" : ""}>sobreposto</option><option value="tela" ${i.modo === "tela" ? "selected" : ""}>tela cheia</option></select></label>
+        <label>Posição<select data-el="posicao" data-id="${esc(i.id)}" ${i.modo === "tela" ? "disabled" : ""}>${posicoes(i.posicao)}</select></label>
+        <label>Trocar por<select data-el="trocar" data-id="${esc(i.id)}"><option value="">escolha...</option>${opcoes(i.elemento)}</select></label>
+      </div>` : `
+      <div class="aj-campos"><label>Entra em (s)<input type="number" step="0.1" min="0" value="${i.inicio}" data-el="tempo" data-id="${esc(i.id)}" data-campo="inicio"></label>
+        <label>Dura (s)<input type="number" step="0.1" value="${i.duracao}" data-el="tempo" data-id="${esc(i.id)}" data-campo="duracao"></label></div>
+      <div class="extras">O texto desta ${esc(tipo)} vem da fala: dá para mudar o momento ou tirar.</div>`;
+    return `<div class="aj-linha ${i.previa ? "" : "sem-previa"}" data-linha="${esc(i.id)}">
+      ${i.previa ? `<img loading="lazy" alt="prévia" title="clique para ampliar" src="/api/elementos/previa?pasta=${qs()}&id=${encodeURIComponent(i.id)}&v=${hashTexto(JSON.stringify([i.elemento, i.modo, i.posicao, i.texto, i.duracao]))}">` : ""}
+      <div><div class="nome">${esc(i.nome)}${tipo ? `<span class="tipo">${esc(tipo)}</span>` : ""}</div>
+        <div class="fala">no vídeo em ${tempoFino(i.inicio)}${i.gatilho ? ` · chamado por “${esc(i.gatilho)}”` : ""}${i.ideia ? ` · ${esc(i.ideia)}` : ""}</div>
+        ${campos}
+        ${i.problema ? `<div class="aj-erro">Desenho com problema: ${esc(i.problema)}</div>` : ""}
+        <div class="botoes"><button class="perigo" data-aj="tirar" data-id="${esc(i.id)}">Tirar</button>
+          ${i.tipo === "gerado" && !i.no_catalogo && !i.problema ? `<button data-aj="promover" data-id="${esc(i.id)}" title="o próximo vídeo já acha este elemento pela palavra">Guardar no catálogo</button>` : ""}
+          ${i.no_catalogo ? `<span class="marca">no catálogo</span>` : ""}</div></div></div>`;
+  };
+  const total = d.duracao_final ? ` O vídeo tem ${tempoFino(d.duracao_final)}.` : "";
+  return `<p class="aj-aviso">${AVISO_REPLANEJA}${total}</p>
+    <div class="troca"><span>Adicionar:</span><select id="aj-novo-el">${opcoes("")}</select>
+      <span>em</span><input type="number" step="0.1" min="0" id="aj-novo-t" value="0" style="width:84px"><span>s</span>
+      <select id="aj-novo-modo"><option value="sobreposto">sobreposto</option><option value="tela">tela cheia</option></select>
+      <button id="aj-novo-ir" data-aj="adicionar">Adicionar</button></div>
+    ${d.itens.length ? d.itens.map(linha).join("") : `<p class="vazio">Nenhum elemento nesta edição. Use Adicionar para pôr um.</p>`}`;
+}
+
+/* ---- zoom ---- */
+function htmlZoom(d) {
+  const inten = ["nenhum", "leve", "normal", "forte"].map((x) => `<option value="${x}" ${x === d.escolha ? "selected" : ""}>${{nenhum: "parado, sem zoom", leve: "leve", normal: "normal", forte: "forte"}[x]}</option>`).join("");
+  const topo = `<div class="aj-campos"><label>Intensidade do zoom<select data-aj-escolha="camera">${inten}</select></label>
+    <span class="extras">Mudar a intensidade planeja o zoom de novo quando a edição continua.</span>
+    <button data-aj="continuar">Continuar a edição agora</button></div>`;
+  if (!d.planejado) return `${topo}<p class="vazio">O zoom ainda não foi planejado${d.escolha === "nenhum" ? " (está desligado: escolha uma intensidade)" : ": a edição ainda não chegou nessa etapa"}.</p>`;
+  const bloco = (b) => `<div class="zoom-bloco"><div class="tempo">${tempoFino(b.inicio)} a ${tempoFino(b.fim)}</div>
+      <div class="motivo">${esc(b.motivo)}</div>
+      <img loading="lazy" alt="enquadramento" title="clique para ampliar" src="/api/zoom/previa?pasta=${qs()}&i=${b.indice}&v=${hashTexto(JSON.stringify([b.zoom, b.inicio, b.fim]))}">
+      <div class="aj-campos"><label>Nível<select data-aj-zoom="${b.indice}">${["aberto", "perto", "enfase"].map((n) => `<option value="${n}" ${b.nivel === n ? "selected" : ""}>${{aberto: "aberto", perto: "mais perto", enfase: "ênfase"}[n]} (${num(d.niveis[n])}×)</option>`).join("")}${b.nivel === "outro" ? `<option selected>${num(b.zoom)}× (manual)</option>` : ""}</select></label>
+      ${b.enfase ? `<button class="mini" data-aj="tirar-enfase" data-i="${b.indice}">Tirar a ênfase</button>` : ""}</div></div>`;
+  return `${topo}<p class="aj-aviso">O zoom <b>nunca muda com um elemento 3D na tela</b>: se um ajuste fizer isso, o painel recusa e diz em que momento está o elemento. O quadro mostra o enquadramento do meio do bloco, ancorado no rosto.</p>
+    <div class="zoom-grade">${d.blocos.map(bloco).join("")}</div>`;
+}
+
+/* ---- som ---- */
+function htmlSom(d) {
+  const e = d.escolha, lim = d.limites;
+  const musica = (m) => `<div class="musica ${e.musica === m.nome ? "escolhida" : ""}"><div class="nome">${esc(m.titulo)}</div>
+      <small>${esc(m.descricao)} · ${esc(m.autor)}</small>
+      <button class="mini" data-aj="ouvir-musica" data-nome="${esc(m.nome)}">▶ ouvir 30 s</button>
+      <button class="mini ${e.musica === m.nome ? "primario" : ""}" data-aj-musica="${esc(m.nome)}">${e.musica === m.nome ? "escolhida" : "usar esta"}</button></div>`;
+  const efeito = (x) => `<div class="aj-linha sem-previa"><div><div class="nome">${esc(x.descricao || x.som)}</div>
+      <div class="fala">${tempoFino(x.tempo)} · junto do elemento ${esc(x.elemento)}</div>
+      <div class="aj-campos"><label>Som<select data-aj-som="${x.indice}">${d.sons.map((s) => `<option value="${esc(s.nome)}" ${s.nome === x.som ? "selected" : ""}>${esc(s.descricao)}</option>`).join("")}</select></label>
+        <label>Volume (dB)<input type="number" step="0.5" min="${lim.ganho_efeito[0]}" max="${lim.ganho_efeito[1]}" value="${x.ganho_db}" data-aj-ganho="${x.indice}"></label>
+        <button class="mini" data-aj="ouvir-efeito" data-nome="${esc(x.som)}">▶ ouvir</button>
+        <button class="mini perigo" data-aj="tirar-efeito" data-i="${x.indice}">Tirar</button></div></div></div>`;
+  const niveis = d.musica ? `<div class="aj-campos"><label>Música abaixo da voz (dB)<input type="number" step="1" min="${lim.abaixo[0]}" max="${lim.abaixo[1]}" value="${d.musica.abaixo_da_voz_db}" id="aj-abaixo" data-aj-nivel></label>
+      <label>Sobe nas pausas (dB)<input type="number" step="1" min="${lim.sobe[0]}" max="${lim.sobe[1]}" value="${d.musica.sobe_na_pausa_db}" id="aj-sobe" data-aj-nivel></label></div>` : "";
+  return `<p class="aj-aviso">Escolher a música ou ligar os efeitos planeja o som de novo quando a edição continua. A mistura final (voz, música e efeitos juntos) se confere na amostra. <button class="mini" data-aj="continuar">Continuar a edição agora</button></p>
+    <div class="aj-campos"><label class="sel"><input type="checkbox" data-aj-efeitos ${e.efeitos ? "checked" : ""}> um efeito sonoro em cada elemento 3D</label></div>
+    <div class="musicas"><div class="musica ${e.musica === "nenhuma" ? "escolhida" : ""}"><div class="nome">Sem música</div><small>só a voz</small>
+      <button class="mini ${e.musica === "nenhuma" ? "primario" : ""}" data-aj-musica="nenhuma">${e.musica === "nenhuma" ? "escolhida" : "usar esta"}</button></div>${d.musicas.map(musica).join("")}</div>
+    ${niveis}
+    <h2 style="margin-top:22px">Efeitos desta edição</h2>
+    ${d.efeitos.length ? d.efeitos.map(efeito).join("") : `<p class="vazio">${d.planejado ? "Nenhum efeito." : "O som ainda não foi planejado."}</p>`}`;
+}
+
+/* ---- conferência ---- */
+function htmlConferencia(d) {
+  const itens = d.checks.map((x) => `<li class="${x.ok ? "" : "f"}">${x.ok ? "✓" : "✗"} <b>${esc(x.item)}</b>: ${esc(x.detalhe)}</li>`).join("");
+  const botoes = (c) => ({
+    pausa: `<button class="primario" data-aj="aceitar-pausa" data-inicio="${c.inicio}">Aceitar essa pausa</button>`,
+    ganho: `<button class="primario" data-aj="aplicar-ganho" data-trecho="${c.trecho}" data-ganho="${c.ganho_db}">Aplicar o ganho sugerido (${c.ganho_db > 0 ? "+" : ""}${num(c.ganho_db)} dB)</button>`,
+    cortes: `<button data-aj="abrir-cortes">Abrir a revisão dos cortes</button>`,
+  }[c.tipo] || "");
+  const correcoes = d.correcoes.map((c) => `<div class="correcao"><span class="texto">${esc(c.texto)}</span>${botoes(c)}</div>`).join("");
+  return `<h2 style="margin-top:8px">${esc(d.video)} · ${d.aprovado ? "tudo certo" : "com problema"}</h2>
+    <ul class="conf-itens">${itens}</ul>
+    ${correcoes ? `<h2>O que dá para consertar com um botão</h2>${correcoes}` : (d.aprovado ? "" : `<p class="vazio">Nenhum destes problemas tem conserto automático: refaça o vídeo ou aceite assim mesmo.</p>`)}
+    ${d.pausas_ok.length ? `<p class="extras">Pausas aceitas: ${d.pausas_ok.map((x) => tempoFino(x)).join(", ")}</p>` : ""}
+    <div class="botoes" style="margin-top:14px"><button data-aj="refazer-video">Refazer o vídeo (uma versão nova, a anterior fica)</button></div>`;
+}
+
+/* ---- eventos ---- */
+document.addEventListener("click", async (ev) => {
+  if (!$("#ajustes").classList.contains("aberto")) return;
+  const el = ev.target;
+  if (el.tagName === "IMG" && el.closest(".aj-linha, .zoom-bloco")) { abrir("Prévia", `<img src="${el.src}" alt="">`); return; }
+  const aba = el.closest("[data-aba]");
+  if (aba && aba.closest("#aj-abas")) { trocarAba(aba.dataset.aba); return; }
+  const m = el.closest("[data-aj-musica]");
+  if (m) { await escolherAj("som.musica", m.dataset.ajMusica); return; }
+  const b = el.closest("button[data-aj]");
+  if (!b) return;
+  const d = b.dataset;
+  switch (d.aj) {
+    case "tirar": { const r = await agirAj("/api/elementos/tirar", {id: d.id}, () => "Elemento tirado."); if (r) desenharAjustes(); break; }
+    case "adicionar": {
+      const r = await agirAj("/api/elementos/adicionar", {elemento: $("#aj-novo-el").value, inicio: parseFloat($("#aj-novo-t").value), modo: $("#aj-novo-modo").value}, () => "Elemento adicionado.");
+      if (r) desenharAjustes(); break;
+    }
+    case "promover": {
+      const sugestao = ((aj.dados.elementos.itens.find((i) => i.id === d.id) || {}).gatilho || "").toLowerCase().replace(/[^a-zà-ÿ ]/g, "").split(" ").filter((x) => x.length >= 4).join(", ");
+      const resp = window.prompt("Palavras que chamam este elemento nos próximos vídeos (separadas por vírgula, de 3 a 24 letras):", sugestao);
+      if (resp === null) break;
+      const r = await agirAj("/api/elementos/promover", {id: d.id, palavras: resp.split(",").map((x) => x.trim()).filter(Boolean)}, () => "Guardado no catálogo.");
+      if (r) desenharAjustes(); break;
+    }
+    case "tirar-enfase": { const r = await agirAj("/api/zoom/tirar-enfase", {indice: +d.i}, () => "Ênfase tirada."); if (r) desenharAjustes(); break; }
+    case "ouvir-musica": tocarSom("musica", d.nome); break;
+    case "ouvir-efeito": tocarSom("efeito", d.nome); break;
+    case "tirar-efeito": { const r = await agirAj("/api/som/tirar", {indice: +d.i}, () => "Efeito tirado."); if (r) desenharAjustes(); break; }
+    case "continuar": try { await api("/api/iniciar", {pasta: aj.pasta}); aviso("Na fila."); fecharAjustes(); } catch (e) { aviso(e.message); } break;
+    case "aceitar-pausa": {
+      const r = await agirAj("/api/conferencia/aceitar-pausa", {inicio: parseFloat(d.inicio)}, () => "Pausa aceita. Conferindo de novo.");
+      if (r) fecharAjustes(); break;
+    }
+    case "aplicar-ganho": {
+      const r = await agirAj("/api/conferencia/aplicar-ganho", {trecho: +d.trecho, ganho_db: parseFloat(d.ganho)}, () => "Ganho aplicado. Refazendo o vídeo.");
+      if (r) fecharAjustes(); break;
+    }
+    case "abrir-cortes": { const pasta = aj.pasta; fecharAjustes(); abrirRevisao("cortes", pasta); break; }
+    case "refazer-video": {
+      try { await api("/api/refazer", {pasta: aj.pasta, etapa: "video"}); await api("/api/iniciar", {pasta: aj.pasta}); aviso("Refazendo o vídeo."); fecharAjustes(); }
+      catch (e) { aviso(e.message); }
+      break;
+    }
+  }
+});
+async function escolherAj(chave, valor) {
+  const r = await agirAj("/api/ajustar", {chave, valor}, (x) => x.refeitas.length ? "Escolha guardada. Será refeito: " + x.refeitas.join(", ") + "." : "Escolha guardada.");
+  if (r) await trocarAba(aj.aba);
+}
+function tocarSom(tipo, nome) {
+  const a = $("#aj-audio");
+  a.src = `/api/som/ouvir?pasta=${qs()}&tipo=${tipo}&nome=${encodeURIComponent(nome)}`;
+  a.play().catch(() => aviso("Não consegui tocar esse som."));
+}
+document.addEventListener("change", async (ev) => {
+  if (!$("#ajustes").classList.contains("aberto")) return;
+  const el = ev.target;
+  const d = el.dataset;
+  if (d.el === "tempo") {
+    const linha = el.closest(".aj-linha");
+    const [ini, dur] = ["inicio", "duracao"].map((c) => parseFloat(linha.querySelector(`[data-campo=${c}]`).value));
+    const r = await agirAj("/api/elementos/tempo", {id: d.id, inicio: ini, duracao: dur}, () => "Momento atualizado.");
+    desenharAjustes(); return;                                      // com erro, redesenha com o que está salvo
+  }
+  if (d.el === "rotulo") { await agirAj("/api/elementos/rotulo", {id: d.id, texto: el.value}, () => "Rótulo atualizado."); desenharAjustes(); return; }
+  if (d.el === "modo" || d.el === "posicao") {
+    const linha = el.closest(".aj-linha");
+    await agirAj("/api/elementos/modo", {id: d.id, modo: linha.querySelector("[data-el=modo]").value, posicao: linha.querySelector("[data-el=posicao]").value}, () => "Modo atualizado.");
+    desenharAjustes(); return;
+  }
+  if (d.el === "trocar") { if (el.value) await agirAj("/api/elementos/trocar", {id: d.id, elemento: el.value}, () => "Elemento trocado."); desenharAjustes(); return; }
+  if (d.ajZoom !== undefined) { await agirAj("/api/zoom/nivel", {indice: +d.ajZoom, nivel: el.value}, () => "Zoom atualizado."); desenharAjustes(); return; }
+  if (d.ajEscolha === "camera") { await escolherAj("camera", el.value); return; }
+  if (d.ajEfeitos !== undefined) { await escolherAj("som.efeitos", el.checked); return; }
+  if (d.ajSom !== undefined) { await agirAj("/api/som/trocar", {indice: +d.ajSom, som: el.value}, () => "Som trocado."); desenharAjustes(); return; }
+  if (d.ajGanho !== undefined) { await agirAj("/api/som/ganho", {indice: +d.ajGanho, ganho_db: parseFloat(el.value)}, () => "Volume atualizado."); desenharAjustes(); return; }
+  if (d.ajNivel !== undefined) { await agirAj("/api/som/musica", {abaixo: parseFloat($("#aj-abaixo").value), sobe: parseFloat($("#aj-sobe").value)}, () => "Música atualizada."); desenharAjustes(); return; }
+});
+$("#aj-fechar").onclick = fecharAjustes;
+$("#aj-desfazer").onclick = async () => {
+  const rota = {elementos: "/api/elementos/desfazer", zoom: "/api/zoom/desfazer", som: "/api/som/desfazer"}[aj.aba];
+  if (rota && await agirAj(rota, {}, () => "Desfeito.")) desenharAjustes();
+};
+$("#aj-aprovar").onclick = async () => {
+  const pasta = aj.pasta, portao = PORTAO_DA_ABA[aj.aba];
+  try { await api("/api/aprovar", {pasta, portao, seguir: true}); aviso("Aprovado. Seguindo."); fecharAjustes(); }
+  catch (e) { aviso(e.message); }
+};
+document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && $("#ajustes").classList.contains("aberto")) fecharAjustes(); });
+
 /* ---------- nova edição ---------- */
 let opcoesDesenhadas = "";
 function desenharNova(estado) {
@@ -558,9 +855,12 @@ function desenharPortao(t) {
   return `<div class="portao"><h3>${esc(g.pergunta)}</h3>
     ${arqs ? `<div class="extras">Arquivos: ${arqs}</div>` : ""}
     ${g.nome === "cortes" || g.nome === "legenda" ? `<div class="extras">Revise na tela: ${g.nome === "cortes" ? "a fala com o que fica e o que sai, as suspeitas, e ouça as emendas" : "o texto de cada bloco, com a prévia"}.</div>` :
-      g.tipo === "julgamento" ? `<div class="extras">A revisão detalhada deste portão na tela vem na próxima fase; por enquanto, aprove aqui ou peça ao Claude.</div>` : ""}
+      g.nome === "elementos" ? `<div class="extras">Revise na tela: cada elemento com a prévia, o momento, o rótulo e a troca.</div>` :
+      g.nome === "problemas" ? `<div class="extras">Corrija na tela: aceitar uma pausa, aplicar o ganho sugerido ou refazer o vídeo.</div>` :
+      g.tipo === "julgamento" ? `<div class="extras">Este portão se revisa na conversa com o Claude. Se você já decidiu, aprove aqui.</div>` : ""}
     <div class="botoes">
       ${g.nome === "cortes" || g.nome === "legenda" ? `<button class="primario" data-acao="revisar" data-tipo="${esc(g.nome)}" data-pasta="${esc(t.nome)}">${g.nome === "cortes" ? "Revisar os cortes" : "Revisar a legenda"}</button>` : ""}
+      ${g.nome === "elementos" || g.nome === "problemas" ? `<button class="primario" data-acao="ajustar" data-aba="${g.nome === "elementos" ? "elementos" : "conferencia"}" data-pasta="${esc(t.nome)}">${g.nome === "elementos" ? "Revisar os elementos" : "Ver os problemas e corrigir"}</button>` : ""}
       ${amostra ? `<button data-video="${esc(amostra.caminho)}" data-nome="${esc(amostra.nome)}">assistir a amostra</button>` : ""}
       <button class="primario" data-acao="aprovar" data-pasta="${esc(t.nome)}" data-portao="${esc(g.nome)}">${g.nome === "amostra" ? "Aprovar a amostra e seguir" : "Aprovar e seguir"}</button>
       <button data-copiar-texto="${esc(pedidoDoClaude(t, g))}">Copiar pedido para o Claude</button>
@@ -588,6 +888,10 @@ function desenharOrq(t, versoes) {
       ${!o.portao && incompleta ? `<button class="primario" data-acao="iniciar" data-pasta="${esc(t.nome)}">${parada ? "Retomar" : "Continuar"}</button>` : ""}
       ${o.revisar && o.revisar.cortes && !(o.portao && o.portao.nome === "cortes") ? `<button data-acao="revisar" data-tipo="cortes" data-pasta="${esc(t.nome)}">Revisar cortes</button>` : ""}
       ${o.revisar && o.revisar.legenda && !(o.portao && o.portao.nome === "legenda") ? `<button data-acao="revisar" data-tipo="legenda" data-pasta="${esc(t.nome)}">Revisar legenda</button>` : ""}
+      ${o.ajustar && o.ajustar.elementos && !(o.portao && o.portao.nome === "elementos") ? `<button data-acao="ajustar" data-aba="elementos" data-pasta="${esc(t.nome)}">Ajustar elementos</button>` : ""}
+      ${o.ajustar && o.ajustar.zoom ? `<button data-acao="ajustar" data-aba="zoom" data-pasta="${esc(t.nome)}">Ajustar zoom</button>` : ""}
+      ${o.ajustar && o.ajustar.som ? `<button data-acao="ajustar" data-aba="som" data-pasta="${esc(t.nome)}">Ajustar som</button>` : ""}
+      ${o.ajustar && o.ajustar.conferencia && !(o.portao && o.portao.nome === "problemas") ? `<button data-acao="ajustar" data-aba="conferencia" data-pasta="${esc(t.nome)}">Ver a conferência</button>` : ""}
       <button data-acao="abrir" data-pasta="${esc(t.nome)}">Abrir a pasta</button></div>` : "";
   const ult = o.ultimo && ["falhou", "erro"].includes(o.ultimo.resultado) ? `<div class="erro-rodada">A última rodada terminou com problema: ${esc((o.ultimo.linhas || []).slice(-1)[0] || "")}</div>` : "";
   return `<div class="cab"><span class="titulo">${esc(t.nome)}</span>
@@ -688,6 +992,7 @@ async function atualizar() {
     ultimoEstado = estado;
     desenharBrutos(estado); desenharNova(estado); desenharTrabalhos(estado);
     if (rev.tipo) $("#rev-aprovar").style.display = portaoAbertoDa(rev.tipo) ? "" : "none";
+    if (aj.aba) botoesDoAjuste();
     $("#bolinha").classList.remove("fora"); $("#conexao").textContent = "atualizando ao vivo";
   } catch {
     $("#bolinha").classList.add("fora"); $("#conexao").textContent = "painel desligado: rode o painel.py";
@@ -719,6 +1024,7 @@ document.addEventListener("click", (ev) => {
     case "cancelar": agir("/api/cancelar", {pasta}, "Cancelado."); break;
     case "abrir": agir("/api/abrir-pasta", {pasta}); break;
     case "revisar": abrirRevisao(b.dataset.tipo, pasta); break;
+    case "ajustar": abrirAjustes(b.dataset.aba, pasta); break;
     case "aprovar-entrega": agir("/api/aprovar-entrega", {pasta, arquivo: b.dataset.arquivo}, "Entrega aprovada."); break;
   }
   if (b.id === "nova-comecar") {

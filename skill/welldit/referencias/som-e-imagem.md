@@ -64,3 +64,7 @@ O iPhone grava em HDR (Dolby Vision ou HLG) por padrão. Legenda queimada em HDR
 
 - Cor padrão: H.264, qualidade alta (CRF 18), 8 bits 4:2:0, BT.709, áudio AAC 192 kbps, arquivo pronto para internet (começa a tocar antes de baixar tudo).
 - HDR mantido: HEVC 10 bits com as marcações de cor do original.
+
+## No painel
+
+A aba Som da tela de ajustes escolhe a música (com escuta de 30 s), liga os efeitos, ajusta o quanto a música fica abaixo da voz e o volume, o som e a presença de cada efeito. Na conferência, **Aceitar essa pausa** e **Aplicar o ganho sugerido** resolvem o silêncio morto e o trecho com volume diferente sem editar JSON (`pausas_ok` nas escolhas e `ganho_db` no trecho do `cortes.json`). Veja `painel.md`.

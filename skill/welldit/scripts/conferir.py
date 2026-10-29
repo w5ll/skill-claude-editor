@@ -199,6 +199,7 @@ def main():
     desloc = amostra[0] if amostra else 0.0
 
     checks = []
+    correcoes = []       # o que a tela do painel sabe consertar com um botão (veja docs/fase-7-ajustes-no-painel.md)
 
     def check(nome, ok, detalhe):
         checks.append({"item": nome, "ok": bool(ok), "detalhe": detalhe})
@@ -236,14 +237,20 @@ def main():
         cortadas = palavras_cortadas(a.pasta, cortes, fps_alvo)
         check("nenhuma palavra cortada nas emendas", not cortadas,
               "; ".join(f"'{c['palavra']}' em {tempo(c['saida'])}" for c in cortadas) or "ok")
+        correcoes += [{"tipo": "cortes", "item": "nenhuma palavra cortada nas emendas", "momento": round(c["saida"], 2),
+                       "texto": f"a palavra '{c['palavra']}' ficou cortada em {tempo(c['saida'])}"} for c in cortadas]
         reps = repeticoes(cortes, fps_alvo)
         check("nenhum trecho repetido", not reps, "; ".join(reps) or "ok")
+        correcoes += [{"tipo": "cortes", "item": "nenhum trecho repetido", "momento": None, "texto": r} for r in reps]
 
     sil = silencios(a.pasta, cortes, fps_alvo, a.pausa_max, a.pausas_ok, (desloc, desloc + dur))
     check(f"nenhum silêncio morto (acima de {a.pausa_max:.1f} s)", not sil,
           "; ".join(f"{tempo(s['inicio'])} a {tempo(s['fim'])} ({s['fim'] - s['inicio']:.1f} s"
                     f"{', no ' + s['onde'] if s['onde'] != 'meio' else ''}): tirar ou, se for de efeito, "
                     f"--pausas-ok {s['inicio']:.1f}" for s in sil) or "ok")
+    correcoes += [{"tipo": "pausa", "item": f"nenhum silêncio morto (acima de {a.pausa_max:.1f} s)", "inicio": s["inicio"],
+                   "fim": s["fim"], "momento": s["inicio"], "onde": s["onde"],
+                   "texto": f"silêncio de {s['fim'] - s['inicio']:.1f} s em {tempo(s['inicio'])}"} for s in sil]
 
     nivel_info = []
     if au is not None:
@@ -272,6 +279,11 @@ def main():
                 for n, x in sorted(problemas):
                     atual = float(cortes["trechos"][n].get("ganho_db", 0)) if n < len(cortes["trechos"]) else 0.0
                     sugere = round((atual + ref - x) * 2) / 2
+                    correcoes.append({"tipo": "ganho", "item": "volume parecido entre os trechos", "trecho": n,
+                                      "momento": round(trechos[n]["saida_inicio"], 2), "ganho_db": sugere, "atual": atual,
+                                      "diferenca_db": round(x - ref, 1),
+                                      "texto": f"o trecho {n + 1} ({tempo(trechos[n]['saida_inicio'])}) está {abs(x - ref):.1f} dB "
+                                               f"{'mais baixo' if x < ref else 'mais alto'} que o resto"})
                     nivel_info.append(f"trecho {n} ({tempo(trechos[n]['saida_inicio'])}) "
                                       f"{abs(x - ref):.1f} dB {'mais baixo' if x < ref else 'mais alto'}: "
                                       f"ponha \"ganho_db\": {sugere} nesse trecho do cortes.json")
@@ -320,7 +332,7 @@ def main():
 
     resultado = {"video": str(a.video), "checks": checks, "aprovado": all(c["ok"] for c in checks),
                  "quadros": str(quadros), "folhas_de_emendas": folhas, "quadros_elementos": quadros_elementos,
-                 "texto_retranscrito": texto_obtido}
+                 "texto_retranscrito": texto_obtido, "correcoes": correcoes}
     salvar_json(a.video.with_suffix(".conferencia.json"), resultado)
     andamento_fim(a.pasta, "conferido", a.video.name)
     for c in checks:

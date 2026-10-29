@@ -24,6 +24,17 @@ Tirar e voltar mexem no `cortes.json` e guardam o anterior em `revisao/cortes-NN
 
 Na conversa, o mesmo é editar `cortes.json` e `legendas.json` à mão (veja `cortes.md` e `legendas.md`).
 
+## Ajustes de elementos, zoom, som e conferência
+
+Uma tela de **ajustes** com quatro abas abre pelo portão `elementos` (**Revisar os elementos**), pelo portão `problemas` (**Ver os problemas e corrigir**) e pelos botões **Ajustar elementos / zoom / som** e **Ver a conferência** do cartão da edição. Como a revisão da Fase 6, só mexe com a edição parada, e cada mudança guarda a versão anterior em `revisao/` (**Desfazer**). Um pedido recusado não muda nada. Na conversa, o equivalente é editar `elementos.json`, `camera.json` e `som.json` à mão (veja `elementos-3d.md`, `rosto-e-camera.md` e `som-e-imagem.md`).
+
+- **Elementos.** Uma linha por elemento, com a **prévia** (sobre o fundo da marca e sobre o quadro do vídeo), o momento, a duração, o rótulo (até 40 letras, `*asteriscos*` destacam), o modo (sobreposto ou tela cheia), a posição, **Trocar por** (os 12 prontos e o catálogo), **Tirar** e **Adicionar**. Dois elementos não ficam juntos na tela, e nenhum passa do fim do vídeo. Cena e imagem de apoio só mudam de momento ou saem (o texto vem da fala). Elemento desenhado na hora mostra o problema do desenho, se houver, e tem **Guardar no catálogo** (pede as palavras que o chamam).
+- **Zoom.** A intensidade (parado, leve, normal, forte) e, bloco a bloco, o nível (aberto, mais perto, ênfase) com a prévia do enquadramento já ancorado no rosto. **Tirar a ênfase** devolve o enquadramento do bloco vizinho. O painel recusa qualquer ajuste que faria o zoom mudar com um elemento na tela.
+- **Som.** A música (**ouvir 30 s**), um efeito em cada elemento (liga ou desliga), o quanto a música fica abaixo da voz (10 a 30 dB) e sobe nas pausas (0 a 12 dB), e cada efeito: trocar o som, o volume (−12 a +6 dB) e tirar. Só os sons e músicas da skill; música de fora continua sendo pedido na conversa. A mistura final se confere na amostra.
+- **Conferência.** Cada problema com conserto automático ganha um botão: **Aceitar essa pausa** (vira `pausas_ok` nas escolhas e a conferência é refeita), **Aplicar o ganho sugerido** (grava `ganho_db` no trecho do `cortes.json`; refaz só a amostra e o vídeo) e **Abrir a revisão dos cortes** (palavra cortada ou trecho repetido). **Refazer o vídeo** gera uma versão nova e nunca apaga a anterior.
+
+**Ordem recomendada: elementos, depois zoom, depois som.** Mudar os elementos faz o zoom e os efeitos serem planejados de novo na próxima rodada (o zoom nunca muda no meio de um elemento, e cada efeito cai junto do seu elemento); os ajustes manuais de zoom e de som feitos antes se perdem. Mudar o zoom refaz as posições da legenda, mas **mantém o texto revisado** (os cortes e o estilo são os mesmos).
+
 ## Conversa e painel juntos
 
 Os dois leem e escrevem o `trabalho.json`. Se a pessoa pedir para revisar um portão na conversa, o orquestrador já gravou `pedidos/<portao>.json`: leia, faça a revisão (`referencias/cortes.md`, `legendas.md`, `elementos-3d.md`...) e aprove com `editar.py aprovar --pasta ... PORTAO --seguir`. Enquanto uma edição está rodando ou na fila no painel, **não** rode `editar.py` nela por fora (o painel recusa o contrário com 409): espere terminar ou cancele.
@@ -34,12 +45,13 @@ Como o painel executa, tem defesas:
 
 - **Código de sessão** novo a cada abertura, no endereço do terminal. Vira um cookie `HttpOnly` e `SameSite=Strict` e sai do endereço. Sem ele, a API e os arquivos respondem 401. Se a pessoa abrir `http://localhost:8765` sem o código, a página pede para colá-lo.
 - **Host e origem**: o cabeçalho `Host` tem que ser `localhost` ou `127.0.0.1` com a porta do painel (contra o truque de trocar o nome da máquina), a `Origin`, se vier, tem que ser a do painel, e todo pedido que muda algo leva `X-Painel: 1`. Não há CORS.
-- **Só ações conhecidas**: `novo`, `aprovar`, `iniciar`, `cancelar`, `ajustar`, `refazer`, `aprovar-entrega` e `abrir-pasta`. Não existe campo que receba um comando. Vídeos só de `material-bruto/`, edições só de `saida/` (nome simples, com `trabalho.json`), escolhas só da lista permitida.
+- **Só ações conhecidas**: `novo`, `aprovar`, `iniciar`, `cancelar`, `ajustar`, `refazer`, `aprovar-entrega`, `abrir-pasta`, as de revisão (cortes e legenda) e as de ajuste (elementos, zoom, som e conferência), cada uma com valores de uma lista ou dentro de um limite. Não existe campo que receba um comando. Vídeos só de `material-bruto/`, edições só de `saida/` (nome simples, com `trabalho.json`), escolhas só da lista permitida.
 - Ouve só em `127.0.0.1`. Nada sai do computador.
 
 ## Limites
 
 - A fila e o processo de uma etapa não sobrevivem a fechar o painel; a edição, sim (`trabalho.json`): abra o painel de novo e clique em **Retomar**.
-- A revisão de elementos, zoom e som na tela e os botões de correção da conferência são da Fase 7. Na tela de cortes não há "refazer" (só desfazer) nem arrastar para ajustar o tempo: a escolha é sempre por frase.
+- Na tela de cortes não há "refazer" (só desfazer) nem arrastar para ajustar o tempo: a escolha é sempre por frase. Nos elementos também não se arrasta: o momento é um número.
+- A tela de som não monta a mistura (voz, música e efeitos juntos): ouve cada som sozinho. A mistura se confere na amostra.
 - A prévia da legenda mostra o enquadramento original (sem o zoom da câmera) e não mostra os elementos 3D.
 - O painel não substitui a conversa para o que exige julgamento: ele grava o "ok" da pessoa, não decide.
