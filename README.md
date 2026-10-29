@@ -19,6 +19,7 @@ Para instalar no seu Mac, veja [Instalar no seu Mac, com o VS Code](#instalar-no
 11. Iguala o volume da voz ao padrão das redes, e o volume entre uma tomada e outra.
 12. Confere uma amostra de 8 a 15 segundos, depois faz o vídeo inteiro e confere de novo: toca até o fim, volume, nenhuma palavra cortada, nenhum estalo, trecho repetido, silêncio sobrando ou quadro preto, fala completa, e uma folha com os quadros de cada emenda.
 13. Entrega o MP4, sem nunca apagar os originais nem as versões anteriores.
+14. Se você pedir, monta o **pacote de publicação**: escolhe 4 quadros para a capa (rosto grande, centrado, nítido), põe o título no padrão da marca fora do rosto e dentro do corte da grade do perfil, confere o texto do post (tamanho, hashtags, números que você não falou) e os limites do Instagram, e entrega tudo numa pasta pronta para postar. Nada é publicado.
 
 ## Fases do projeto
 
@@ -220,6 +221,7 @@ skill/edicao-video-well/         ← a skill (é isso que vira o arquivo .skill)
     elementos-3d.md              catálogo dos elementos 3D, modos, critério e como desenhar elementos novos
     rosto-e-camera.md            rosto (legenda e elementos fora dele) e zoom de ênfase
     som-e-imagem.md              volume, ruído, estouro, eco, música, efeitos, HDR, formato, cor
+    publicacao.md                capa, texto do post, limites do Instagram e a pasta de publicação
     gravacao.md                  dicas para gravar de um jeito que edita melhor
     instalacao.md                o que precisa estar instalado
   marca.json                     cores da marca (as mesmas do carrossel)

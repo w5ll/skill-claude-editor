@@ -48,7 +48,7 @@ Descarta o que está a menos de 0,3 s de uma emenda ou sem rosto achado. Os 4 es
 
 ### `texto --pasta ... --arquivo texto-do-post.md`
 
-Confere o texto do post que o Claude escreveu (ou veio da skill de conteúdo): vazio, passou de 2.200 caracteres, hashtags (mais de 5 é aviso, mais de 30 falha) e **números que a pessoa não falou**. Grava `texto-do-post.txt` sem formatação, pronto para colar.
+Confere o texto do post que o Claude escreveu (ou veio da skill de conteúdo): vazio, passou de 2.200 caracteres, hashtags (mais de 5 é aviso, mais de 30 falha) e **números que a pessoa não falou**. O texto é tratado como texto simples (o `#` das hashtags não é título). O `pacote` grava `texto-do-post.txt` pronto para colar.
 
 ### `conferir --pasta ... --video V.mp4 [--texto ...] [--capa ...]`
 

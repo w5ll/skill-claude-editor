@@ -18,6 +18,7 @@ Sempre em português, com acentuação, sem travessão e sem termo em inglês se
 | `referencias/elementos-3d.md` | Catálogo dos elementos 3D, modos, quando usar, e como desenhar elementos novos (receita, animações, prévia, catálogo) | Ao sugerir, revisar e desenhar os elementos |
 | `referencias/rosto-e-camera.md` | Rosto (legenda e elementos fora dele) e zoom de ênfase | Ao rodar `rosto.py` e `camera.py` |
 | `referencias/som-e-imagem.md` | Volume, ruído, estouro, eco, música, efeitos, HDR, formato, cor | Ao montar o cartão e renderizar |
+| `referencias/publicacao.md` | Capa, texto do post, limites do Instagram e a pasta pronta para postar | Depois que o Well aprovar o vídeo |
 | `referencias/gravacao.md` | Dicas para o Well gravar de um jeito que edita melhor | Quando o bruto vier com problema recorrente |
 | `referencias/instalacao.md` | O que precisa estar instalado | Se faltar alguma ferramenta |
 | `marca.json` | Cores da marca (as mesmas do carrossel) | Só se for mudar a cor da legenda |
@@ -69,6 +70,7 @@ Vou juntar os 2 vídeos num Reels vertical, ritmo natural, com legenda.
 - 📐 **Formato**: vertical 9:16, mesma fluidez do original _(do seu vídeo)_ · reduzido de 4K para 1080x1920, o tamanho do Instagram _(sugerido)_
 - 👀 **Revisão**: eu confiro uma amostra de 8 a 15 s antes de fazer o vídeo inteiro _(sugerido)_
 - 📁 **Entrega**: `saida/2026-10-22_lead-curioso/2026-10-22_lead-curioso-v001.mp4` _(sugerido)_
+- 📦 **Publicação**: depois que você aprovar o vídeo, escolho o quadro e o título da capa e escrevo o texto do post para você aprovar; entrego uma pasta pronta para postar, com a conferência dos limites do Instagram _(sugerido)_
 
 ⚙️ 2160x3840 → 1080x1920 · 29,97 quadros/s fixos · MP4 · voz em -14 LUFS, pico até -1 dBTP
 
@@ -180,7 +182,23 @@ Só entregue com tudo "ok". Qualquer "FALHOU" você resolve (ajusta corte, põe 
 
 Se o Well quiser guardar um elemento novo, rode `elementos.py promover NOME --pasta saida/... --palavras "começo,das,palavras"` para cada um (palavras que não chamam um elemento pronto). Daí em diante o `sugerir` usa o elemento nos outros vídeos.
 
-Se o vídeo saiu de um roteiro da skill de conteúdo, a legenda do post (o texto que vai embaixo do Reels) é feita lá, não aqui.
+### 8. Publicação (só depois que o Well aprovar o vídeo)
+
+Leia `referencias/publicacao.md`. Em resumo:
+
+```bash
+python scripts/publicar.py capa-opcoes --pasta saida/... --video saida/.../<tema>-v001.mp4
+python scripts/publicar.py capa --pasta saida/... --video ... --opcao 2 --titulo "Frase curta com *destaque*"
+python scripts/publicar.py texto --pasta saida/... --arquivo saida/.../texto-do-post.md
+python scripts/publicar.py pacote --pasta saida/... --video ... --capa capa-v001.jpg --texto saida/.../texto-do-post.md
+```
+
+1. Mande ao Well a folha `capa-opcoes.jpg` e proponha o título; espere o "ok" no quadro e na frase.
+2. Faça a capa e mostre `capa-grade-v001.jpg` (como fica no perfil). Se não agradar, refaça: a seguinte ganha o número seguinte.
+3. O texto do post: se veio da skill de conteúdo, use o dele. Se não, escreva um rascunho **só com o que o Well falou** (nada de número, nome ou promessa que ele não disse), com o aviso obrigatório do assunto, se houver. Mostre e espere o "ok".
+4. Rode o `pacote`. Entregue a pasta `publicacao-<nome>/` e diga em uma linha cada aviso que sobrou (duração acima de 90 s, mais de 5 hashtags etc.). Os limites do Instagram ficam em `assets/instagram.json` e mudam: diga que é para conferir na ajuda oficial.
+
+Postar continua sendo com o Well, ou com a skill de conteúdo e só com "pode postar".
 
 ## Ajustes depois da entrega
 
@@ -196,7 +214,7 @@ Mudança pontual ("legenda maior", "volta a frase do 0:30") mexe só no que foi 
 - Elemento 3D gerado só entra com a prévia aprovada pelo Well e depois de passar no `validar` (sem texto, pessoa, rosto, mão, logotipo ou marca de terceiros).
 - Música e efeitos só da biblioteca da skill (domínio público) ou que o Well mandar. Nunca baixe música da internet.
 - Nada é enviado para fora do computador. A transcrição é local.
-- Nunca publique. Postar é com a skill de conteúdo, e só com "pode postar".
+- Nunca publique. Postar é com a skill de conteúdo, e só com "pode postar". A capa e o texto do post só entram no pacote com o "ok" do Well, e título e texto só trazem número, nome e afirmação que ele falou.
 
 ## Painel no navegador
 
