@@ -19,6 +19,7 @@ Para instalar no seu Mac, veja [Instalar no seu Mac, com o VS Code](#instalar-no
 11. Iguala o volume da voz ao padrão das redes, e o volume entre uma tomada e outra.
 12. Confere uma amostra de 8 a 15 segundos, depois faz o vídeo inteiro e confere de novo: toca até o fim, volume, nenhuma palavra cortada, nenhum estalo, trecho repetido, silêncio sobrando ou quadro preto, fala completa, e uma folha com os quadros de cada emenda.
 13. Entrega o MP4, sem nunca apagar os originais nem as versões anteriores.
+14. Se você pedir, monta o **pacote de publicação**: escolhe 4 quadros para a capa (rosto grande, centrado, nítido), põe o título no padrão da marca fora do rosto e dentro do corte da grade do perfil, confere o texto do post (tamanho, hashtags, números que você não falou) e os limites do Instagram, e entrega tudo numa pasta pronta para postar. Nada é publicado.
 
 ## Fases do projeto
 
@@ -46,7 +47,7 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 **Trilha B: conteúdo e entrega** (independentes entre si)
 
 - [ ] **Fase 9.** Gancho dos 3 primeiros segundos e detecção de leitura e olhar · _Lucas, em andamento_ ([especificação](docs/fase-9-gancho-olhar.md))
-- [ ] **Fase 10.** Pacote de publicação e capa do Reels · _Lucas (proposta)_
+- [ ] **Fase 10.** Pacote de publicação e capa do Reels · _Lucas, em andamento_ ([especificação](docs/fase-10-pacote-publicacao.md))
 - [ ] **Fase 11.** Direção de arte por série, conferência de fatos e imagens de apoio · _Lucas (proposta)_
 - [ ] **Fase 12.** Cenas explicativas sincronizadas com a fala · _Lucas (proposta)_
 
@@ -221,6 +222,7 @@ skill/edicao-video-well/         ← a skill (é isso que vira o arquivo .skill)
     rosto-e-camera.md            rosto (legenda e elementos fora dele) e zoom de ênfase
     gancho-e-olhar.md            nota do começo, propostas de gancho, leitura e olhar para baixo
     som-e-imagem.md              volume, ruído, estouro, eco, música, efeitos, HDR, formato, cor
+    publicacao.md                capa, texto do post, limites do Instagram e a pasta de publicação
     gravacao.md                  dicas para gravar de um jeito que edita melhor
     instalacao.md                o que precisa estar instalado
   marca.json                     cores da marca (as mesmas do carrossel)
