@@ -228,6 +228,23 @@ class TestFluxoCompleto(Base):
         self.assertEqual(melhor.scripts()[0], "rosto.py")           # retoma da que falhou
 
 
+class TestAprovarESeguir(Base):
+    def test_uma_chamada_aprova_e_roda_ate_o_proximo_portao(self):
+        pasta, falso = self.novo(), Falso()
+        self.rodar(pasta, falso)
+        r = editar.aprovar_e_seguir(pasta, None, "A,C", falso, self.saida.append)
+        self.assertEqual(r, "portao")
+        self.assertEqual(editar.carregar(pasta)["portao"]["nome"], "cortes")
+        self.assertEqual(falso.scripts(), ["inspecionar.py", "transcrever.py", "propor_cortes.py"])
+
+    def test_resposta_incompleta_nao_roda_nada(self):
+        pasta, falso = self.novo(), Falso()
+        self.rodar(pasta, falso)
+        with self.assertRaises(SystemExit):
+            editar.aprovar_e_seguir(pasta, None, "A", falso, self.saida.append)
+        self.assertEqual(falso.scripts(), ["inspecionar.py"])
+
+
 class TestRetomadaEInvalidacao(Base):
     def test_etapa_interrompida_e_refeita_e_so_ela(self):
         pasta, falso = self.novo(), Falso()

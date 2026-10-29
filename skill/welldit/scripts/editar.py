@@ -5,7 +5,7 @@ Uso:
     python editar.py proximo --pasta saida/2026-10-22_tema
     python editar.py estado  --pasta ... [--json]
     python editar.py cartao  --pasta ...
-    python editar.py aprovar --pasta ... [PORTAO] [--resposta "A,C"]
+    python editar.py aprovar --pasta ... [PORTAO] [--resposta "A,C"] [--seguir]
     python editar.py ajustar --pasta ... --escolha chave=valor
     python editar.py refazer --pasta ... ETAPA
 
@@ -636,6 +636,13 @@ def aprovar(pasta: Path, portao: str | None, resposta: str | None) -> str:
     return g["nome"]
 
 
+def aprovar_e_seguir(pasta: Path, portao: str | None, resposta: str | None, executor=executar_subprocesso, saida=print) -> str:
+    """Aprova o portão aberto e já roda até o próximo: uma chamada em vez de duas."""
+    nome = aprovar(pasta, portao, resposta)
+    saida(f"ok  portão {nome} aprovado")
+    return proximo(pasta, executor, saida)
+
+
 def _valor(txt: str):
     try:
         return json.loads(txt)
@@ -739,6 +746,7 @@ def main():
     ap.add_argument("--resposta")
     ap.add_argument("--escolha")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--seguir", action="store_true", help="aprovar: depois de aprovar, já roda até o próximo portão")
     a = ap.parse_args()
 
     if a.acao == "novo":
@@ -761,6 +769,8 @@ def main():
             erro("o cartão sai depois da inspeção: rode editar.py proximo")
         print(texto_do_cartao(t, ler_json(pasta / "inspecao.json")))
     elif a.acao == "aprovar":
+        if a.seguir:
+            sys.exit({"portao": 0, "fim": 0, "falhou": 1}[aprovar_e_seguir(pasta, a.alvo[0] if a.alvo else None, a.resposta)])
         nome = aprovar(pasta, a.alvo[0] if a.alvo else None, a.resposta)
         print(f"ok  portão {nome} aprovado. Siga com: editar.py proximo --pasta {curto(pasta)}")
     elif a.acao == "ajustar":

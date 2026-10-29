@@ -9,7 +9,7 @@ python scripts/editar.py novo VIDEO... [--serie NOME] [--perfil NOME] [--tema cu
 python scripts/editar.py proximo --pasta saida/AAAA-MM-DD_tema
 python scripts/editar.py estado  --pasta ... [--json]
 python scripts/editar.py cartao  --pasta ...
-python scripts/editar.py aprovar --pasta ... [PORTAO] [--resposta "A,C"]
+python scripts/editar.py aprovar --pasta ... [PORTAO] [--resposta "A,C"] [--seguir]   # aprova e já roda até o próximo portão
 python scripts/editar.py ajustar --pasta ... --escolha chave=valor
 python scripts/editar.py refazer --pasta ... ETAPA
 ```

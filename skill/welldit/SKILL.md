@@ -23,7 +23,7 @@ Leia só o que a etapa pede. Em `referencias/`: `fluxo-manual.md` (cada etapa, o
 python scripts/editar.py novo BRUTO1.mov [BRUTO2.mov] [--serie NOME] [--perfil NOME] [--tema curto]
 python scripts/editar.py proximo --pasta saida/AAAA-MM-DD_tema      # roda até o próximo portão
 python scripts/editar.py estado  --pasta ...                         # onde está (curto)
-python scripts/editar.py aprovar --pasta ... [PORTAO] [--resposta "A,C"]
+python scripts/editar.py aprovar --pasta ... [PORTAO] [--resposta "A,C"] [--seguir]   # --seguir: aprova e já roda até o próximo portão
 python scripts/editar.py ajustar --pasta ... --escolha camera=leve   # muda uma escolha e refaz só o que depende dela
 ```
 
@@ -31,7 +31,7 @@ Cada etapa imprime uma linha; o texto completo fica em `etapas/<nome>.log` (só 
 
 | Portão | O que fazer |
 | --- | --- |
-| `cartao` | `editar.py cartao`: mande o texto **como mensagem normal** (não em bloco de código) e espere a resposta com as letras das pendências. `aprovar --resposta "A,C"`. Mudança pedida: `ajustar` e mostre o cartão de novo com ✏️. |
+| `cartao` | `editar.py cartao`: mande o texto **como mensagem normal** (não em bloco de código) e espere a resposta com as letras das pendências. `aprovar --resposta "A,C" --seguir`. Mudança pedida: `ajustar` e mostre o cartão de novo com ✏️. |
 | `cortes` | Leia `referencias/cortes.md` e revise o `cortes.json` (tomada certa, fim da gravação, o que nunca sai). Fala não reconhecida: `transcrever.py --trecho` antes de cortar. |
 | `fatos` | `fatos.py mostrar`, pergunte à pessoa, `fatos.py responder`. Só segue com tudo respondido (`referencias/fatos.md`). |
 | `gancho_olhar` | Mostre a nota e as propostas (`referencias/gancho-e-olhar.md`); só aplique com o "ok". |
