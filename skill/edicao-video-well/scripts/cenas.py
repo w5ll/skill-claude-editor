@@ -502,6 +502,14 @@ def resolver_caixa(item: dict, largura: int, altura: int, rostos, camera) -> str
         if y0 >= topo and y1 <= base:
             item["caixa_usada"] = [x, int(round(y0)), w, h]
             return None
+    # folga cheia não coube: aceita uma folga menor (um quarto) antes de desistir
+    minima = folga / 4
+    if topo + h <= zy0 - minima:
+        item["caixa_usada"] = [x, int(round(max(topo, zy0 - folga - h))), w, h]
+        return None
+    if base - h >= zy1 + minima:
+        item["caixa_usada"] = [x, int(round(min(base - h, zy1 + folga))), w, h]
+        return None
     # não coube: o que invade menos o rosto
     y0 = max(topo, min(zy0 - folga - h, base - h))
     item["caixa_usada"] = [x, int(round(y0)), w, h]
