@@ -19,6 +19,7 @@ Sempre em português, com acentuação, sem travessão e sem termo em inglês se
 | `referencias/legendas.md` | Estilo, posição, grafia dos termos, como corrigir | Antes de gerar e revisar a legenda |
 | `referencias/elementos-3d.md` | Catálogo dos elementos 3D, modos, quando usar, e como desenhar elementos novos (receita, animações, prévia, catálogo) | Ao sugerir, revisar e desenhar os elementos |
 | `referencias/rosto-e-camera.md` | Rosto (legenda e elementos fora dele) e zoom de ênfase | Ao rodar `rosto.py` e `camera.py` |
+| `referencias/gancho-e-olhar.md` | Nota do começo, propostas de gancho, leitura e olhar para baixo | Ao rodar `gancho.py` e `olhar.py` |
 | `referencias/som-e-imagem.md` | Volume, ruído, estouro, eco, música, efeitos, HDR, formato, cor | Ao montar o cartão e renderizar |
 | `referencias/gravacao.md` | Dicas para gravar de um jeito que edita melhor | Quando o bruto vier com problema recorrente |
 | `referencias/instalacao.md` | O que precisa estar instalado | Se faltar alguma ferramenta |
@@ -86,6 +87,7 @@ Regras do cartão:
 - Tudo que é desconhecido, conflitante ou não suportado vai em ⚠️, no topo, com opções em letra e uma recomendada. Sem pendência, tire o bloco ⚠️ e peça **ok**.
 - "ok", "pode", "manda" só aprovam se responderem todas as pendências. Escolher outra opção ou pedir mudança é mudança: mostre o cartão de novo com ✏️ nas linhas alteradas e espere outro ok.
 - Música, efeito sonoro e trilha só entram se a pessoa pedir com essas palavras. "Deixa dinâmico" não é pedido de música. Quando pedir, a linha 🔊 diz qual música (calma, animada ou batida leve, ou a que a pessoa mandar) e "efeito em cada elemento 3D".
+- Gancho e olhar: o cartão inicial não os mostra (dependem dos cortes). Diga só "avalio o começo e marco os trechos em que você lê, e te mostro antes de mexer" na linha ✂️. Depois dos cortes, mostre a linha 🪝 com ✏️ (veja o passo 3c). Puxar uma frase do meio para o começo, cortar a abertura e zoom para disfarçar leitura só entram com o "ok".
 - Zoom de ênfase só entra se a pessoa pedir ("com zoom", "dá uns cortes de câmera", "aproxima nas partes fortes") ou aceitar quando você oferecer. "Deixa dinâmico" pode virar uma oferta no cartão, nunca um zoom ligado por conta própria.
 - Redução de ruído: com chiado medido (diferença de 30 dB ou menos), vai como pendência ⚠️ com a sugestão da inspeção (leve ou forte). Gravação limpa: "sem redução de ruído (gravação limpa)".
 - Áudio estourado ou sala com eco: vão em ⚠️ como aviso (não têm conserto na edição), com a opção de seguir assim ou regravar a frase.
@@ -119,6 +121,15 @@ python scripts/rosto.py --pasta saida/... [--formato 9:16]
 ```
 
 Sempre que tiver legenda, elemento 3D ou zoom. Rode depois de fechar o `cortes.json` (e de novo se ele mudar). Veja `referencias/rosto-e-camera.md`.
+
+### 3c. Gancho e olhar (sugestões, só depois do ok)
+
+```bash
+python scripts/gancho.py avaliar --pasta saida/...
+python scripts/olhar.py medir --pasta saida/... [--formato 9:16]
+```
+
+Rode depois dos cortes fechados (o `olhar.py` precisa do `rosto.json`). Os dois só sugerem; leia `referencias/gancho-e-olhar.md`. Com o resultado em mãos, mostre à pessoa a linha 🪝 do cartão com ✏️ (a nota do começo, o que propõe e a folha `olhar-quadros.jpg`, se houver trecho marcado) e espere o "ok", como nos elementos gerados. Aplicar é `gancho.py aplicar --proposta ...` (guarda `cortes.anterior.json`) e `olhar.py zoom`; depois de aplicar, rode de novo rosto, elementos, câmera e legenda. Sem o "ok", não aplique nada.
 
 ### 4. Elementos 3D, câmera e legenda (nesta ordem)
 

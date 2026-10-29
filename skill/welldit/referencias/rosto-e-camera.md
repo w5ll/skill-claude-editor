@@ -18,6 +18,8 @@ O caminho do rosto é suavizado: uma detecção errada não mexe em nada, mão n
 
 Detector: YuNet, do OpenCV (licença MIT), em `assets/modelos/`.
 
+O mesmo detector alimenta o `olhar.py`, que marca os trechos de leitura (cabeça abaixada ou virada). Veja `referencias/gancho-e-olhar.md`.
+
 ## Câmera: zoom de ênfase (só com escolha da pessoa no cartão)
 
 ```bash

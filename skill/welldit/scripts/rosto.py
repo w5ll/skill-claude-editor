@@ -96,7 +96,10 @@ def medir_video(arquivo: str, largura: int, altura: int, pasta=None) -> list:
         olhos_y = (f[5] + f[7]) / 2
         boca_y = (f[11] + f[13]) / 2
         medidas.append({"cx": (x + fw / 2) / w, "cy": (y + fh / 2) / h, "w": fw / w, "h": fh / h,
-                        "olhos": float(olhos_y) / h, "boca": float(boca_y) / h, "conf": round(float(f[14]), 2)})
+                        "olhos": float(olhos_y) / h, "boca": float(boca_y) / h, "conf": round(float(f[14]), 2),
+                        # pontos extras, usados só por olhar.py
+                        "nariz_x": float(f[8]) / w, "nariz_y": float(f[9]) / h,
+                        "olho_d_x": float(f[4]) / w, "olho_e_x": float(f[6]) / w})
     proc.wait()
     return medidas
 
