@@ -55,8 +55,8 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 - [x] **Fase 4.** Orquestrador e estado da edição (`editar.py`, `trabalho.json`, modelos de edição) · _Lucas_ ([especificação](docs/fase-4-orquestrador.md))
 - [x] **Fase 5.** Painel que executa: formulário do cartão, fila, aprovações, senha de sessão · _Lucas_ ([especificação](docs/fase-5-painel-executa.md))
 - [x] **Fase 6.** Revisão de cortes e legenda no painel · _Lucas_ ([especificação](docs/fase-6-revisao-na-tela.md))
-- [ ] **Fase 7.** Elementos, zoom e som no painel, conferência com botões de correção · _Well (proposta)_
-- [ ] **Fase 8.** Claude por trás, opcional: revisar cortes e desenhar elementos pelo painel · _Well (proposta)_
+- [ ] **Fase 7.** Elementos, zoom e som no painel, conferência com botões de correção · _Well_ ([especificação](docs/fase-7-ajustes-no-painel.md))
+- [ ] **Fase 8.** Claude por trás, opcional: revisar cortes e desenhar elementos pelo painel · _Well_ ([especificação](docs/fase-8-claude-por-tras.md))
 
 **Trilha B: conteúdo e entrega** (independentes entre si)
 
