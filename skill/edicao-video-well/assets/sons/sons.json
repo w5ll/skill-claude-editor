@@ -26,7 +26,8 @@
     "anel": "brilho",
     "cubo": "brilho",
     "cristal": "brilho",
-    "tela": "passagem-longa"
+    "tela": "passagem-longa",
+    "cena": "passagem-curta"
   },
   "por_animacao": {
     "girar": "passagem",

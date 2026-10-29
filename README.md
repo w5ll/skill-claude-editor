@@ -20,6 +20,8 @@ Para instalar no seu Mac, veja [Instalar no seu Mac, com o VS Code](#instalar-no
 12. Confere uma amostra de 8 a 15 segundos, depois faz o vídeo inteiro e confere de novo: toca até o fim, volume, nenhuma palavra cortada, nenhum estalo, trecho repetido, silêncio sobrando ou quadro preto, fala completa, e uma folha com os quadros de cada emenda.
 13. Entrega o MP4, sem nunca apagar os originais nem as versões anteriores.
 
+Também, quando você pedir: **cenas explicativas**, com texto e números animados na marca, cada parte entrando quando você a fala. Há quatro tipos: lista de passos ("primeiro, segundo, terceiro"), antes e depois, um número que sobe ("30%", "R$ 130 mil") e de-para ("de 1 milhão para 130 mil"). Entram como um cartão fora do rosto ou em tela cheia por poucos segundos, e todo número da cena tem que ter sido falado por você.
+
 ## Fases do projeto
 
 O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de edição para qualquer pessoa com acesso ao repositório**, com a marca configurável e um painel que roda a edição inteira sem abrir uma conversa. O nome novo é **welldit**, e o visual padrão segue a marca ARVEN (**elementos base ARVEN**). O plano completo, as dependências, a divisão entre as duas pessoas e as regras de trabalho em dupla estão em [docs/roadmap.md](docs/roadmap.md).
@@ -220,6 +222,7 @@ skill/edicao-video-well/         ← a skill (é isso que vira o arquivo .skill)
     elementos-3d.md              catálogo dos elementos 3D, modos, critério e como desenhar elementos novos
     rosto-e-camera.md            rosto (legenda e elementos fora dele) e zoom de ênfase
     som-e-imagem.md              volume, ruído, estouro, eco, música, efeitos, HDR, formato, cor
+    cenas.md                     cenas explicativas: lista, antes e depois, número, de-para
     gravacao.md                  dicas para gravar de um jeito que edita melhor
     instalacao.md                o que precisa estar instalado
   marca.json                     cores da marca (as mesmas do carrossel)

@@ -18,6 +18,7 @@ Sempre em português, com acentuação, sem travessão e sem termo em inglês se
 | `referencias/elementos-3d.md` | Catálogo dos elementos 3D, modos, quando usar, e como desenhar elementos novos (receita, animações, prévia, catálogo) | Ao sugerir, revisar e desenhar os elementos |
 | `referencias/rosto-e-camera.md` | Rosto (legenda e elementos fora dele) e zoom de ênfase | Ao rodar `rosto.py` e `camera.py` |
 | `referencias/som-e-imagem.md` | Volume, ruído, estouro, eco, música, efeitos, HDR, formato, cor | Ao montar o cartão e renderizar |
+| `referencias/cenas.md` | Cenas explicativas: lista de passos, antes e depois, número que sobe, de-para | Ao mostrar a estrutura do que ele explica |
 | `referencias/gravacao.md` | Dicas para o Well gravar de um jeito que edita melhor | Quando o bruto vier com problema recorrente |
 | `referencias/instalacao.md` | O que precisa estar instalado | Se faltar alguma ferramenta |
 | `marca.json` | Cores da marca (as mesmas do carrossel) | Só se for mudar a cor da legenda |
@@ -137,6 +138,8 @@ Revise `legendas.json` seguindo `referencias/legendas.md` (grafia de marca e ter
 
 **Elementos 3D gerados.** Rode o `sugerir` primeiro (ele reescreve o `elementos.json`; a versão anterior fica em `elementos.anterior.json`). Depois leia o texto final do corte e escolha de 3 a 6 ideias-chave: a promessa do gancho, os exemplos, a virada, a conclusão. Onde um elemento pronto (ou do catálogo) serve, use. Onde nenhum serve, desenhe um novo, seguindo a receita de `referencias/elementos-3d.md` (modelos em `templates/exemplos-gerados/`): o desenho vai em `elementos-gerados/<nome>.svg`, o item `gerado:<nome>` entra no `elementos.json` com a animação, e você roda `validar` e `previa`. Olhe a folha `elementos-previa.jpg`: legível em tamanho pequeno, da mesma família dos atuais, com contraste sobre o vídeo, sem nada de mau gosto. Refaça o que não passar. Gerado nunca entra sem o "ok": mostre ao Well a linha ✨ atualizada (com ✏️) e a folha, e espere. Sem o "ok", tire os gerados e fique só com os prontos.
 
+**Cenas explicativas.** Quando a fala tem uma estrutura (passos, antes e depois, um número forte, "de X para Y"), rode `python scripts/cenas.py sugerir --pasta saida/...` e leia `referencias/cenas.md`. Escolha poucas (no máximo uma a cada 15 s), resuma os textos em poucas palavras, aplique com `cenas.py aplicar N --pasta ...`, rode `cenas.py validar` e `cenas.py previa`, e mostre ao Well a linha ✨ com a folha `cenas-previa.jpg`. Só entra com o "ok". Todo número da cena tem que ter sido falado.
+
 **Câmera.** Revise `camera.json` seguindo `referencias/rosto-e-camera.md`: poucas aproximações, nas palavras que pedem força. Sem zoom aprovado, não rode (e use `camera.py desligar` se existir).
 
 **Som.** Revise `som.json` seguindo `referencias/som-e-imagem.md`. Sem música nem efeito pedido, não rode (e use `som.py desligar` se existir).
@@ -193,6 +196,7 @@ Mudança pontual ("legenda maior", "volta a frase do 0:30") mexe só no que foi 
 - A fala é do Well: não corte ressalva, negação ou condição que muda o sentido (cuidado especial com o que a OAB exige, veja `referencias/cortes.md`). Não junte pedaços de frases diferentes para criar uma frase que ele não disse.
 - Corte medido no áudio, não estimado pelo roteiro. O roteiro serve para grafia e ordem.
 - Sem elemento 3D, zoom, música, efeito, filtro de cor, conversão de HDR ou redução de ruído sem o Well escolher no cartão.
+- Cena explicativa só entra com a prévia aprovada pelo Well e depois de passar no `cenas.py validar`: todo número e todo gatilho têm que estar na fala, e o texto só resume o que ele disse.
 - Elemento 3D gerado só entra com a prévia aprovada pelo Well e depois de passar no `validar` (sem texto, pessoa, rosto, mão, logotipo ou marca de terceiros).
 - Música e efeitos só da biblioteca da skill (domínio público) ou que o Well mandar. Nunca baixe música da internet.
 - Nada é enviado para fora do computador. A transcrição é local.

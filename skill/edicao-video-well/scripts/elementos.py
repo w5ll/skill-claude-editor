@@ -224,6 +224,8 @@ def sugerir(palavras: list[dict], duracao_video: float, modo: str, intervalo: fl
 def tamanho_quadro(item: dict, largura: int, altura: int) -> tuple[int, int]:
     if item["modo"] == "tela":
         return largura, altura
+    if item.get("caixa_usada"):      # cena em painel: o tamanho vem do conteúdo (cenas.resolver_caixa)
+        return item["caixa_usada"][2], item["caixa_usada"][3]
     lado = round(largura * 0.40 * float(item.get("escala_usada", item.get("escala", 1.0))))
     h = round(lado * 1.32) if item.get("texto") else lado
     return lado - lado % 2, h - h % 2
@@ -232,6 +234,8 @@ def tamanho_quadro(item: dict, largura: int, altura: int) -> tuple[int, int]:
 def posicao_quadro(item: dict, largura: int, altura: int) -> tuple[int, int]:
     if item["modo"] == "tela":
         return 0, 0
+    if item.get("caixa_usada"):
+        return item["caixa_usada"][0], item["caixa_usada"][1]
     w, h = tamanho_quadro(item, largura, altura)
     pos = item.get("posicao_usada", item.get("posicao", "topo"))
     if pos == "esquerda":
@@ -252,6 +256,10 @@ def resolver_posicao(item: dict, largura: int, altura: int, rostos, camera) -> s
     """Escolhe onde o elemento entra sem cobrir o rosto. Devolve um aviso, se não achou lugar."""
     item.pop("posicao_usada", None)
     item.pop("escala_usada", None)
+    item.pop("caixa_usada", None)
+    if eh_cena(item):
+        from cenas import resolver_caixa
+        return resolver_caixa(item, largura, altura, rostos, camera)
     if item["modo"] == "tela" or item.get("posicao", "auto") != "auto":
         return None
     if rostos is None:
@@ -293,6 +301,8 @@ def pasta_do_item(pasta: Path, n: int, item: dict, largura: int, altura: int, fp
               largura, altura, str(fps), ler_json(PASTA_SKILL / "marca.json")["cores"]]
     if svg is not None:     # elemento gerado: o desenho e a animação entram na chave (os 12 prontos não mudam)
         partes += [hashlib.sha1(svg.encode()).hexdigest(), item.get("animacao"), bool(item.get("parar"))]
+    if eh_cena(item):       # cena: o conteúdo, o tempo (a sincronia depende do início) e o tamanho do painel
+        partes += [item.get("cena"), item["inicio"], (item.get("caixa_usada") or [0, 0, 0, 0])[2:]]
     chave = json.dumps(partes, sort_keys=True)
     nome = item["elemento"].replace(":", "-")
     return pasta / "elementos" / f"{n:02d}_{nome}_{hashlib.sha1(chave.encode()).hexdigest()[:8]}"
@@ -321,6 +331,10 @@ def abrir_navegador(p):
 
 def eh_gerado(item: dict) -> bool:
     return str(item.get("elemento", "")).startswith("gerado:")
+
+
+def eh_cena(item: dict) -> bool:
+    return str(item.get("elemento", "")).startswith("cena:")
 
 
 def _sem_ns(nome: str) -> str:
@@ -557,8 +571,12 @@ def desenhar(pasta: Path, largura: int, altura: int, fps) -> list[dict]:
             if erros:
                 erro(f"o desenho de {item['elemento']} não passou na validação (rode elementos.py validar): "
                      + "; ".join(erros))
+        elif eh_cena(item):
+            from cenas import TIPOS
+            if item["elemento"].split(":", 1)[1] not in TIPOS:
+                erro(f"cena desconhecida: {item['elemento']} (use {', '.join('cena:' + t for t in TIPOS)})")
         elif item["elemento"] not in ELEMENTOS:
-            erro(f"elemento desconhecido: {item['elemento']} (use {', '.join(ELEMENTOS)}, ou gerado:nome)")
+            erro(f"elemento desconhecido: {item['elemento']} (use {', '.join(ELEMENTOS)}, gerado:nome ou cena:tipo)")
         aviso_pos = resolver_posicao(item, largura, altura, rostos, camera)
         if aviso_pos:
             aviso(f"atenção: {aviso_pos}")
@@ -581,9 +599,17 @@ def desenhar(pasta: Path, largura: int, altura: int, fps) -> list[dict]:
                 if destino.exists():
                     shutil.rmtree(destino)
                 pagina = nav.new_page(viewport={"width": w, "height": h}, device_scale_factor=1)
-                pagina.goto(molde)
-                pagina.evaluate("document.fonts.ready")
-                pagina.evaluate("cfg => montar(cfg)", cfg_pagina(item, w, h, svgs.get(n), marca))
+                if eh_cena(item):
+                    from cenas import cfg_da_cena
+                    pagina.goto((PASTA_SKILL / "templates" / "cenas.html").resolve().as_uri())
+                    pagina.evaluate("document.fonts.ready")
+                    resultado = pagina.evaluate("cfg => montar(cfg)", cfg_da_cena(item, w, h, marca))
+                    if resultado.get("estoura"):
+                        erro(f"o texto da {item['elemento']} em {item['inicio']:.1f} s não cabe no painel: encurte os textos")
+                else:
+                    pagina.goto(molde)
+                    pagina.evaluate("document.fonts.ready")
+                    pagina.evaluate("cfg => montar(cfg)", cfg_pagina(item, w, h, svgs.get(n), marca))
                 pagina.evaluate("document.fonts.ready")
                 if n in svgs:
                     problema = problema_de_margem(pagina)
@@ -684,9 +710,9 @@ def previa(pasta: Path, largura: int, altura: int, fps) -> Path:
     arq = pasta / "elementos.json"
     if not arq.exists():
         erro("não há elementos.json: rode elementos.py sugerir antes")
-    itens = ler_json(arq).get("itens", [])
+    itens = [i for i in ler_json(arq).get("itens", []) if not eh_cena(i)]   # cenas: cenas.py previa
     if not itens:
-        erro("o elementos.json está vazio")
+        erro("o elementos.json está vazio (as cenas têm a prévia em cenas.py previa)")
     marca = ler_json(PASTA_SKILL / "marca.json")
     cores = marca["cores"]
     cortes = ler_json(pasta / "cortes.json")

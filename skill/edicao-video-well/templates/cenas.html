@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face { font-family: "Sora ExtraBold"; src: url("../assets/fontes/Sora-ExtraBold.ttf"); }
+  html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; }
+  #palco { position: relative; overflow: hidden; font-family: "Sora ExtraBold", sans-serif; color: var(--texto); }
+  #palco.tela { background: radial-gradient(120% 80% at 50% 30%, var(--fundo) 0%, var(--fundo-profundo) 100%); }
+  #cena { position: absolute; box-sizing: border-box; will-change: transform, opacity; display: flex;
+          flex-direction: column; justify-content: center; }
+  #palco.sobreposto #cena { background: var(--fundo-profundo-a); border: 2px solid var(--linha); }
+  .linha1 { white-space: nowrap; }
+  .titulo { text-align: center; line-height: 1.1; letter-spacing: -0.01em; }
+  .passo { display: flex; align-items: center; will-change: transform, opacity; }
+  .selo { flex: none; border-radius: 50%; background: var(--destaque); color: var(--fundo-profundo);
+          display: flex; align-items: center; justify-content: center; }
+  .bloco { text-align: center; will-change: transform, opacity; }
+  .rotulo { color: var(--rotulo); letter-spacing: .08em; text-transform: uppercase; }
+  .pilula { border-radius: 0.3em; padding: .35em .6em; box-sizing: border-box; }
+  .antes { border: 2px solid var(--linha); background: var(--cartao); }
+  .depois { border: 2px solid var(--destaque); background: var(--destaque-fraco); }
+  .num { font-variant-numeric: tabular-nums; line-height: 1; letter-spacing: -0.02em; }
+  .destaque { color: var(--destaque); }
+  .envolve { position: relative; display: inline-block; }
+  .suave { color: var(--apoio); }
+  svg { display: block; overflow: visible; }
+</style>
+</head>
+<body>
+<div id="palco"><div id="cena"></div></div>
+<script>
+/* Cenas explicativas: texto e números animados, cada parte entrando no instante em que é falada.
+   cfg: {tipo: "lista"|"antes-depois"|"numero"|"de-para", modo: "sobreposto"|"tela", largura, altura,
+         duracao, cores, cena: {...}}  (os tempos "em" são em segundos desde o início da cena).
+   desenhar(t) posiciona tudo no instante t, para gerar cada quadro de forma exata. */
+let CFG, U, K, PARTES = {};
+const limitar = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const saidaCubica = x => 1 - Math.pow(1 - x, 3);
+const saidaVolta = x => { const c = 1.6; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const fmt = (v, dec) => new Intl.NumberFormat('pt-BR', { minimumFractionDigits: dec, maximumFractionDigits: dec }).format(v);
+const px = n => n.toFixed(2) + 'px';
+
+function cabe(el, largura) {  // diminui a letra até o texto caber numa linha
+  let tam = parseFloat(el.style.fontSize);
+  for (let i = 0; i < 40 && el.scrollWidth > largura + 1 && tam > 12; i++) { tam *= 0.95; el.style.fontSize = px(tam); }
+}
+
+function hexa(c, a) { return c + Math.round(a * 255).toString(16).padStart(2, '0'); }
+
+async function montar(cfg) {
+  CFG = cfg; U = cfg.largura; K = cfg.modo === 'tela' ? 1.3 : 1;
+  const C = cfg.cores, raiz = document.documentElement.style;
+  raiz.setProperty('--texto', C.texto); raiz.setProperty('--destaque', C.destaque); raiz.setProperty('--rotulo', C.rotulo);
+  raiz.setProperty('--apoio', C.apoio); raiz.setProperty('--linha', C.linha); raiz.setProperty('--cartao', C.cartao);
+  raiz.setProperty('--fundo', C.fundo); raiz.setProperty('--fundo-profundo', C.fundo_profundo);
+  raiz.setProperty('--fundo-profundo-a', hexa(C.fundo_profundo, 0.94)); raiz.setProperty('--destaque-fraco', hexa(C.destaque, 0.16));
+  const palco = document.getElementById('palco'), cena = document.getElementById('cena');
+  palco.className = cfg.modo;
+  palco.style.width = cfg.largura + 'px'; palco.style.height = cfg.altura + 'px';
+  if (cfg.modo === 'tela') {
+    Object.assign(cena.style, { left: px(U * 0.08), top: 0, width: px(U * 0.84), height: px(cfg.altura), padding: 0 });
+  } else {
+    const m = 6;
+    Object.assign(cena.style, { left: px(m), top: px(m), width: px(cfg.largura - 2 * m), height: px(cfg.altura - 2 * m),
+                                borderRadius: px(U * 0.05), padding: `${px(U * 0.045)} ${px(U * 0.05)}`,
+                                boxShadow: '0 14px 36px rgba(10, 10, 18, .5)' });
+  }
+  cena.innerHTML = '';
+  PARTES = {};
+  const c = cfg.cena, tipo = cfg.tipo;
+  const largUtil = () => cena.clientWidth - parseFloat(getComputedStyle(cena).paddingLeft) * 2;
+  const titulo = (txt) => {
+    const t = document.createElement('div'); t.className = 'titulo linha1';
+    t.style.fontSize = px(U * 0.052 * K); t.style.marginBottom = px(U * 0.035 * K); t.textContent = txt;
+    cena.appendChild(t); PARTES.titulo = t; return t;
+  };
+  if (tipo === 'lista') {
+    if (c.titulo) titulo(c.titulo);
+    PARTES.passos = c.passos.map((p, i) => {
+      const lin = document.createElement('div'); lin.className = 'passo';
+      lin.style.marginBottom = px(U * 0.03 * K); lin.style.height = px(U * 0.08 * K);
+      const selo = document.createElement('div'); selo.className = 'selo';
+      selo.style.width = selo.style.height = px(U * 0.075 * K); selo.style.fontSize = px(U * 0.042 * K);
+      selo.style.marginRight = px(U * 0.035 * K); selo.textContent = String(i + 1);
+      const txt = document.createElement('div'); txt.className = 'linha1'; txt.style.fontSize = px(U * 0.05 * K);
+      txt.style.flex = '1'; txt.style.minWidth = 0; txt.textContent = p.texto;
+      lin.append(selo, txt); cena.appendChild(lin);
+      return { el: lin, txt, em: p.em };
+    });
+  } else if (tipo === 'antes-depois') {
+    const bloco = (rot, texto, cls) => {
+      const b = document.createElement('div'); b.className = 'bloco';
+      b.innerHTML = `<div class="rotulo" style="font-size:${px(U * 0.03 * K)};margin-bottom:${px(U * 0.015 * K)}">${rot}</div>` +
+                    `<div class="pilula ${cls} linha1" style="font-size:${px(U * 0.055 * K)}">${esc(texto)}</div>`;
+      cena.appendChild(b); return b;
+    };
+    PARTES.antes = bloco('Antes', c.antes.texto, 'antes');
+    const seta = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const sw = U * 0.1 * K, sh = U * 0.1 * K;
+    seta.setAttribute('width', sw); seta.setAttribute('height', sh); seta.setAttribute('viewBox', '0 0 40 40');
+    seta.style.margin = `${px(U * 0.02 * K)} auto`;
+    seta.innerHTML = `<path id="seta" d="M20 4 V32 M8 22 L20 34 L32 22" fill="none" stroke="${C.destaque}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`;
+    cena.appendChild(seta); PARTES.seta = seta;
+    PARTES.depois = bloco('Depois', c.depois.texto, 'depois');
+    PARTES.em = c.depois.em;
+    PARTES.seta.querySelector('path').style.strokeDasharray = 60;
+  } else if (tipo === 'numero') {
+    const n = document.createElement('div'); n.className = 'num destaque linha1 bloco';
+    n.style.fontSize = px(U * 0.2 * K); n.textContent = '0'; cena.appendChild(n); PARTES.num = n;
+    const r = document.createElement('div'); r.className = 'bloco suave'; r.style.fontSize = px(U * 0.05 * K);
+    r.style.marginTop = px(U * 0.04 * K); r.textContent = c.rotulo || ''; cena.appendChild(r); PARTES.rotulo = r;
+    PARTES.em = c.em;
+  } else if (tipo === 'de-para') {
+    const rot = (t) => { const d = document.createElement('div'); d.className = 'rotulo bloco'; d.style.fontSize = px(U * 0.03 * K); d.textContent = t; cena.appendChild(d); return d; };
+    const num = (cls, tam) => { const n = document.createElement('div'); n.className = 'num bloco linha1 ' + cls; n.style.fontSize = px(U * tam * K); cena.appendChild(n); return n; };
+    PARTES.rde = rot('De');
+    PARTES.de = num('suave', 0.13);
+    PARTES.de.style.marginBottom = px(U * 0.02 * K);
+    PARTES.de.innerHTML = '<span class="envolve"></span>';
+    PARTES.deTxt = PARTES.de.firstChild;
+    PARTES.deTxt.textContent = montaNum(c.de.valor, c.de, c.decimais || 0);
+    const risco = document.createElement('i');
+    Object.assign(risco.style, { position: 'absolute', left: 0, top: '52%', height: px(U * 0.012 * K), width: 0, background: C.destaque, borderRadius: '4px' });
+    PARTES.deTxt.appendChild(risco); PARTES.risco = risco;
+    PARTES.rpara = rot('Para'); PARTES.para = num('destaque', 0.2);
+    const r = document.createElement('div'); r.className = 'bloco suave'; r.style.fontSize = px(U * 0.045 * K);
+    r.style.marginTop = px(U * 0.03 * K); r.textContent = c.rotulo || ''; cena.appendChild(r); PARTES.rotulo = r;
+    PARTES.em = c.em;
+  }
+  await document.fonts.ready;
+  // texto de uma linha só: diminui a letra até caber
+  const L = largUtil();
+  if (tipo === 'lista') {
+    if (PARTES.titulo) cabe(PARTES.titulo, L);
+    const larguraTexto = L - U * 0.11 * K;
+    PARTES.passos.forEach(p => { p.txt.style.width = px(larguraTexto); cabe(p.txt, larguraTexto); });
+  } else if (tipo === 'antes-depois') {
+    [PARTES.antes, PARTES.depois].forEach(b => { const p = b.querySelector('.pilula'); cabe(p, L * 0.92); });
+  } else {
+    const finais = { num: c.valor === undefined ? null : montaNum(c.valor, c, c.decimais || 0),
+                     de: c.de ? montaNum(c.de.valor, c.de, c.decimais || 0) : null,
+                     para: c.para ? montaNum(c.para.valor, c.para, c.decimais || 0) : null };
+    ['num', 'para'].forEach(k => { const n = PARTES[k]; if (n && finais[k]) { n.textContent = finais[k]; cabe(n, L); n.textContent = ''; } });
+    if (PARTES.de) cabe(PARTES.de, L);
+  }
+  return { ok: true, estoura: cena.scrollHeight > cena.clientHeight + 2 };
+}
+
+function numeroEm(t, em, de, para, dec, dur = 1.1) {
+  const u = saidaCubica(limitar((t - em) / dur));
+  return de + (para - de) * u;
+}
+const montaNum = (v, o, dec) => `${o.prefixo || ''}${fmt(v, dec)}${o.sufixo || ''}`;
+
+function desenhar(t) {
+  const cena = document.getElementById('cena'), palco = document.getElementById('palco');
+  const dur = CFG.duracao, c = CFG.cena;
+  const e = limitar(t / 0.45), s = limitar((t - (dur - 0.3)) / 0.3);
+  if (CFG.modo === 'tela') {
+    palco.style.opacity = limitar(t / 0.12) * (1 - limitar((t - (dur - 0.12)) / 0.12));
+    cena.style.opacity = 1; cena.style.transform = 'none';
+  } else {
+    const escala = (0.9 + 0.1 * saidaVolta(e)) * (1 - 0.12 * saidaCubica(s));
+    cena.style.opacity = limitar(e * 2) * (1 - s);
+    cena.style.transform = `scale(${escala})`;
+  }
+  const entra = (el, desde, dy = 26) => {
+    const k = limitar((t - desde) / 0.35);
+    el.style.opacity = limitar(k * 3);
+    el.style.transform = `translateY(${(1 - saidaVolta(k)) * dy * K}px)`;
+    return k;
+  };
+  if (PARTES.titulo) entra(PARTES.titulo, 0.15, 18);
+  if (CFG.tipo === 'lista') {
+    PARTES.passos.forEach(p => entra(p.el, p.em));
+  } else if (CFG.tipo === 'antes-depois') {
+    entra(PARTES.antes, 0.15);
+    const k = limitar((t - (PARTES.em - 0.25)) / 0.3);
+    PARTES.seta.style.opacity = limitar(k * 4);
+    PARTES.seta.querySelector('path').style.strokeDashoffset = 60 * (1 - saidaCubica(k));
+    const kd = limitar((t - PARTES.em) / 0.4);
+    PARTES.depois.style.opacity = limitar(kd * 3);
+    PARTES.depois.style.transform = `scale(${0.8 + 0.2 * saidaVolta(kd)})`;
+  } else if (CFG.tipo === 'numero') {
+    const k = limitar((t - PARTES.em) / 0.3);
+    PARTES.num.style.opacity = limitar(k * 4);
+    PARTES.num.textContent = montaNum(numeroEm(t, PARTES.em, 0, c.valor), c, c.decimais || 0);
+    PARTES.num.style.transform = `scale(${0.85 + 0.15 * saidaVolta(k)})`;
+    entra(PARTES.rotulo, PARTES.em + 0.2, 14);
+  } else if (CFG.tipo === 'de-para') {
+    entra(PARTES.rde, 0.15, 10); entra(PARTES.de, 0.15, 18);
+    const kr = limitar((t - (PARTES.em - 0.3)) / 0.3);
+    PARTES.risco.style.width = (100 * saidaCubica(kr)) + '%';
+    const kp = limitar((t - PARTES.em) / 0.3);
+    PARTES.rpara.style.opacity = limitar(kp * 4);
+    PARTES.para.style.opacity = limitar(kp * 4);
+    PARTES.para.style.transform = `scale(${0.85 + 0.15 * saidaVolta(kp)})`;
+    PARTES.para.textContent = montaNum(numeroEm(t, PARTES.em, c.de.valor, c.para.valor), c.para, c.decimais || 0);
+    entra(PARTES.rotulo, PARTES.em + 0.2, 14);
+  }
+}
+</script>
+</body>
+</html>
