@@ -8,7 +8,7 @@ Uso:
 
 --termos: só nomes e palavras difíceis que aparecem NESTE vídeo (tirados do roteiro).
 Termo que não aparece na fala atrapalha: quando o Whisper não entende um trecho, ele
-costuma "inventar" palavras da lista ("OAB, OAB, OAB"). Na dúvida, não passe termos.
+costuma "inventar" palavras da lista (uma marca repetida várias vezes). Na dúvida, não passe termos.
 
 Trecho com som de fala que o Whisper não reconheceu não é descartado: vai para
 "sem_transcricao" no arquivo, e o propor_cortes.py manda conferir em vez de cortar.

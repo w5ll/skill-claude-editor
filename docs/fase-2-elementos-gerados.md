@@ -1,5 +1,7 @@
 # Fase 2. Elementos 3D gerados a partir da fala
 
+> **Documento histórico:** escrito quando o projeto era de uma pessoa só, por isso fala "o Well". Os caminhos foram atualizados para o nome novo (`skill/welldit/`), o texto não.
+
 Especificação para implementar. Quem implementa: o Claude Code no Mac do Well, com os vídeos de verdade para testar. Substitui a lista fixa de 12 elementos de `docs/proximas-fases.md`.
 
 > **Status: implementada** (29/10/2026) e testada com o vídeo de planejamento (IMG_5127). As decisões que a especificação deixava em aberto estão em [Como ficou](#como-ficou).

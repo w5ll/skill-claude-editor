@@ -19,7 +19,7 @@
 <body>
 <div id="palco"><div id="elemento"></div><div id="texto"></div><div id="arroba"></div></div>
 <script>
-/* Elementos 3D do Well, os mesmos do carrossel (skill conteudo-well-advogados),
+/* Elementos 3D base ARVEN,
    com partes nomeadas para animar. desenhar(t) posiciona tudo no instante t (segundos),
    para gerar cada quadro do vídeo de forma exata.
    Os 12 elementos prontos estão em FORMAS. Um elemento gerado (cfg.svg) vem de fora, validado,
@@ -119,7 +119,7 @@ function montar(cfg) {
   el.innerHTML = `<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">${defs(C.elemento_3d)}${forma()}</svg>`;
   GER = cfg.svg ? prepararGerado(el.querySelector('svg'), cfg) : null;
   const txt = document.getElementById('texto');
-  // *palavra* fica na cor de destaque, como no título do carrossel
+  // *palavra* fica na cor de destaque do perfil
   txt.innerHTML = cfg.texto ? esc(cfg.texto).replace(/\*(.+?)\*/g, '<b>$1</b>') : '';
   document.getElementById('arroba').textContent = cfg.modo === 'tela' ? (cfg.arroba || '') : '';
   document.getElementById('arroba').style.fontSize = Math.round(cfg.largura * 0.03) + 'px';

@@ -6,5 +6,5 @@
 - Licença: MIT. Autores: Shiqi Yu e colaboradores (projeto libfacedetection).
 - SHA-256: 8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4
 
-Usado por `scripts/rosto.py` para saber onde estão os olhos e a boca do Well, e assim
+Usado por `scripts/rosto.py` para saber onde estão os olhos e a boca da pessoa, e assim
 colocar legenda e elementos 3D fora do rosto e fazer o zoom acompanhar o rosto.

@@ -4,7 +4,7 @@
 
 - Volume da voz: -14 LUFS (o padrão das redes sociais), pico até -1,5 dBTP no processamento e no máximo -1 dBTP no arquivo final. Feito em duas passadas, sem esmagar a dinâmica.
 - Cada emenda ganha uma suavização de 8 ms na entrada e na saída para não estalar.
-- `--sem-normalizar` mantém o volume original (por exemplo, se o Well pedir só a legenda).
+- `--sem-normalizar` mantém o volume original (por exemplo, se a pessoa pedir só a legenda).
 - Volume diferente entre tomadas: a conferência mede cada trecho e avisa quando um fica mais de 4 dB fora do resto (ou dois vizinhos com mais de 6 dB de diferença). Ela já diz o valor: ponha `"ganho_db": 5.0` naquele trecho do `cortes.json` e renderize de novo.
 
 ### Redução de ruído
@@ -18,7 +18,7 @@ A inspeção mede a diferença entre a voz e o ruído das pausas (chiado, ar-con
 | abaixo de 20 dB | ruído forte | redução forte (`--ruido forte`) |
 
 - O tratamento corta o grave abaixo de 80 Hz e usa uma amostra do próprio ruído, tirada das pausas da gravação. A voz fica no mesmo instante da imagem.
-- Só entra com a escolha do Well no cartão. Leve primeiro; forte só com ruído forte (forte demais deixa a voz "metálica").
+- Só entra com a escolha da pessoa no cartão. Leve primeiro; forte só com ruído forte (forte demais deixa a voz "metálica").
 - Para ouvir antes e depois: `python scripts/ruido.py testar BRUTO.mov --modo leve` (canal esquerdo original, direito tratado).
 - Tira chiado constante. Barulho que vai e volta (porta, buzina, cachorro) não sai.
 
@@ -29,14 +29,14 @@ A inspeção mede a diferença entre a voz e o ruído das pausas (chiado, ar-con
 
 ### Música e efeitos sonoros
 
-Só se o Well pedir com essas palavras. "Deixa dinâmico", "ritmo de Reels" ou "estilo daquele vídeo" não são pedido de música nem de efeito.
+Só se a pessoa pedir com essas palavras. "Deixa dinâmico", "ritmo de Reels" ou "estilo daquele vídeo" não são pedido de música nem de efeito.
 
 ```bash
 python scripts/som.py listar
 python scripts/som.py planejar --pasta saida/... --musica batida --efeitos
 ```
 
-- Músicas da skill (domínio público): `calmo`, `animado`, `batida`. Música que o Well mandar: passe o caminho do arquivo em `--musica`; o direito de uso é dele.
+- Músicas da skill (domínio público): `calmo`, `animado`, `batida`. Música que a pessoa mandar: passe o caminho do arquivo em `--musica`; o direito de uso é dela.
 - A música fica 22 dB abaixo da voz enquanto ele fala e sobe 6 dB nas pausas, abaixando sozinha quando ele volta. Mais alta: `--abaixo 18`. Começar de outro ponto da música: `--inicio-musica 8`.
 - Efeitos: um para cada elemento 3D, no instante em que ele aparece. Mensagem com som de mensagem, relógio com tique-taque, funil com passagem de ar, furo com bipe de erro, gráfico com sinal de acerto, alvo com estalo, cadeado com clique, lupa com passagem curta, esfera, anel, cubo e cristal com brilho, tela cheia com passagem longa. Pelo menos 1,2 s entre um e outro. Elemento gerado (veja `elementos-3d.md`) segue a animação dele: `girar` e `balancar` passagem, `subir` e `encaixar` estalo, `tracar` passagem curta, `pulsar` e `brilhar` brilho, `aparecer` clique (bloco `por_animacao` de `assets/sons/sons.json`).
 - Tudo fica em `som.json`: dá para apagar um efeito, trocar o som (`"som": "estalo"`), mudar o volume (`"ganho_db": -3`) ou o tempo. Sem som: `python scripts/som.py desligar --pasta ...` ou `--sem-som` no renderizar.
@@ -57,8 +57,8 @@ O iPhone grava em HDR (Dolby Vision ou HLG) por padrão. Legenda queimada em HDR
 
 - Quando o bruto é HDR, o cartão sempre pergunta. Recomendado: **converter para cor padrão** (`--hdr sdr`). O renderizador não roda sem essa escolha.
 - `--hdr manter` só funciona se todos os vídeos forem HDR; sai em HEVC 10 bits.
-- Depois de converter, compare um quadro do original com o do resultado. Se ficar escuro demais, avise o Well.
-- Melhor ainda: o Well desliga o HDR na câmera (veja `gravacao.md`).
+- Depois de converter, compare um quadro do original com o do resultado. Se ficar escuro demais, avise a pessoa.
+- Melhor ainda: desligar o HDR na câmera (veja `gravacao.md`).
 
 ## Codificação
 

@@ -37,4 +37,4 @@ python -m playwright install chromium
 
 ## Onde rodar
 
-A skill foi feita para o Claude Code (no computador do Well ou numa sessão na nuvem com os vídeos acessíveis). No Claude.ai pelo navegador o limite de envio de arquivo e a falta do ffmpeg costumam impedir a edição de vídeo.
+A skill foi feita para o Claude Code (no computador da pessoa ou numa sessão na nuvem com os vídeos acessíveis). No Claude.ai pelo navegador o limite de envio de arquivo e a falta do ffmpeg costumam impedir a edição de vídeo.

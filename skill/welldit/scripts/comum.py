@@ -138,6 +138,8 @@ def carregar_marca(perfil: str | None = None, pasta=None) -> dict:
     marca.setdefault("arroba", "")
     marca.setdefault("creditos", "")
     marca.setdefault("gatilhos", ["geral"])
+    if "geral" not in marca["gatilhos"]:         # o pacote geral está sempre ligado
+        marca["gatilhos"] = ["geral"] + list(marca["gatilhos"])
     marca.setdefault("avisos_obrigatorios", [])
     marca.setdefault("termos", [])
     marca["legenda"].setdefault("cor_texto", "texto")

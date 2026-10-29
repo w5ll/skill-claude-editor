@@ -22,16 +22,16 @@ promover guarda um elemento gerado e aprovado no catálogo (templates/gerados/),
 Elementos gerados: o item do elementos.json tem "elemento": "gerado:nome", "svg" (o desenho, em
 elementos-gerados/nome.svg) e "animacao". Veja referencias/elementos-3d.md.
 
-Elementos (os mesmos do carrossel): esfera, anel, cubo, cristal, mensagem, funil, relogio,
+Elementos base ARVEN: esfera, anel, cubo, cristal, mensagem, funil, relogio,
 grafico, alvo, cadeado, lupa, furo.
 
 Modos:
-- sobreposto: o elemento flutua sobre o vídeo, com um rótulo opcional. O rosto do Well
+- sobreposto: o elemento flutua sobre o vídeo, com um rótulo opcional. O rosto da pessoa
   continua na tela. Posição "auto" (padrão): com rosto.json, procura o primeiro lugar que
   não cobre o rosto (topo, topo menor, esquerda, direita, cada vez menor), já com o zoom
   da câmera. Também aceita topo, esquerda, direita ou meio fixos.
 - tela: por 1 a 3 s a tela vira o fundo escuro da marca com o elemento e um título curto,
-  como um slide do carrossel no meio do vídeo. A voz continua por baixo.
+  como um slide no meio do vídeo. A voz continua por baixo.
 
 Tudo é proposta: Claude revisa elementos.json (tira, troca, muda o tempo ou o texto) e
 confere nos quadros que o elemento não cobre o rosto.
@@ -163,7 +163,7 @@ def rotulo_numero(palavras: list[dict], k: int) -> str | None:
 
 
 def carregar_catalogo() -> list[dict]:
-    """Elementos gerados que o Well aprovou (templates/gerados/catalogo.json)."""
+    """Elementos gerados que a pessoa aprovou (templates/gerados/catalogo.json)."""
     arq = PASTA_GERADOS / "catalogo.json"
     if not arq.exists():
         return []

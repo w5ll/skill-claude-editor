@@ -1,4 +1,4 @@
-# Dicas de gravação para o Well
+# Dicas de gravação
 
 Mande estas dicas quando o bruto vier com um problema que se repete. Uma ou duas por vez, no máximo.
 

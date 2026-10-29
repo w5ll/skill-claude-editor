@@ -1,4 +1,4 @@
-"""Música de fundo e efeitos sonoros. Só quando o Well pedir com essas palavras.
+"""Música de fundo e efeitos sonoros. Só quando a pessoa pedir com essas palavras.
 
 Uso:
     python som.py listar
@@ -18,7 +18,7 @@ planejar  grava som.json, que o renderizar.py mistura por baixo da voz:
 desligar  apaga som.json (sai só a voz).
 
 Músicas e efeitos da skill são de domínio público (CC0), com a origem em assets/sons/sons.json.
-Música que o Well mandar: passe o caminho do arquivo em --musica; ele responde pelo direito de uso.
+Música que a pessoa mandar: passe o caminho do arquivo em --musica; ela responde pelo direito de uso.
 """
 
 from __future__ import annotations

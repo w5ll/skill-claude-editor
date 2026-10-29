@@ -2,7 +2,7 @@
 
 ## Padrão visual
 
-- Fonte: Sora ExtraBold (a mesma dos títulos do carrossel), em `assets/fontes/`.
+- Fonte: a do perfil de marca (`legenda.fonte` e `legenda.arquivo_fonte` do `marca.json`). No perfil padrão, Sora ExtraBold, em `assets/fontes/`.
 - Cor: texto #eaefef com contorno escuro #0a0a12; a palavra que está sendo falada fica em #a8b4d4 (o azul de destaque da marca). Cores em `marca.json`.
 - Até 3 palavras por vez, numa linha. O bloco quebra também em pausa, em fim de frase ou quando o texto não cabe na largura (medida com a fonte de verdade).
 - Tamanho padrão: 4,6% da altura do vídeo (cerca de 88 px num vídeo de 1920 de altura).
@@ -21,18 +21,18 @@
 
 A legenda tem que ser fiel ao que foi falado, com a grafia certa. Antes de renderizar, leia todos os blocos de `legendas.json` e corrija o campo `texto`:
 
-- Marcas e ferramentas: WhatsApp, Instagram, Meta, Google, CRM, Kommo, Arven.
-- Termos jurídicos: OAB, Código de Ética, Provimento 205/2021, previdenciário, trabalhista, BPC/LOAS.
+- Marcas e ferramentas (WhatsApp, Instagram, Google, CRM...): ponha no campo `termos` do perfil e a legenda corrige sozinha a caixa e a acentuação das palavras soltas. Termo de mais de uma palavra, confira à mão.
+- Termos técnicos do assunto do perfil (siglas, nomes de lei, jargão): confira a grafia no roteiro.
 - Números falados por extenso viram algarismo quando ajuda a leitura: "cinco minutos" → "5 minutos", "trinta por cento" → "30%".
-- Nome de cliente ou dado sensível que escapou na fala: avise o Well; não é para estar no vídeo.
+- Nome de cliente ou dado sensível que escapou na fala: avise a pessoa; não é para estar no vídeo.
 - Não "melhore" a fala. Gíria e jeito de falar dele ficam.
 
 Ao corrigir, mantenha o mesmo número de palavras no bloco para a palavra azul continuar acompanhando a fala. Se mudar o número (por exemplo "cinco minutos" → "5min"), o bloco aparece inteiro sem destaque, o que também é aceitável.
 
 Depois de editar: `python scripts/legendas.py --pasta saida/... --reaproveitar`.
 
-Dica: passe os termos já na transcrição (`--termos "Arven, WhatsApp"`), mas só os que aparecem neste vídeo. Termo que não está na fala faz o Whisper inventar a palavra onde não entendeu.
+Dica: passe os termos já na transcrição (`--termos "NomeDaMarca, WhatsApp"`), mas só os que aparecem neste vídeo. Termo que não está na fala faz o Whisper inventar a palavra onde não entendeu.
 
 ## Arquivo separado
 
-`legendas.srt` é gerado sempre. Só entregue se o Well pedir (por exemplo, para subir a legenda à parte em outra plataforma). Tradução não é feita.
+`legendas.srt` é gerado sempre. Só entregue se a pessoa pedir (por exemplo, para subir a legenda à parte em outra plataforma). Tradução não é feita.

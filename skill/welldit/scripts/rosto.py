@@ -1,4 +1,4 @@
-"""Onde está o rosto do Well em cada momento do vídeo cortado.
+"""Onde está o rosto da pessoa em cada momento do vídeo cortado.
 
 Uso:
     python rosto.py --pasta saida/2026-10-22_tema [--formato 9:16]

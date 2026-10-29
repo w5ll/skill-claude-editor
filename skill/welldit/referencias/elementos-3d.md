@@ -1,8 +1,8 @@
 # Elementos 3D no vídeo
 
-Os mesmos elementos do carrossel (vidro fosco e metal escovado no tom #7f8caa, luz de cima), agora animados e entrando no instante em que o Well fala a palavra. É o que amarra o vídeo à identidade do perfil.
+Elementos base ARVEN (vidro fosco e metal escovado no tom #7f8caa, luz de cima; as cores seguem o perfil de marca), animados e entrando no instante em que a pessoa fala a palavra. É o que amarra o vídeo à identidade do perfil.
 
-São 12 elementos prontos. Para as ideias que nenhum deles representa, o Claude desenha um elemento novo, mostra a prévia ao Well e só usa se ele aprovar: veja [Elementos gerados](#elementos-gerados).
+São 12 elementos prontos. Para as ideias que nenhum deles representa, o Claude desenha um elemento novo, mostra a prévia à pessoa e só usa se for aprovado: veja [Elementos gerados](#elementos-gerados).
 
 ## Catálogo e quando usar
 
@@ -11,21 +11,21 @@ São 12 elementos prontos. Para as ideias que nenhum deles representa, o Claude 
 | `mensagem` | três pontinhos "digitando" | WhatsApp, mensagem, responder, atendimento, conversa |
 | `relogio` | ponteiro correndo | minutos, horas, demora, prazo, tempo de resposta |
 | `funil` | bolinhas (leads) caindo no funil | funil, etapas, jornada, leads, contatos |
-| `furo` | leads escorrendo pelo buraco | perder, vazamento, furo, desperdício ("o furo" é a tese do Well) |
+| `furo` | leads escorrendo pelo buraco | perder, vazamento, furo, desperdício (o "furo" é uma ideia forte para quem fala de atendimento e captação) |
 | `grafico` | barras subindo uma a uma | resultado, crescimento, faturamento, contratos, números |
 | `alvo` | onda saindo do centro | público, foco, nicho, cliente certo |
-| `cadeado` | a haste desce e tranca | OAB, ética, regras, segurança, sigilo |
+| `cadeado` | a haste desce e tranca | regras, segurança, disciplina, método (e OAB, ética e sigilo, com o pacote `juridico`) |
 | `lupa` | lente procurando | analisar, descobrir, diagnóstico |
 | `esfera`, `anel`, `cubo`, `cristal` | só flutuam | abertura, fecho, ideia abstrata, quando nenhum outro serve |
 
-Além do marketing jurídico, o `sugerir` também reconhece assuntos gerais: objetivo, meta, estratégia, sonho (alvo); planejamento, lançamento, caixa, lucro, vendas (gráfico); rotina, agenda, horário (relógio); problema, erro, prejuízo (furo); decisão, enxergar, entender, clareza (lupa); disciplina, método, rigor (cadeado). Se o vídeo for de um assunto que quase não aciona nada, escolha à mão 2 ou 3 momentos fortes e use `esfera`, `cristal` ou o modo tela com um título curto.
+Os gatilhos são organizados em **pacotes**, ligados pelo campo `gatilhos` do perfil: `geral` (sempre), `marketing` (mensagem, funil, público) e `juridico` (OAB, ética, sigilo, contrato). O pacote `geral` reconhece assuntos de gestão e rotina: objetivo, meta, estratégia, sonho (alvo); planejamento, lançamento, caixa, lucro, vendas (gráfico); rotina, agenda, horário (relógio); problema, erro, prejuízo (furo); decisão, enxergar, entender, clareza (lupa); disciplina, método, rigor (cadeado). Se o vídeo for de um assunto que quase não aciona nada, escolha à mão 2 ou 3 momentos fortes e use `esfera`, `cristal` ou o modo tela com um título curto.
 
 ## Dois modos
 
-- **sobreposto** (padrão): o elemento flutua sobre o vídeo, por 2 s, com o rosto do Well na tela. Posição `auto` (padrão): com `rosto.json`, procura o primeiro lugar que não cobre o rosto (topo, topo menor, esquerda, direita, cada vez menor), já com o zoom da câmera; sem `rosto.json`, fica no topo. Também aceita `topo`, `esquerda`, `direita` ou `meio` fixos, e `"escala": 0.8` para diminuir. Rótulo opcional embaixo (ex.: "5 minutos").
-- **tela**: por 1 a 3 s a tela vira o fundo escuro da marca, com o elemento, um título curto e o @lunardiwell no topo, como um slide do carrossel no meio do vídeo. A voz continua. Use para a ideia principal do vídeo, uma ou duas vezes no máximo.
+- **sobreposto** (padrão): o elemento flutua sobre o vídeo, por 2 s, com o rosto da pessoa na tela. Posição `auto` (padrão): com `rosto.json`, procura o primeiro lugar que não cobre o rosto (topo, topo menor, esquerda, direita, cada vez menor), já com o zoom da câmera; sem `rosto.json`, fica no topo. Também aceita `topo`, `esquerda`, `direita` ou `meio` fixos, e `"escala": 0.8` para diminuir. Rótulo opcional embaixo (ex.: "5 minutos").
+- **tela**: por 1 a 3 s a tela vira o fundo escuro da marca, com o elemento, um título curto e o @ do perfil no topo (se o perfil tiver um), como um slide no meio do vídeo. A voz continua. Use para a ideia principal do vídeo, uma ou duas vezes no máximo.
 
-No título e no rótulo, `*palavra*` fica na cor de destaque, como no carrossel. Uma ou duas palavras, nunca a frase inteira.
+No título e no rótulo, `*palavra*` fica na cor de destaque do perfil. Uma ou duas palavras, nunca a frase inteira.
 
 ## Critério
 
@@ -33,7 +33,7 @@ No título e no rótulo, `*palavra*` fica na cor de destaque, como no carrossel.
 - O primeiro elemento no gancho (primeiros 3 s) costuma segurar a atenção.
 - Nunca em cima do rosto ou da boca. A posição `auto` cuida disso; o `elementos.py desenhar` mostra onde cada um ficou, e se avisar que não achou lugar, use o modo `tela` ou tire o elemento.
 - Com efeitos sonoros pedidos, cada elemento ganha o seu som (`som-e-imagem.md`).
-- Número no rótulo só se o Well falou esse número. Não invente dado, resultado nem promessa (regra da OAB vale aqui também).
+- Número no rótulo só se a pessoa falou esse número. Não invente dado, resultado nem promessa (os avisos obrigatórios do perfil valem aqui também).
 - No modo tela com título, a legenda continua aparecendo embaixo. Se o título repete exatamente a fala, tudo bem; se ficar poluído, encurte o título.
 
 ## Como fazer
@@ -55,11 +55,11 @@ Mostra a lista de elementos com o momento e a palavra que chamou cada um. Revise
 
 O `renderizar.py` desenha os elementos que faltam e coloca no vídeo, por baixo da legenda. Para renderizar sem eles: `--sem-elementos`. O `conferir.py` gera um quadro no meio de cada elemento (`.elementoNN.jpg`): olhe todos antes de entregar.
 
-Os desenhos dos 12 prontos ficam em `templates/elementos.html`. Se um elemento novo entrar no carrossel, copie o desenho para lá também. Os gerados ficam na pasta do trabalho e, se o Well aprovar, no catálogo (`templates/gerados/`).
+Os desenhos dos 12 prontos ficam em `templates/elementos.html`. Os gerados ficam na pasta do trabalho e, se a pessoa aprovar, no catálogo (`templates/gerados/`).
 
 ## Elementos gerados
 
-Os 12 prontos cobrem marketing jurídico e pouco mais. Quando o vídeo fala de outra coisa (direção, método, sorte, estar à deriva), o Claude **desenha um elemento novo** para cada ideia que nenhum pronto representa. O desenho segue um molde fixo da marca, aparece numa prévia para o Well aprovar e, se ele gostar, pode ficar no catálogo para os próximos vídeos.
+Os 12 prontos cobrem marketing, atendimento e gestão, e pouco mais. Quando o vídeo fala de outra coisa (direção, método, sorte, estar à deriva), o Claude **desenha um elemento novo** para cada ideia que nenhum pronto representa. O desenho segue um molde fixo da marca, aparece numa prévia para a pessoa aprovar e, se ela gostar, pode ficar no catálogo para os próximos vídeos.
 
 ### O fluxo (depois dos cortes, antes da câmera)
 
@@ -67,10 +67,10 @@ Os 12 prontos cobrem marketing jurídico e pouco mais. Quando o vídeo fala de o
 2. **Pronto ou gerado.** Se um dos 12 (ou um do catálogo) serve para a ideia, use ele. Só desenhe onde nenhum serve. No máximo 1 elemento a cada 6 s, como sempre.
 3. **Escrever o desenho** em `saida/<trabalho>/elementos-gerados/<nome>.svg` e o item no `elementos.json` (campos abaixo).
 4. **Validar e olhar.** Rode `elementos.py validar` e `elementos.py previa` e abra `elementos-previa.jpg`: o desenho é legível em tamanho pequeno, parece da mesma família dos atuais, tem contraste sobre o vídeo e não lembra nada de mau gosto? Refaça o que não passar.
-5. **Mostrar ao Well.** A linha ✨ do cartão diz quais são, com o momento e a palavra de cada um e quantos são novos, e a folha da prévia vai junto. Sem o "ok" dele, os gerados não entram (use só os prontos).
+5. **Mostrar à pessoa.** A linha ✨ do cartão diz quais são, com o momento e a palavra de cada um e quantos são novos, e a folha da prévia vai junto. Sem o "ok", os gerados não entram (use só os prontos).
 6. **Depois da entrega**, pergunte se algum novo deve ficar no catálogo e rode `promover` nos que ele aprovar.
 
-Valem as mesmas regras dos 12: vidro fosco e metal escovado no tom `#7f8caa`, luz de cima, sombra no chão, fundo transparente; entrada de 0,45 s e saída de 0,3 s (já no molde); sem texto dentro do desenho (rótulo só no campo `texto`, com palavras e números que o Well falou); sem pessoa, rosto, mão, logotipo ou marca de terceiros, só objetos e símbolos.
+Valem as mesmas regras dos 12: vidro fosco e metal escovado no tom `#7f8caa`, luz de cima, sombra no chão, fundo transparente; entrada de 0,45 s e saída de 0,3 s (já no molde); sem texto dentro do desenho (rótulo só no campo `texto`, com palavras e números que a pessoa falou); sem pessoa, rosto, mão, logotipo ou marca de terceiros, só objetos e símbolos.
 
 ### O desenho
 
@@ -95,7 +95,7 @@ Peça que gira, como a engrenagem, não leva espessura dentro da parte que gira 
 
 ### As animações
 
-O desenho não traz animação própria: ele marca as partes que se mexem e o item escolhe uma das animações abaixo (campo `animacao`). O som segue a animação, quando o Well pedir efeitos (`som-e-imagem.md`).
+O desenho não traz animação própria: ele marca as partes que se mexem e o item escolhe uma das animações abaixo (campo `animacao`). O som segue a animação, quando a pessoa pedir efeitos (`som-e-imagem.md`).
 
 | Animação | Parte marcada | O que faz | Som |
 | --- | --- | --- | --- |

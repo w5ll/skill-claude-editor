@@ -13,7 +13,7 @@ Campos do `marca.json`:
 | `creditos` | aviso fixo no rodapé do painel (por exemplo, a origem do visual) |
 | `cores` | as nove cores da marca, em `#rrggbb` (`fundo`, `fundo_profundo`, `cartao`, `linha`, `elemento_3d`, `destaque`, `texto`, `apoio`, `rotulo`) |
 | `legenda` | `fonte` (nome da família), `arquivo_fonte` (procurado nesta pasta e depois na pasta da skill) e quais cores a legenda usa |
-| `gatilhos` | pacotes de palavras que chamam elementos: `geral`, `marketing`, `juridico` |
+| `gatilhos` | pacotes de palavras que chamam elementos: `geral` (sempre ligado), `marketing`, `juridico` |
 | `avisos_obrigatorios` | frases que nunca podem ser cortadas; o `propor_cortes.py` avisa se um corte as atingir |
 | `termos` | grafia certa de marcas e termos (a legenda corrige só a caixa e a acentuação) |
 

@@ -6,7 +6,7 @@
 python scripts/rosto.py --pasta saida/... [--formato 9:16]
 ```
 
-Procura o rosto do Well 10 vezes por segundo em cada trecho que fica e grava `rosto.json`: onde estão os olhos, a boca e o tamanho do rosto, já no enquadramento final. Rode depois de fechar o `cortes.json` e de novo sempre que o corte mudar (os outros scripts avisam se o `rosto.json` ficou velho).
+Procura o rosto da pessoa 10 vezes por segundo em cada trecho que fica e grava `rosto.json`: onde estão os olhos, a boca e o tamanho do rosto, já no enquadramento final. Rode depois de fechar o `cortes.json` e de novo sempre que o corte mudar (os outros scripts avisam se o `rosto.json` ficou velho).
 
 Com ele:
 
@@ -18,7 +18,7 @@ O caminho do rosto é suavizado: uma detecção errada não mexe em nada, mão n
 
 Detector: YuNet, do OpenCV (licença MIT), em `assets/modelos/`.
 
-## Câmera: zoom de ênfase (só com escolha do Well no cartão)
+## Câmera: zoom de ênfase (só com escolha da pessoa no cartão)
 
 ```bash
 python scripts/camera.py planejar --pasta saida/... [--intensidade leve|normal|forte]

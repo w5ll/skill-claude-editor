@@ -1,5 +1,7 @@
 # O que o editonny tem e a nossa skill ainda não
 
+> **Documento histórico:** escrito quando o projeto era de uma pessoa só, por isso fala "o Well". Os caminhos foram atualizados para o nome novo (`skill/welldit/`), o texto não.
+
 > **Atualização de 29/10/2026:** os itens 1 a 5 foram implementados (redução de ruído, conferência mais rígida, legenda e elementos fora do rosto, zoom de ênfase, música e efeitos). Os itens 6 e a capa do Reels continuam em aberto. Detalhes no fim.
 
 Comparação feita em 28/10/2026 com a versão do editonny publicada no GitHub ([soumatheusgomes/editonny](https://github.com/soumatheusgomes/editonny), licença MIT). Serve para decidir o que trazer para a `welldit`. O código continua sendo escrito do nosso jeito, mais enxuto; do editonny vem a ideia e, quando valer a pena, os números que ele já mediu.

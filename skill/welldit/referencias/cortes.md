@@ -1,6 +1,6 @@
 # Critérios de corte
 
-O script propõe, você decide. Depois de rodar `propor_cortes.py`, leia os trechos como se fosse o Well assistindo: o texto emendado tem que soar como uma fala só, natural, com o sentido que ele quis.
+O script propõe, você decide. Depois de rodar `propor_cortes.py`, leia os trechos como se fosse a pessoa assistindo: o texto emendado tem que soar como uma fala só, natural, com o sentido pretendido.
 
 ## O que sai
 
@@ -13,8 +13,8 @@ O script propõe, você decide. Depois de rodar `propor_cortes.py`, leia os trec
 
 ## O que nunca sai
 
-- Ressalva, condição e negação: "não", "nem sempre", "depende do caso", "em regra". Tirar isso muda o que o Well disse.
-- Qualquer aviso que a OAB exige ou que deixa o conteúdo informativo em vez de promessa de resultado. Na dúvida, mantenha.
+- Ressalva, condição e negação: "não", "nem sempre", "depende do caso", "em regra". Tirar isso muda o que a pessoa disse.
+- Os **avisos obrigatórios do perfil** (campo `avisos_obrigatorios` do `marca.json`: por exemplo, o aviso que um órgão de classe exige) e qualquer aviso que deixa o conteúdo informativo em vez de promessa de resultado. O `propor_cortes.py` procura os do perfil na fala e marca em "PARA CONFERIR" os que um corte atingir. Na dúvida, mantenha.
 - Pausa de efeito: a pausa antes de um número, de uma virada ou do fecho. Se o roteiro marca pausa, ou a fala claramente espera o espectador, mantenha.
 - O final da última palavra. A folga depois da fala existe para isso.
 
@@ -27,13 +27,13 @@ Quando a mesma frase aparece mais de uma vez:
 3. A última não é automaticamente a melhor.
 4. Se for preciso juntar metade de uma tomada com metade de outra, só faça se o corte cair numa pausa natural e o tom for o mesmo. Nunca emende no meio de uma palavra.
 
-Sem ouvir, você decide pelo texto e pela confiança da transcrição (`conf` em `transcricoes/`): tomada com palavra de confiança baixa ou palavra longa demais costuma ter tropeço. Na dúvida entre duas tomadas, mantenha a mais completa e avise o Well na entrega.
+Sem ouvir, você decide pelo texto e pela confiança da transcrição (`conf` em `transcricoes/`): tomada com palavra de confiança baixa ou palavra longa demais costuma ter tropeço. Na dúvida entre duas tomadas, mantenha a mais completa e avise a pessoa na entrega.
 
 ## Estrutura do vídeo
 
-Os vídeos do Well seguem o roteiro da skill de conteúdo: gancho nos primeiros segundos, desenvolvimento, fecho com chamada. Se o bruto tiver o gancho gravado depois (ele refez no fim), mova o trecho do gancho para o começo no `cortes.json`. Reordenar é permitido; inventar frase não.
+Os vídeos costumam seguir um roteiro: gancho nos primeiros segundos, desenvolvimento, fecho com chamada. Se o bruto tiver o gancho gravado depois (a pessoa refez no fim), mova o trecho do gancho para o começo no `cortes.json`. Reordenar é permitido; inventar frase não.
 
-Duração: a que o material pede. Não estique nem corte conteúdo para caber num tempo, a não ser que o Well peça.
+Duração: a que o material pede. Não estique nem corte conteúdo para caber num tempo, a não ser que a pessoa peça.
 
 ## Mexendo no cortes.json
 
