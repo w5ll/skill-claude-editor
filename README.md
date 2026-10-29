@@ -49,10 +49,10 @@ cd skill-claude-editor
 ```
 
 ```bash
-git checkout claude/gallant-davinci-dif0j3
+git checkout main
 ```
 
-O último comando troca para a versão nova da skill (com redução de ruído, rosto, zoom, música e efeitos). Enquanto ela não for a versão principal do projeto no GitHub, esse passo é obrigatório.
+O último comando garante que você está na versão principal da skill, a `main`.
 
 ### 3. Instalar as ferramentas de vídeo e o Python
 
