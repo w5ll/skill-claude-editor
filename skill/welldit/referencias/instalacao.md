@@ -31,7 +31,7 @@ Depois disso nada sai do computador.
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r skill/edicao-video-well/scripts/requirements.txt
+pip install -r skill/welldit/scripts/requirements.txt
 python -m playwright install chromium
 ```
 

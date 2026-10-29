@@ -125,7 +125,7 @@ source .venv/bin/activate
 ```
 
 ```bash
-pip install -r skill/edicao-video-well/scripts/requirements.txt
+pip install -r skill/welldit/scripts/requirements.txt
 ```
 
 O segundo comando faz a skill sempre usar o ffmpeg completo, mesmo que o Mac tenha outro instalado. O último baixa as bibliotecas de transcrição, rosto e desenho, e leva alguns minutos.
@@ -153,7 +153,7 @@ Para desenhar os elementos 3D a skill usa o Google Chrome. Se você não tiver o
 3. No Claude Code, cole:
 
 ```text
-Edita o vídeo material-bruto/IMG_0000.MOV para o Instagram, seguindo a skill em skill/edicao-video-well/SKILL.md. Use o ambiente .venv do projeto (source .venv/bin/activate). Antes de tudo, confere se está instalado o que a skill precisa (referencias/instalacao.md); se faltar algo, me explica o que vai instalar e espera meu ok. Depois inspeciona o vídeo e me mostra o cartão de ajustes antes de editar.
+Edita o vídeo material-bruto/IMG_0000.MOV para o Instagram, seguindo a skill em skill/welldit/SKILL.md. Use o ambiente .venv do projeto (source .venv/bin/activate). Antes de tudo, confere se está instalado o que a skill precisa (referencias/instalacao.md); se faltar algo, me explica o que vai instalar e espera meu ok. Depois inspeciona o vídeo e me mostra o cartão de ajustes antes de editar.
 ```
 
 Troque `IMG_0000.MOV` pelo nome do seu arquivo. Se forem dois vídeos que se completam, cite os dois, na ordem.
@@ -176,7 +176,7 @@ source .venv/bin/activate
 ```
 
 ```bash
-python skill/edicao-video-well/scripts/painel.py
+python skill/welldit/scripts/painel.py
 ```
 
 O navegador abre em `http://localhost:8765`. Lá você:
@@ -212,7 +212,7 @@ Pode rodar com uma edição em andamento: o que já foi feito fica salvo na past
 ## Estrutura
 
 ```
-skill/edicao-video-well/         ← a skill (é isso que vira o arquivo .skill)
+skill/welldit/         ← a skill (é isso que vira o arquivo .skill)
   SKILL.md                       fluxo, cartão de ajustes, entrega, regras
   referencias/
     cortes.md                    o que cortar, o que nunca cortar, tomada certa
@@ -251,9 +251,9 @@ saida/                           trabalhos editados (vídeos fora do git)
 ## Rodando na mão
 
 ```bash
-pip install -r skill/edicao-video-well/scripts/requirements.txt   # uma vez (precisa do ffmpeg)
+pip install -r skill/welldit/scripts/requirements.txt   # uma vez (precisa do ffmpeg)
 python -m playwright install chromium                              # uma vez (desenha os elementos 3D)
-cd skill/edicao-video-well/scripts
+cd skill/welldit/scripts
 P=../../../saida/2026-10-22_lead-curioso
 python inspecionar.py ../../../material-bruto/2026-10-22_lead-curioso/IMG_2040.mov --pasta $P
 python transcrever.py ../../../material-bruto/2026-10-22_lead-curioso/IMG_2040.mov --pasta $P --termos "Arven, WhatsApp"
@@ -274,7 +274,7 @@ python elementos.py promover bussola --pasta $P --palavras "bussol,rumo"   # gua
 ## Empacotando a skill
 
 ```bash
-./empacotar.sh        # gera dist/edicao-video-well.skill
+./empacotar.sh        # gera dist/welldit.skill
 ```
 
 ## O que ainda não faz
@@ -287,4 +287,4 @@ O que veio do editonny e o que ficou de fora está em [docs/comparacao-editonny.
 
 ## Créditos
 
-A forma de trabalhar (cartão de ajustes antes de editar, corte medido na onda sonora, amostra antes do vídeo inteiro, conferência real do arquivo) veio do projeto aberto [editonny](https://github.com/soumatheusgomes/editonny), de Matheus Gomes (licença MIT). O código daqui é próprio e bem mais enxuto. Detector de rosto YuNet: OpenCV Zoo, licença MIT. Músicas (HoliznaCC0) e efeitos sonoros (vários autores do Freesound): domínio público (CC0), escolhidos da biblioteca do editonny, com a origem em `skill/edicao-video-well/assets/sons/sons.json`. Fonte Sora: The Sora Project Authors, licença SIL Open Font License 1.1 (`skill/edicao-video-well/assets/fontes/OFL.txt`).
+A forma de trabalhar (cartão de ajustes antes de editar, corte medido na onda sonora, amostra antes do vídeo inteiro, conferência real do arquivo) veio do projeto aberto [editonny](https://github.com/soumatheusgomes/editonny), de Matheus Gomes (licença MIT). O código daqui é próprio e bem mais enxuto. Detector de rosto YuNet: OpenCV Zoo, licença MIT. Músicas (HoliznaCC0) e efeitos sonoros (vários autores do Freesound): domínio público (CC0), escolhidos da biblioteca do editonny, com a origem em `skill/welldit/assets/sons/sons.json`. Fonte Sora: The Sora Project Authors, licença SIL Open Font License 1.1 (`skill/welldit/assets/fontes/OFL.txt`).

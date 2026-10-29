@@ -17,13 +17,13 @@ __pycache__/
 .DS_Store
 
 # sons da skill (domínio público) vão para o git
-!skill/edicao-video-well/assets/sons/**/*.wav
-!skill/edicao-video-well/assets/sons/**/*.mp3
+!skill/welldit/assets/sons/**/*.wav
+!skill/welldit/assets/sons/**/*.mp3
 .painel/
 saida/*/andamento.json
 
 # perfis de marca pessoais não vão para o git (só o arven, o modelo e a explicação)
-skill/edicao-video-well/perfis/*
-!skill/edicao-video-well/perfis/arven/
-!skill/edicao-video-well/perfis/_modelo/
-!skill/edicao-video-well/perfis/LEIA.md
+skill/welldit/perfis/*
+!skill/welldit/perfis/arven/
+!skill/welldit/perfis/_modelo/
+!skill/welldit/perfis/LEIA.md

@@ -1,7 +1,7 @@
 """Painel da edição no navegador: enviar vídeos brutos e ver em que etapa cada edição está.
 
 Uso (da pasta do projeto, com o .venv ativo):
-    python skill/edicao-video-well/scripts/painel.py [--porta 8765] [--sem-abrir] [--perfil NOME]
+    python skill/welldit/scripts/painel.py [--porta 8765] [--sem-abrir] [--perfil NOME]
 
 Abre http://localhost:8765 no navegador. Só funciona no próprio computador (não fica
 visível na rede). Para parar: Ctrl+C no terminal.

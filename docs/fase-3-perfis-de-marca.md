@@ -103,7 +103,7 @@ Aparece no topo e nos créditos do README, no rodapé do painel (vindo do campo 
 4. **Aviso obrigatório.** Com um aviso no perfil, o `propor_cortes` o marca quando um corte o atinge e confirma quando ele fica inteiro.
 5. **Legenda com termo.** Com `termos: ["WhatsApp"]`, "whatsapp" sai "WhatsApp"; sem termo, a legenda não muda.
 6. **Troca de perfil no meio.** Gerar a legenda com um perfil e renderizar com outro é recusado com uma mensagem clara.
-7. **Renomeação.** `./empacotar.sh` gera `dist/welldit.skill`; todos os scripts respondem a `--help`; o painel sobe e responde; uma busca no repositório não acha `lunardiwell`, `edicao-video-well` nem "o Well" fora dos documentos históricos e dos créditos.
+7. **Renomeação.** `./empacotar.sh` gera `dist/welldit.skill`; todos os scripts respondem a `--help`; o painel sobe e responde; uma busca no repositório não acha `lunardiwell`, `welldit` nem "o Well" fora dos documentos históricos e dos créditos.
 
 ## Fora desta fase
 

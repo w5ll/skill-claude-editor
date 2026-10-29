@@ -112,5 +112,5 @@ Decisões da implementação, onde a especificação deixava margem:
 ## Prompt para implementar (colar no Claude Code do Mac)
 
 ```text
-Implemente a Fase 2 da skill seguindo docs/fase-2-elementos-gerados.md, do começo ao fim. Leia antes skill/edicao-video-well/SKILL.md, referencias/elementos-3d.md, scripts/elementos.py e templates/elementos.html. Use o ambiente .venv. Faça os testes da seção "Testes antes de dar por pronto" com o vídeo de planejamento (saida/2026-10-28_img-5127) e me mostre a folha de prévia dos 4 elementos gerados. Não mude o visual dos 12 elementos atuais. Quando tudo passar, atualize README, SKILL.md e referencias, rode ./empacotar.sh, faça commit e push para a main.
+Implemente a Fase 2 da skill seguindo docs/fase-2-elementos-gerados.md, do começo ao fim. Leia antes skill/welldit/SKILL.md, referencias/elementos-3d.md, scripts/elementos.py e templates/elementos.html. Use o ambiente .venv. Faça os testes da seção "Testes antes de dar por pronto" com o vídeo de planejamento (saida/2026-10-28_img-5127) e me mostre a folha de prévia dos 4 elementos gerados. Não mude o visual dos 12 elementos atuais. Quando tudo passar, atualize README, SKILL.md e referencias, rode ./empacotar.sh, faça commit e push para a main.
 ```

@@ -1,6 +1,6 @@
 # Projeto: edição de vídeo do Well
 
-Repositório da skill `skill/edicao-video-well/`, que edita os vídeos que o Well (@lunardiwell) grava para o Instagram: corta pausas e erros, coloca legenda no padrão da marca, iguala o volume e entrega o MP4. Leia `skill/edicao-video-well/SKILL.md` e os arquivos de `referencias/` antes de qualquer trabalho.
+Repositório da skill `skill/welldit/`, que edita os vídeos que o Well (@lunardiwell) grava para o Instagram: corta pausas e erros, coloca legenda no padrão da marca, iguala o volume e entrega o MP4. Leia `skill/welldit/SKILL.md` e os arquivos de `referencias/` antes de qualquer trabalho.
 
 - Sempre em português, com acentuação, sem travessão, sem termo em inglês sem tradução. O Well não lê inglês.
 - Pedido de edição: siga o SKILL.md. Inspecionar, cartão de ajustes, esperar o "ok" do Well, só então editar.

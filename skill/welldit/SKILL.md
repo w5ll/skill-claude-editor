@@ -1,5 +1,5 @@
 ---
-name: edicao-video-well
+name: welldit
 description: "Edita os vídeos gravados pelo Well para o Instagram (@lunardiwell): corta pausas, respirações, erros e repetições, junta tomadas, coloca legenda no padrão da marca fora do rosto, faz elementos 3D da marca entrarem quando ele fala a palavra certa (e desenha elementos novos para as ideias que nenhum elemento pronto representa), dá zoom de ênfase, tira ruído, põe música e efeitos quando pedido, iguala o volume e entrega o MP4 pronto para postar. Use quando ele mandar um vídeo bruto, pedir para editar, cortar, legendar, pôr elementos 3D, zoom, música ou ajustar um vídeo já editado."
 ---
 
