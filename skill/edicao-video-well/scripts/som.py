@@ -192,18 +192,26 @@ def planejar(pasta: Path, musica: str | None, efeitos: bool, abaixo: float, sobe
                 nome = cat["por_elemento"]["tela"]
             elif it["elemento"].startswith("imagem:"):    # imagem de apoio: som próprio
                 nome = cat["por_elemento"].get("imagem")
+            elif it["elemento"].startswith("cena:"):      # cena explicativa: passagem ao entrar, clique a cada parte
+                nome = cat["por_elemento"].get("cena")
             elif it["elemento"].startswith("gerado:"):   # elemento gerado: o som segue a animação dele
                 nome = it.get("som") or cat.get("por_animacao", {}).get(it.get("animacao"))
             else:
                 nome = cat["por_elemento"].get(it["elemento"])
             t = round(it["inicio"] + POP_DO_ELEMENTO, 3)
-            if not nome or t - ultimo < ESPACO_EFEITOS:
-                continue
-            ef = {"som": nome, "tempo": t, "ganho_db": 0, "elemento": it["elemento"]}
-            if nome == "tique-taque":
-                ef["duracao_max"] = round(it["duracao"], 2)
-            plano["efeitos"].append(ef)
-            ultimo = t
+            if nome and t - ultimo >= ESPACO_EFEITOS:
+                ef = {"som": nome, "tempo": t, "ganho_db": 0, "elemento": it["elemento"]}
+                if nome == "tique-taque":
+                    ef["duracao_max"] = round(it["duracao"], 2)
+                plano["efeitos"].append(ef)
+                ultimo = t
+            if it["elemento"].startswith("cena:"):
+                from cenas import momentos
+                for f in momentos(it)[1:]:      # a primeira parte coincide com a entrada da cena
+                    tc = round(f, 3)
+                    if "clique" in cat["efeitos"] and tc - ultimo >= ESPACO_EFEITOS:
+                        plano["efeitos"].append({"som": "clique", "tempo": tc, "ganho_db": 0, "elemento": it["elemento"]})
+                        ultimo = tc
     return plano
 
 

@@ -27,7 +27,8 @@
     "cubo": "brilho",
     "cristal": "brilho",
     "tela": "passagem-longa",
-    "imagem": "passagem-curta"
+    "imagem": "passagem-curta",
+    "cena": "passagem-curta"
   },
   "por_animacao": {
     "girar": "passagem",
