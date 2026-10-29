@@ -43,6 +43,7 @@ MAX_ANTES_DEPOIS = 10.0
 ALTURA_PAINEL = {"lista": (0.09, 0.092, 0.11), "antes-depois": 0.60, "numero": 0.42, "de-para": 0.64}
 SEGURO_TOPO, SEGURO_BASE = 0.12, 0.80      # como a legenda: nada importante fora disso
 FOLGA_ROSTO = 0.02
+ENCOLHE_MIN = 0.8          # o painel pode encolher até 80% para caber fora do rosto
 
 ORDINAIS = {"primeiro": 1, "primeira": 1, "segundo": 2, "segunda": 2, "terceiro": 3, "terceira": 3,
             "quarto": 4, "quarta": 4, "quinto": 5, "quinta": 5}
@@ -502,7 +503,15 @@ def resolver_caixa(item: dict, largura: int, altura: int, rostos, camera) -> str
         if y0 >= topo and y1 <= base:
             item["caixa_usada"] = [x, int(round(y0)), w, h]
             return None
-    # folga cheia não coube: aceita uma folga menor (um quarto) antes de desistir
+    # a folga cheia não coube: encolhe o painel até 20% (a altura é proporcional à largura)
+    for livre_y0, livre_y1 in ((topo, zy0 - folga), (zy1 + folga, base)):
+        disponivel = livre_y1 - livre_y0
+        if h * ENCOLHE_MIN <= disponivel < h:
+            k = disponivel / h
+            w2, h2 = int(w * k) // 2 * 2, int(h * k) // 2 * 2
+            item["caixa_usada"] = [(largura - w2) // 2, int(round(livre_y0)), w2, h2]
+            return None
+    # ainda não coube: aceita uma folga menor (um quarto) antes de desistir
     minima = folga / 4
     if topo + h <= zy0 - minima:
         item["caixa_usada"] = [x, int(round(max(topo, zy0 - folga - h))), w, h]
