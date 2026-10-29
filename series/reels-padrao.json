@@ -1,0 +1,9 @@
+{
+  "nome": "Reels padrão",
+  "descricao": "Reels vertical, ritmo dinâmico, zoom leve e música calma. Ponto de partida para quem não tem série própria.",
+  "ritmo": "dinamico",
+  "formato": "9:16@1080",
+  "camera": {"zoom": "leve"},
+  "som": {"musica": "calmo", "efeitos": false, "volume": -14},
+  "ruido": "auto"
+}

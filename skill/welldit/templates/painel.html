@@ -96,6 +96,35 @@
   .modal .barra-topo span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .aviso-copiado { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--cartao);
     border: 1px solid var(--destaque); border-radius: 10px; padding: 10px 16px; font-size: 14px; display: none; z-index: 30; }
+  a { color: var(--destaque); }
+  button.primario { background: var(--destaque); color: var(--fundo-profundo); border-color: var(--destaque); font-weight: 600; }
+  button.primario:hover { color: var(--fundo-profundo); filter: brightness(1.08); }
+  button:disabled { opacity: .45; cursor: default; }
+  button.perigo:hover { border-color: var(--falha); color: var(--falha); }
+  select, input[type=text] { font: inherit; color: var(--texto); background: var(--fundo); border: 1px solid var(--linha);
+    border-radius: 8px; padding: 7px 9px; width: 100%; }
+  .campos, .rapido .grade2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; margin-top: 12px; }
+  .campos label, .rapido label.c { display: block; font-size: 13px; color: var(--rotulo); margin-bottom: 4px; }
+  .escolhidos { color: var(--apoio); font-size: 14px; }
+  .sel { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--rotulo); margin-top: 6px; cursor: pointer; }
+  .portao { margin-top: 14px; padding: 14px; border-radius: 12px; border: 1px solid var(--destaque); background: rgba(168,180,212,.06); }
+  .portao h3 { margin: 0 0 6px; font-size: 15px; font-family: "FontePerfil", sans-serif; }
+  .portao .linhas { margin: 8px 0; padding-left: 18px; color: var(--apoio); font-size: 14px; }
+  .pend { margin: 12px 0; }
+  .pend .q { font-weight: 600; margin-bottom: 4px; }
+  .opcao { display: flex; gap: 8px; align-items: baseline; padding: 3px 0; cursor: pointer; }
+  .opcao small { color: var(--ok); margin-left: 4px; }
+  .avisos { color: var(--aviso); font-size: 13px; margin: 8px 0; }
+  details.rapido { margin: 10px 0; border: 1px solid var(--linha); border-radius: 10px; padding: 8px 10px; }
+  details.rapido summary { cursor: pointer; color: var(--apoio); }
+  .marcar { display: flex; align-items: center; gap: 8px; font-size: 14px; padding-top: 22px; }
+  .botoes { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; align-items: center; }
+  .fila-linha { font-size: 13px; color: var(--aviso); margin-top: 10px; display: flex; align-items: center; gap: 8px; }
+  .etapa.pulada { opacity: .5; }
+  .etapa.rodando { border-color: var(--destaque); color: var(--destaque); }
+  .etapa.interrompida, .etapa.desatualizada { border-color: rgba(240,208,143,.5); color: var(--aviso); }
+  .etapa.falhou { border-color: rgba(240,163,163,.5); color: var(--falha); }
+  .erro-rodada { margin-top: 10px; font-size: 13px; color: var(--falha); }
   @media (max-width: 560px) {
     .versao { grid-template-columns: 1fr; }
     .versao .acoes { justify-content: flex-start; }
@@ -122,6 +151,19 @@
   <section>
     <h2>Vídeos brutos</h2>
     <div class="grade" id="brutos"><p class="vazio">Carregando...</p></div>
+  </section>
+
+  <section id="nova">
+    <h2>Nova edição</h2>
+    <div class="cartao">
+      <div class="escolhidos" id="escolhidos">Marque os vídeos que formam a edição (nos vídeos brutos acima).</div>
+      <div class="campos">
+        <div><label for="nova-tema">Nome da edição</label><input type="text" id="nova-tema" maxlength="60" placeholder="ex.: planejamento-semana"></div>
+        <div><label for="nova-serie">Série (jeito de editar)</label><select id="nova-serie"></select></div>
+        <div><label for="nova-perfil">Perfil de marca</label><select id="nova-perfil"></select></div>
+      </div>
+      <div class="botoes"><button class="primario" id="nova-comecar" disabled>Começar a edição</button></div>
+    </div>
   </section>
 
   <section>
@@ -161,13 +203,27 @@ function pedidoPara(caminho) {
     `Use o ambiente .venv do projeto (source .venv/bin/activate). Antes de tudo, confere se está instalado o que a skill ` +
     `precisa; se faltar algo, me explica e espera meu ok. Depois inspeciona o vídeo e me mostra o cartão de ajustes antes de editar.`;
 }
+function aviso(txt) { const a = $("#copiado"); a.textContent = txt; a.style.display = "block"; setTimeout(() => a.style.display = "none", 3200); }
 async function copiar(texto) {
   try { await navigator.clipboard.writeText(texto); }
   catch {
     const t = document.createElement("textarea"); t.value = texto; document.body.appendChild(t);
     t.select(); document.execCommand("copy"); t.remove();
   }
-  const a = $("#copiado"); a.style.display = "block"; setTimeout(() => a.style.display = "none", 2200);
+  aviso("Pedido copiado. Cole no Claude Code.");
+}
+/* Tudo que muda algo passa por aqui: o cabeçalho X-Painel e o cookie de sessão acompanham o pedido. */
+async function api(rota, corpo) {
+  const r = await fetch(rota, {method: "POST", headers: {"Content-Type": "application/json", "X-Painel": "1"}, body: JSON.stringify(corpo || {})});
+  let d = {};
+  try { d = await r.json(); } catch {}
+  if (r.status === 401) { location.reload(); throw new Error("sem sessão"); }
+  if (!r.ok) throw new Error(d.erro || "o painel recusou o pedido");
+  return d;
+}
+async function agir(rota, corpo, ok) {
+  try { const d = await api(rota, corpo); if (ok) aviso(ok); atualizar(); return d; }
+  catch (e) { aviso(e.message); }
 }
 
 /* ---------- envio ---------- */
@@ -197,6 +253,7 @@ function proximo() {
   const xhr = new XMLHttpRequest();
   const inicio = Date.now();
   xhr.open("PUT", "/api/enviar?nome=" + encodeURIComponent(arquivo.name));
+  xhr.setRequestHeader("X-Painel", "1");
   xhr.upload.onprogress = (ev) => {
     if (!ev.lengthComputable) return;
     const p = ev.loaded / ev.total, s = (Date.now() - inicio) / 1000;
@@ -224,6 +281,7 @@ function proximo() {
 
 /* ---------- estado ---------- */
 let ultimoBrutos = "", ultimos = {};
+const selecionados = new Set();
 
 function desenharBrutos(estado) {
   const chave = JSON.stringify([estado.brutos, estado.enviando]);
@@ -236,9 +294,105 @@ function desenharBrutos(estado) {
       ${b.video ? `<img loading="lazy" src="/miniatura?c=${encodeURIComponent(b.caminho)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'sem'}))">` : `<div class="sem"></div>`}
       <div class="info"><b title="${esc(b.nome)}">${esc(b.nome)}</b>
         <span>${tamanho(b.tamanho)} · ${quando(b.modificado)}</span><br>
+        ${b.video ? `<label class="sel"><input type="checkbox" data-usar="${esc(b.nome)}" ${selecionados.has(b.nome) ? "checked" : ""}> usar numa edição</label>` : ""}
         ${b.video ? `<button class="mini" data-copiar="${esc(b.caminho)}">copiar pedido de edição</button>` : ""}
       </div>
     </div>`).join("");
+}
+
+/* ---------- nova edição ---------- */
+let opcoesDesenhadas = "";
+function desenharNova(estado) {
+  const o = estado.opcoes || {series: [], perfis: []};
+  const chave = JSON.stringify(o);
+  if (chave !== opcoesDesenhadas) {
+    opcoesDesenhadas = chave;
+    $("#nova-serie").innerHTML = `<option value="">nenhuma (padrões da skill)</option>` + o.series.map((x) => `<option>${esc(x)}</option>`).join("");
+    $("#nova-perfil").innerHTML = `<option value="">padrão</option>` + o.perfis.map((x) => `<option>${esc(x)}</option>`).join("");
+  }
+  const existentes = new Set(estado.brutos.map((b) => b.nome));
+  [...selecionados].forEach((n) => { if (!existentes.has(n)) selecionados.delete(n); });
+  $("#escolhidos").textContent = selecionados.size ? `Vídeos escolhidos: ${[...selecionados].join(" + ")}` :
+    "Marque os vídeos que formam a edição (nos vídeos brutos acima).";
+  $("#nova-comecar").disabled = !selecionados.size;
+}
+
+const SIMB = {feita: "✓", pulada: "–", pendente: "·", rodando: "▶", interrompida: "↺", falhou: "✗", desatualizada: "↻"};
+const limpaMd = (t) => t.replace(/\*\*/g, "").replace(/`/g, "").replace(/_\(([^)]*)\)_/g, "($1)");
+
+function formCartao(t) {
+  const g = t.orq.portao, c = g.cartao, e = t.orq.escolhas;
+  const pend = c.pendencias.map((p) => `<div class="pend"><div class="q">${esc(p.pergunta)}</div>` + p.opcoes.map((op) =>
+    `<label class="opcao"><input type="radio" name="p-${esc(t.nome)}-${esc(p.id)}" value="${op.letra}" ${op.recomendada ? "checked" : ""}>
+      <span><b>${op.letra})</b> ${esc(op.texto)}${op.recomendada ? "<small>recomendado</small>" : ""}</span></label>`).join("") + `</div>`).join("");
+  const avisos = c.avisos.length ? `<div class="avisos">${c.avisos.map((a) => "⚠ " + esc(a)).join("<br>")}</div>` : "";
+  const linhas = (g.texto || "").split("\n").filter((l) => l.startsWith("- ") && !l.includes("Preciso") && !l.startsWith("- Aviso") &&
+    !/^- O vídeo está|^- Tem chiado/.test(l)).map((l) => `<li>${esc(limpaMd(l.slice(2)).replace(/\S*\/(\S+\.mp4)/, "$1"))}</li>`).join("");
+  const sel = (chave, rotulo, opcoes, atual) => `<div><label class="c">${rotulo}</label><select data-escolha="${chave}" data-atual="${esc(atual)}">` +
+    opcoes.map(([v, n]) => `<option value="${v}" ${v === atual ? "selected" : ""}>${n}</option>`).join("") + `</select></div>`;
+  const marcar = (chave, rotulo, atual) => `<label class="marcar"><input type="checkbox" data-escolha="${chave}" data-atual="${atual}" ${atual ? "checked" : ""}> ${rotulo}</label>`;
+  const rapido = `<details class="rapido"><summary>Ajustes rápidos</summary><div class="grade2">
+      ${sel("ritmo", "Ritmo", [["natural", "natural"], ["dinamico", "dinâmico"]], e.ritmo)}
+      ${sel("camera", "Zoom de ênfase", [["nenhum", "sem zoom"], ["leve", "leve"], ["normal", "normal"], ["forte", "forte"]], e.camera)}
+      ${sel("som.musica", "Música", [["nenhuma", "sem música"], ["calmo", "calma"], ["animado", "animada"], ["batida", "batida leve"]], e.som.musica)}
+      ${sel("amostra", "Amostra", [["conferir", "eu confiro"], ["aprovar", "você aprova"], ["nao", "sem amostra"]], e.amostra)}
+      ${marcar("som.efeitos", "efeito sonoro nos elementos", !!e.som.efeitos)}
+      ${marcar("legenda.ligada", "legenda", e.legenda.ligada !== false)}
+      ${marcar("elementos.ligado", "elementos 3D", e.elementos.ligado !== false)}
+    </div></details>`;
+  return `${pend}${avisos}<ul class="linhas">${linhas}</ul>${rapido}
+    <div class="botoes"><button class="primario" data-acao="aprovar-cartao" data-pasta="${esc(t.nome)}">Aprovar e começar</button></div>`;
+}
+
+function pedidoDoClaude(t, g) {
+  return `Revise o portão "${g.nome}" da edição ${t.nome} (projeto welldit). Rode: python skill/welldit/scripts/editar.py estado --pasta saida/${t.nome}. ` +
+    `Leia o pedido em saida/${t.nome}/pedidos/${g.nome}.json e a referência da skill, faça a revisão e depois aprove com: ` +
+    `python skill/welldit/scripts/editar.py aprovar --pasta saida/${t.nome} ${g.nome} --seguir`;
+}
+
+function desenharPortao(t) {
+  const g = t.orq.portao;
+  if (!g || t.orq.posicao !== null) return "";
+  if (g.nome === "cartao") return `<div class="portao"><h3>Cartão de ajustes</h3>${formCartao(t)}</div>`;
+  const arqs = g.arquivos.map((a) => `<a href="${url(a.caminho)}" target="_blank" rel="noopener">${esc(a.nome)}</a>`).join(" · ");
+  const amostra = g.nome === "amostra" ? t.versoes.find((v) => v.amostra && v.pronta) : null;
+  return `<div class="portao"><h3>${esc(g.pergunta)}</h3>
+    ${arqs ? `<div class="extras">Arquivos: ${arqs}</div>` : ""}
+    ${g.tipo === "julgamento" ? `<div class="extras">A revisão detalhada na tela vem nas próximas fases; por enquanto, aprove aqui ou peça ao Claude.</div>` : ""}
+    <div class="botoes">
+      ${amostra ? `<button data-video="${esc(amostra.caminho)}" data-nome="${esc(amostra.nome)}">assistir a amostra</button>` : ""}
+      <button class="primario" data-acao="aprovar" data-pasta="${esc(t.nome)}" data-portao="${esc(g.nome)}">${g.nome === "amostra" ? "Aprovar a amostra e seguir" : "Aprovar e seguir"}</button>
+      <button data-copiar-texto="${esc(pedidoDoClaude(t, g))}">Copiar pedido para o Claude</button>
+    </div></div>`;
+}
+
+function desenharOrq(t, versoes) {
+  const o = t.orq;
+  const chips = Object.values(o.etapas).map((e) => `<span class="etapa ${e.situacao === "feita" ? "feito" : e.situacao}" title="${esc(e.resumo)}">${e.situacao === "feita" ? "" : SIMB[e.situacao] + " "}${esc(e.titulo)}${e.situacao === "feita" && e.resumo && e.resumo.length <= 30 ? `<small>${esc(e.resumo)}</small>` : ""}</span>`).join("");
+  const a = t.agora;
+  let andando = "";
+  if (o.posicao === 0) {
+    const pct = a && a.situacao === "rodando" && a.progresso != null ? Math.round(a.progresso * 100) + "%" : "";
+    andando = `<div class="agora"><div class="linha1"><i class="gira"></i>${a && a.situacao === "rodando" ? esc(capital(a.etapa)) : "Rodando"}<span class="pct">${pct}</span></div>
+      <div class="det">${esc((a && a.detalhe) || "")}</div>
+      ${pct ? `<div class="barra"><i style="width:${(a.progresso * 100).toFixed(1)}%"></i></div>` : ""}
+      <div class="botoes"><button class="perigo" data-acao="cancelar" data-pasta="${esc(t.nome)}">Cancelar</button></div></div>`;
+  } else if (o.posicao > 0) {
+    andando = `<div class="fila-linha"><i class="gira"></i>na fila, posição ${o.posicao}
+      <button class="mini perigo" data-acao="cancelar" data-pasta="${esc(t.nome)}">Tirar da fila</button></div>`;
+  }
+  const incompleta = o.etapas.entrega.situacao !== "feita";
+  const parada = Object.values(o.etapas).some((e) => ["interrompida", "falhou", "desatualizada"].includes(e.situacao));
+  const controles = o.posicao === null ? `<div class="botoes">
+      ${!o.portao && incompleta ? `<button class="primario" data-acao="iniciar" data-pasta="${esc(t.nome)}">${parada ? "Retomar" : "Continuar"}</button>` : ""}
+      <button data-acao="abrir" data-pasta="${esc(t.nome)}">Abrir a pasta</button></div>` : "";
+  const ult = o.ultimo && ["falhou", "erro"].includes(o.ultimo.resultado) ? `<div class="erro-rodada">A última rodada terminou com problema: ${esc((o.ultimo.linhas || []).slice(-1)[0] || "")}</div>` : "";
+  return `<div class="cab"><span class="titulo">${esc(t.nome)}</span>
+      <span class="quando">${esc(t.videos.join(" + "))}${t.videos.length ? " · " : ""}${o.serie ? "série " + esc(o.serie) + " · " : ""}atualizado ${quando(t.modificado)}</span></div>
+    <div class="etapas">${chips}</div>
+    ${andando}${ult}${desenharPortao(t)}${controles}
+    ${o.entrega_aprovada ? `<div class="extras">Entrega aprovada: ${esc(o.entrega_aprovada.arquivo)}</div>` : ""}
+    ${versoes ? `<div class="versoes">${versoes}</div>` : ""}`;
 }
 
 function desenharTrabalho(t) {
@@ -274,8 +428,11 @@ function desenharTrabalho(t) {
         ${v.quadros ? `<button data-img="${esc(v.quadros)}" data-nome="quadros de ${esc(v.nome)}">quadros</button>` : ""}
         ${v.emendas.map((e, j) => `<button data-img="${esc(e)}" data-nome="emendas ${j + 1} de ${esc(v.nome)}">emendas${v.emendas.length > 1 ? " " + (j + 1) : ""}</button>`).join("")}
         ${c ? `<button data-checks="ck-${esc(t.nome)}-${k}">conferência</button>` : ""}
+        ${t.orq && !v.amostra ? (t.orq.entrega_aprovada && t.orq.entrega_aprovada.arquivo === v.nome ? `<span class="selo ok">entrega aprovada</span>` :
+          `<button data-acao="aprovar-entrega" data-pasta="${esc(t.nome)}" data-arquivo="${esc(v.nome)}">aprovar entrega</button>`) : ""}
       </div>${checks}</div>`;
   }).join("");
+  if (t.orq) return desenharOrq(t, versoes);
   return `<div class="cab"><span class="titulo">${esc(t.nome)}</span>
       <span class="quando">${esc(t.videos.join(" + "))}${t.videos.length ? " · " : ""}atualizado ${quando(t.modificado)}</span></div>
     <div class="etapas">${etapas}</div>
@@ -323,8 +480,9 @@ async function aplicarMarca() {
 async function atualizar() {
   try {
     const r = await fetch("/api/estado", {cache: "no-store"});
+    if (r.status === 401) { location.reload(); return; }
     const estado = await r.json();
-    desenharBrutos(estado); desenharTrabalhos(estado);
+    desenharBrutos(estado); desenharNova(estado); desenharTrabalhos(estado);
     $("#bolinha").classList.remove("fora"); $("#conexao").textContent = "atualizando ao vivo";
   } catch {
     $("#bolinha").classList.add("fora"); $("#conexao").textContent = "painel desligado: rode o painel.py";
@@ -336,6 +494,33 @@ document.addEventListener("click", (ev) => {
   const b = ev.target.closest("button");
   if (!b) return;
   if (b.dataset.copiar) copiar(pedidoPara(b.dataset.copiar));
+  if (b.dataset.copiarTexto) copiar(b.dataset.copiarTexto);
+  const pasta = b.dataset.pasta;
+  switch (b.dataset.acao) {
+    case "aprovar-cartao": {
+      const caixa = b.closest(".portao");
+      const resposta = [...caixa.querySelectorAll("input[type=radio]:checked")].map((i) => i.value).join(",");
+      const escolhas = [];
+      caixa.querySelectorAll("[data-escolha]").forEach((el) => {
+        let valor = el.type === "checkbox" ? el.checked : el.value;
+        if (String(valor) !== el.dataset.atual) escolhas.push({chave: el.dataset.escolha, valor});
+      });
+      b.disabled = true;
+      agir("/api/aprovar", {pasta, portao: "cartao", resposta, escolhas, seguir: true}, "Cartão aprovado. A edição começou.").finally(() => { b.disabled = false; });
+      break;
+    }
+    case "aprovar": agir("/api/aprovar", {pasta, portao: b.dataset.portao, seguir: true}, "Aprovado. Seguindo."); break;
+    case "iniciar": agir("/api/iniciar", {pasta}, "Na fila."); break;
+    case "cancelar": agir("/api/cancelar", {pasta}, "Cancelado."); break;
+    case "abrir": agir("/api/abrir-pasta", {pasta}); break;
+    case "aprovar-entrega": agir("/api/aprovar-entrega", {pasta, arquivo: b.dataset.arquivo}, "Entrega aprovada."); break;
+  }
+  if (b.id === "nova-comecar") {
+    const corpo = {videos: [...selecionados], tema: $("#nova-tema").value.trim() || null, serie: $("#nova-serie").value || null,
+      perfil: $("#nova-perfil").value || null, iniciar: true};
+    b.disabled = true;
+    agir("/api/novo", corpo, "Edição criada. A inspeção começou.").then((d) => { if (d) { selecionados.clear(); $("#nova-tema").value = ""; ultimoBrutos = ""; } }).finally(() => { atualizar(); });
+  }
   if (b.dataset.checks) document.getElementById(b.dataset.checks)?.classList.toggle("aberto");
   if (b.dataset.video) abrir(b.dataset.nome, `<video src="${url(b.dataset.video)}" controls autoplay playsinline></video>`);
   if (b.dataset.img) abrir(b.dataset.nome, `<img src="${url(b.dataset.img)}" alt="">`);
@@ -345,6 +530,13 @@ function fechar() { $("#modal").classList.remove("aberto"); $("#modal-corpo").in
 $("#fechar").onclick = fechar;
 $("#modal").addEventListener("click", (ev) => { if (ev.target.id === "modal") fechar(); });
 document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") fechar(); });
+document.addEventListener("change", (ev) => {
+  const c = ev.target.closest("input[data-usar]");
+  if (!c) return;
+  if (c.checked) selecionados.add(c.dataset.usar); else selecionados.delete(c.dataset.usar);
+  $("#escolhidos").textContent = selecionados.size ? `Vídeos escolhidos: ${[...selecionados].join(" + ")}` : "Marque os vídeos que formam a edição (nos vídeos brutos acima).";
+  $("#nova-comecar").disabled = !selecionados.size;
+});
 
 aplicarMarca();
 atualizar();

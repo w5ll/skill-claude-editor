@@ -10,6 +10,8 @@ Para instalar no seu Mac, veja [Instalar no seu Mac, com o VS Code](#instalar-no
 
 ## Como funciona
 
+**Em uma linha por etapa:** o `editar.py` roda as etapas da lista abaixo na ordem, para nos pontos em que é preciso a sua decisão (o cartão de ajustes, os cortes, os elementos, a legenda) e retoma de onde parou se for interrompido. Cada etapa imprime uma linha, e o detalhe fica num arquivo de registro. Veja `referencias/orquestrador.md`.
+
 1. Você manda o vídeo bruto (e o roteiro, se tiver): *"edita esse vídeo da dica rápida"*.
 2. A skill olha o vídeo e mostra um **cartão com todos os ajustes** (ritmo, legenda, som, formato, cor). Nada é editado antes do seu "ok".
 3. Transcreve a fala no próprio computador, palavra por palavra.
@@ -50,8 +52,8 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 
 **Trilha A: painel que roda a edição** (nesta ordem)
 
-- [ ] **Fase 4.** Orquestrador e estado da edição (`editar.py`, `trabalho.json`, modelos de edição) · _Well (proposta)_
-- [ ] **Fase 5.** Painel que executa: formulário do cartão, fila, aprovações, senha de sessão · _Well (proposta)_
+- [x] **Fase 4.** Orquestrador e estado da edição (`editar.py`, `trabalho.json`, modelos de edição) · _Lucas_ ([especificação](docs/fase-4-orquestrador.md))
+- [x] **Fase 5.** Painel que executa: formulário do cartão, fila, aprovações, senha de sessão · _Lucas_ ([especificação](docs/fase-5-painel-executa.md))
 - [ ] **Fase 6.** Revisão de cortes e legenda no painel · _Well (proposta)_
 - [ ] **Fase 7.** Elementos, zoom e som no painel, conferência com botões de correção · _Well (proposta)_
 - [ ] **Fase 8.** Claude por trás, opcional: revisar cortes e desenhar elementos pelo painel · _Well (proposta)_
@@ -79,6 +81,8 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 | 10 | Lucas | a anotar | a anotar | PR #2 |
 | 11 | Lucas | a anotar | a anotar | PR #3 |
 | 12 | Lucas | a anotar | a anotar | PR #4 |
+| 4 | Lucas | a anotar | a anotar | PR #6 |
+| 5 | Lucas | a anotar | a anotar | PR #7 |
 
 Referência informada (Sonnet 5.5, esforço médio): a Fase 2 e o planejamento custaram cerca de **2% do plano semanal**, e a Fase 3 mais cerca de **3 pontos**, indo a 5%. Números lidos no Claude Code por quem rodou a fase, sem casa decimal.
 
@@ -199,7 +203,7 @@ Vídeo do iPhone em 4K: peça para sair em 1080x1920 (`--formato original@1080`)
 
 ### 7. Painel no navegador (opcional)
 
-Uma página para enviar os vídeos e acompanhar a edição sem abrir pastas. Em outro terminal do VS Code (menu Terminal, Novo Terminal), na pasta do projeto:
+Uma página para **editar sem abrir uma conversa**: você envia os vídeos, preenche o cartão de ajustes e aprova cada etapa com cliques. Em outro terminal do VS Code (menu Terminal, Novo Terminal), na pasta do projeto:
 
 ```bash
 source .venv/bin/activate
@@ -211,13 +215,16 @@ python skill/welldit/scripts/painel.py
 
 (Para o painel nas cores de um perfil seu: `python skill/welldit/scripts/painel.py --perfil minha-marca`.)
 
-O navegador abre em `http://localhost:8765`. Lá você:
+O navegador abre sozinho num endereço com um **código de sessão** (`http://localhost:8765/?s=...`), que muda toda vez que o painel é aberto. Se abrir a página sem o código, ela pede para colar o que aparece no terminal. Isso impede que outro site aberto no navegador use o painel. Lá você:
 
-- **Envia vídeos:** arraste os brutos para a página. Eles vão para `material-bruto` e nunca sobrescrevem um arquivo com o mesmo nome. Depois do envio, o botão "copiar pedido de edição" copia o prompt pronto para colar no Claude Code.
-- **Acompanha cada edição:** as etapas feitas (inspeção, transcrição, cortes, rosto, legenda, amostra, vídeo, conferência) e o que está rodando agora, com a porcentagem na transcrição, no rosto, no desenho dos elementos e no render. Se um passo parar no meio (erro ou fim do limite de uso), o painel avisa.
-- **Vê o resultado:** assiste à amostra e às versões, abre as folhas de quadros e de emendas, e vê a lista da conferência.
+- **Envia vídeos:** arraste os brutos para a página. Eles vão para `material-bruto` e nunca sobrescrevem um arquivo com o mesmo nome.
+- **Começa uma edição:** marque os vídeos, escolha a série e o perfil (se tiver) e clique em **Começar a edição**.
+- **Preenche o cartão:** o formulário já vem com o recomendado marcado (cor padrão, redução de ruído) e uma área de "Ajustes rápidos". Clique em **Aprovar e começar**.
+- **Aprova as etapas:** quando a edição precisa da sua decisão (cortes, elementos, legenda, amostra), ela para e mostra o que decidir, com **Aprovar e seguir** ou **Copiar pedido para o Claude**, se você preferir revisar na conversa.
+- **Acompanha:** as etapas, a porcentagem das longas e a fila (uma edição por vez; as outras esperam). Dá para **Cancelar** e **Retomar** de onde parou.
+- **Recebe a entrega:** assiste às versões, vê as folhas de quadros e a conferência, clica em **Aprovar entrega** e em **Abrir a pasta**.
 
-O painel só funciona no seu computador: ninguém na rede vê. Quem edita e aprova continua sendo a conversa no Claude Code. Para fechar o painel: Ctrl+C no terminal dele.
+O painel só funciona no seu computador: ninguém na rede vê. Para fechar o painel: Ctrl+C no terminal dele. As edições feitas só pela conversa continuam aparecendo (só sem os botões de execução). Detalhes e segurança em `skill/welldit/referencias/painel.md`.
 
 ### 8. Atualizar a skill
 
@@ -258,6 +265,9 @@ skill/welldit/         ← a skill (é isso que vira o arquivo .skill)
     fatos.md                     números, datas, fontes e afirmações a confirmar
     imagens.md                   imagens de apoio: licenças, registro e créditos
     cenas.md                     cenas explicativas: lista, antes e depois, número, de-para
+    orquestrador.md              o editar.py por dentro: etapas, portões, retomada, saída curta
+    painel.md                    o painel que executa: o que faz, segurança, fila, API
+    fluxo-manual.md              o passo a passo completo de cada etapa (o SKILL.md só aponta para ele)
     gravacao.md                  dicas para gravar de um jeito que edita melhor
     instalacao.md                o que precisa estar instalado
   perfis/                        perfis de marca: arven (o padrão, elementos base ARVEN) e _modelo para copiar
