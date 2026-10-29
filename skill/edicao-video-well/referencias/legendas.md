@@ -31,7 +31,7 @@ Ao corrigir, mantenha o mesmo número de palavras no bloco para a palavra azul c
 
 Depois de editar: `python scripts/legendas.py --pasta saida/... --reaproveitar`.
 
-Dica: passe os termos já na transcrição (`--termos "Arven, OAB, WhatsApp"`). O Whisper erra menos.
+Dica: passe os termos já na transcrição (`--termos "Arven, WhatsApp"`), mas só os que aparecem neste vídeo. Termo que não está na fala faz o Whisper inventar a palavra onde não entendeu.
 
 ## Arquivo separado
 

@@ -93,13 +93,17 @@ Padrões propostos: ritmo natural, legenda ligada fora do rosto, elementos 3D na
 ### 3. Transcrever e propor os cortes (depois do ok)
 
 ```bash
-python scripts/transcrever.py BRUTO1.mov BRUTO2.mov --pasta saida/... --termos "Arven, OAB, WhatsApp, CRM"
+python scripts/transcrever.py BRUTO1.mov BRUTO2.mov --pasta saida/... [--termos "nomes que aparecem neste vídeo"]
 python scripts/propor_cortes.py --pasta saida/... --ritmo natural      # ou dinamico
 ```
+
+Nem todo vídeo do Well é de marketing jurídico (ele também fala de gestão, planejamento, rotina). `--termos` leva só nomes e palavras difíceis que aparecem **neste** vídeo, tirados do roteiro. Sem roteiro, não passe termos: termo que não está na fala faz o Whisper inventar ("OAB, OAB, OAB" onde ele não entendeu).
 
 Leia a lista de trechos que o script mostra e revise seguindo `referencias/cortes.md`. Em especial:
 
 - Tudo em "PARA CONFERIR" precisa de decisão sua: palavra duvidosa, mesma frase gravada duas vezes (fica a melhor tomada, normalmente a mais fluida, não necessariamente a última), som sem palavra.
+- Fala que o Whisper não reconheceu (o script avisa e diz o comando): rode `transcrever.py VIDEO --pasta ... --trecho INICIO FIM` e leia o resultado antes de decidir. Nunca corte como "ruído" um trecho com som de fala sem ter lido a retranscrição. Palavra repetida sem sentido ("OAB, OAB", "Amém") no meio da transcrição é sinal disso.
+- **O fim da gravação é onde costuma estar o fecho** (chamada, convite para comentar). Antes de cortar o fim, garanta que os últimos 15 s foram transcritos de verdade (`--trecho` neles). Se o vídeo editado ficar sem fecho, diga no cartão de entrega e pergunte; não termine o vídeo no meio do raciocínio sem avisar.
 - Leia o texto final emendado, do primeiro ao último trecho. Ele tem que fazer sentido e dizer exatamente o que o Well disse, sem perder ressalva nem inverter o sentido.
 - Para ajustar, edite `cortes.json` à mão: apague o trecho, ou mude `inicio`/`fim` (em segundos do vídeo original). Mantenha a ordem dos trechos.
 

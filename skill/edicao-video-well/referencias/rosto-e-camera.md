@@ -34,7 +34,7 @@ Dá ritmo de corte de câmera num vídeo gravado com uma câmera só:
 | forte | 100% e 115% | 130% |
 
 - A cada frase o enquadramento alterna entre aberto e um pouco mais perto. Frase longa (mais de 4,5 s) vira duas; frase curta (menos de 1,2 s) junta com a seguinte; mudança perto de um corte (até 0,25 s) vai para o corte.
-- Nas palavras fortes (negação como "nunca", "nenhum", "não", "nada"; números; "dobro", "metade") a câmera aproxima rápido e segura 0,6 s depois da palavra. No máximo uma a cada 4 s.
+- Nas palavras fortes (negação como "nunca", "nenhum", "não", "nada"; números; "dobro", "metade") a câmera aproxima rápido e segura 0,6 s depois da palavra. No máximo uma a cada 4 s, a mesma palavra no máximo 2 vezes, e nunca duas ênfases seguidas na mesma palavra. Se as ênfases ficarem em palavras fracas, troque à mão no `camera.json` para o momento que pede força (o número, a virada, a conclusão).
 - Nunca muda o zoom com elemento 3D na tela: a troca espera o elemento sair. Nunca menos de 2,5 s entre uma mudança e outra.
 - O zoom cresce em volta do rosto: o rosto fica no mesmo lugar da tela e só aumenta, então não sai do quadro. A legenda e os elementos ficam por cima e não crescem junto.
 

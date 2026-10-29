@@ -61,7 +61,7 @@ python -m playwright install chromium                              # uma vez (de
 cd skill/edicao-video-well/scripts
 P=../../../saida/2026-10-22_lead-curioso
 python inspecionar.py ../../../material-bruto/2026-10-22_lead-curioso/IMG_2040.mov --pasta $P
-python transcrever.py ../../../material-bruto/2026-10-22_lead-curioso/IMG_2040.mov --pasta $P --termos "Arven, OAB, WhatsApp"
+python transcrever.py ../../../material-bruto/2026-10-22_lead-curioso/IMG_2040.mov --pasta $P --termos "Arven, WhatsApp"
 python propor_cortes.py --pasta $P --ritmo natural
 python rosto.py --pasta $P
 python elementos.py sugerir --pasta $P

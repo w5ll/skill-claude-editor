@@ -59,7 +59,17 @@ GATILHOS = [
     ("analis", "lupa"), ("descobr", "lupa"), ("procur", "lupa"), ("diagnost", "lupa"), ("investig", "lupa"),
     ("perd", "furo"), ("furo", "furo"), ("vazament", "furo"), ("buraco", "furo"), ("escap", "furo"),
     ("desperdic", "furo"), ("jogando fora", "furo"),
+    # Assuntos gerais (gestão, planejamento, rotina), não só marketing jurídico.
+    ("objetiv", "alvo"), ("estrateg", "alvo"), ("proposit", "alvo"), ("sonho", "alvo"),
+    ("planej", "grafico"), ("lancament", "grafico"), ("caixa", "grafico"), ("lucro", "grafico"),
+    ("venda", "grafico"), ("vender", "grafico"), ("faturar", "grafico"), ("meta", "alvo"),
+    ("rotina", "relogio"), ("agenda", "relogio"), ("horario", "relogio"), ("cedo", "relogio"),
+    ("problema", "furo"), ("erro", "furo"), ("prejuiz", "furo"),
+    ("decis", "lupa"), ("enxerg", "lupa"), ("entend", "lupa"), ("clareza", "lupa"),
+    ("disciplin", "cadeado"), ("metodo", "cadeado"), ("metodic", "cadeado"), ("rigor", "cadeado"),
 ]
+# Palavras que só contam inteiras (o começo delas pega outras: "meta" x "metade").
+INTEIRAS = {"meta", "metas", "erro", "erros", "cedo"}
 
 NUMEROS = {"um": 1, "uma": 1, "dois": 2, "duas": 2, "tres": 3, "quatro": 4, "cinco": 5, "seis": 6,
            "sete": 7, "oito": 8, "nove": 9, "dez": 10, "quinze": 15, "vinte": 20, "trinta": 30,
@@ -115,7 +125,7 @@ def sugerir(palavras: list[dict], duracao_video: float, modo: str, intervalo: fl
                     if junto.startswith(prefixo.replace(" ", "")):
                         elemento = el
                         break
-                elif norm[k].startswith(prefixo):
+                elif (norm[k] in (prefixo, prefixo + "s") if prefixo in INTEIRAS else norm[k].startswith(prefixo)):
                     elemento = el
                     break
         if not elemento:

@@ -9,7 +9,7 @@ O script propõe, você decide. Depois de rodar `propor_cortes.py`, leia os trec
 - Começo errado e frase regravada: fica a versão completa e mais fluida.
 - Palavra repetida em seguida ("perde no WhatsApp, perde no WhatsApp").
 - Hesitação: "ahn", "hum", "é..." arrastado.
-- Silêncio do começo (antes da primeira palavra) e do fim.
+- Silêncio do começo (antes da primeira palavra) e do fim. Só o silêncio: fala no fim sem transcrição é provavelmente o fecho, e fica até ser retranscrita (`transcrever.py --trecho`).
 
 ## O que nunca sai
 

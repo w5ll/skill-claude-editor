@@ -193,9 +193,11 @@ def propor(video_id: int, arquivo: str, transcricao: dict, ritmo: dict):
 
     removidos = []
     falas = []
+    sem_transcricao = transcricao.get("sem_transcricao", [])
     for a, b in medida["regioes"]:
         tem_palavra = any(w["f"] > a and w["i"] < b for w in palavras)
-        if not tem_palavra and b - a < RESPIRO_MAX:
+        nao_reconhecida = any(x < b and y > a for x, y in sem_transcricao)
+        if not tem_palavra and b - a < RESPIRO_MAX and not nao_reconhecida:
             removidos.append({"inicio": round(a, 3), "fim": round(b, 3), "motivo": "respiração ou ruído sem fala"})
             continue
         falas.append([a, b, tem_palavra])
@@ -207,10 +209,18 @@ def propor(video_id: int, arquivo: str, transcricao: dict, ritmo: dict):
     falas.sort()
 
     conferir = []
+    ultima = max((w["f"] for w in palavras), default=0.0)
     for a, b, tem in falas:
         if not tem:
-            conferir.append({"tempo": round(a, 3), "motivo": "som sem palavra transcrita (risada, barulho?)",
-                             "texto": ""})
+            if a > ultima:
+                motivo = ("FALA NO FIM SEM TRANSCRIÇÃO: pode ser o fecho do vídeo. Rode transcrever.py --trecho "
+                          f"{max(0, a - 1):.0f} {duracao:.0f} e leia antes de decidir; não corte sem ouvir")
+            elif b - a >= 0.6:
+                motivo = ("fala que o Whisper não reconheceu: rode transcrever.py --trecho "
+                          f"{max(0, a - 1):.0f} {b + 1:.0f} antes de cortar")
+            else:
+                motivo = "som sem palavra transcrita (risada, barulho?)"
+            conferir.append({"tempo": round(a, 3), "motivo": motivo, "texto": ""})
 
     # Trechos mantidos: fala com folga; pausas longas encurtadas.
     trechos: list[list[float]] = []

@@ -9,6 +9,7 @@ planejar  lê a fala já cortada e grava camera.json:
             (112% no normal), como se fossem duas câmeras;
           - nas palavras fortes (negação como "nunca", "nenhum", "não"; números; "dobro",
             "metade") a câmera dá uma aproximação rápida (125%) e segura 0,6 s depois da palavra;
+            a mesma palavra no máximo 2 vezes e nunca em duas ênfases seguidas;
           - frase longa (mais de 4,5 s) é dividida em duas; frase curta (menos de 1,2 s) junta
             com a seguinte; mudança a menos de 0,25 s de um corte vai para o corte;
           - nunca muda o zoom no meio de um elemento 3D (o elemento foi posicionado para
@@ -142,8 +143,13 @@ def planejar(pasta: Path, intensidade: str) -> dict:
         fim = mudancas[k + 1][0] if k + 1 < len(mudancas) else duracao
         blocos.append({"inicio": round(t, 3), "fim": round(fim, 3), "zoom": z, "motivo": motivo})
     ultima_enfase = -99.0
+    usadas: list[str] = []
     for w in palavras:
         if not eh_forte(w["p"]):
+            continue
+        n = normalizar(w["p"])
+        # Variar: a mesma palavra no máximo 2 vezes no vídeo, e nunca duas ênfases seguidas nela.
+        if usadas.count(n) >= 2 or (usadas and usadas[-1] == n):
             continue
         ini = max(0.0, w["i"] - 0.05)
         fim = min(duracao, w["f"] + SEGURA)
@@ -173,6 +179,7 @@ def planejar(pasta: Path, intensidade: str) -> dict:
                       "motivo": f"ênfase: {w['p'].strip('.,!?')}"})
         blocos = sorted(novos, key=lambda b: b["inicio"])
         ultima_enfase = ini
+        usadas.append(n)
     return {"intensidade": intensidade, "duracao": round(duracao, 3), "blocos": blocos}
 
 

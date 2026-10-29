@@ -16,6 +16,8 @@ Os mesmos elementos do carrossel (vidro fosco e metal escovado no tom #7f8caa, l
 | `lupa` | lente procurando | analisar, descobrir, diagnóstico |
 | `esfera`, `anel`, `cubo`, `cristal` | só flutuam | abertura, fecho, ideia abstrata, quando nenhum outro serve |
 
+Além do marketing jurídico, o `sugerir` também reconhece assuntos gerais: objetivo, meta, estratégia, sonho (alvo); planejamento, lançamento, caixa, lucro, vendas (gráfico); rotina, agenda, horário (relógio); problema, erro, prejuízo (furo); decisão, enxergar, entender, clareza (lupa); disciplina, método, rigor (cadeado). Se o vídeo for de um assunto que quase não aciona nada, escolha à mão 2 ou 3 momentos fortes e use `esfera`, `cristal` ou o modo tela com um título curto.
+
 ## Dois modos
 
 - **sobreposto** (padrão): o elemento flutua sobre o vídeo, por 2 s, com o rosto do Well na tela. Posição `auto` (padrão): com `rosto.json`, procura o primeiro lugar que não cobre o rosto (topo, topo menor, esquerda, direita, cada vez menor), já com o zoom da câmera; sem `rosto.json`, fica no topo. Também aceita `topo`, `esquerda`, `direita` ou `meio` fixos, e `"escala": 0.8` para diminuir. Rótulo opcional embaixo (ex.: "5 minutos").
