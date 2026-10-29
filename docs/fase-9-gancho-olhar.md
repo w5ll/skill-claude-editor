@@ -62,7 +62,7 @@ As duas medidas são comparadas com a **mediana do próprio vídeo** (a pessoa o
 
 1. Mede os pontos do rosto 10 vezes por segundo nos trechos que ficam (a mesma passada do `rosto.py`).
 2. Suaviza com a mediana de 5 medidas.
-3. Marca como desvio quando a inclinação passa da mediana em **mais de 0,07 e mais de 3 vezes o desvio típico** (isso é cerca de 12 graus), ou o giro passa de **0,25**, que é cerca de 15 graus.
+3. Marca como desvio quando a inclinação passa da mediana em **mais de 0,05 e mais de 3 vezes o desvio típico**, ou o giro passa de **0,12** (valores calibrados em vídeo real em 29/10/2026; os de partida, 0,07 e 0,25, não marcavam nada).
 4. Junta desvios separados por até 0,3 s e **só guarda os que duram 1,2 s ou mais**.
 5. Grava `olhar.json` com cada trecho (início, fim, tipo `baixo` ou `lado`, intensidade, as palavras ditas), e uma folha `olhar-quadros.jpg` com um quadro do meio de cada trecho marcado e um quadro normal ao lado para comparar. **Quem revisa olha a folha antes de aceitar**: pensar olhando para baixo também é desvio.
 
@@ -90,4 +90,4 @@ Não há vídeo no repositório, então os testes são com dados sintéticos e r
 4. `olhar` marca uma sequência sintética com 2 s de inclinação alta, ignora 0,8 s, junta dois desvios separados por 0,2 s e ignora ruído de uma medida só.
 5. `zoom` pula o trecho que cruza um elemento e respeita o limite de 1,3.
 
-E um teste com um vídeo de verdade assim que houver um bruto à mão. **Os limiares de 0,07 e 0,25 foram calculados na teoria e precisam ser ajustados com vídeo real.**
+E um teste com um vídeo de verdade assim que houver um bruto à mão. Calibração feita com um vídeo real sem leitura (veja `referencias/gancho-e-olhar.md`); falta um vídeo lido do roteiro para a inclinação.

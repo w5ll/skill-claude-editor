@@ -47,4 +47,10 @@ O zoom nunca entra em trecho que tem elemento 3D na tela (o script avisa qual pu
 
 ## Limiares e ajustes
 
-Os números (inclinação 0,07 acima do normal, giro 0,25) vieram da geometria do rosto e **ainda não foram calibrados com vídeo de verdade**. Na primeira edição real, compare o que o script marcou com o que você vê na folha. Se marcou demais, suba `LIMIAR_INCLINACAO` em `olhar.py`; se deixou passar leitura clara, desça. Anote o ajuste aqui.
+Os números (inclinação 0,05 acima do normal, giro 0,12) foram calibrados na primeira edição real (29/10/2026): um vídeo de 3:26 sem leitura, 2.083 medidas, a pessoa falando para a câmera e olhando para o lado algumas vezes.
+
+- Normal do vídeo: inclinação 0,561 (desvio típico 0,02; 95% das medidas até 0,035 acima); giro entre -0,09 e +0,12 em 90% das medidas.
+- Os limiares que a teoria sugeria (0,07 e 0,25) não marcaram nada. Com giro 0,10 saíram 4 trechos, e a folha mostrou que os 2 mais fracos eram falso alarme (olhando para a câmera, com a cabeça levemente inclinada) e os 2 mais fortes eram olhar para o lado de verdade.
+- Com 0,05 e 0,12 saiu 1 trecho (olhar para o lado em 3:12, por 2,8 s), sem falso alarme. Um olhar para o lado de cerca de 1 s (em 2:44) ficou de fora por não passar de 1,2 s.
+
+**Ainda não calibrado:** leitura com a cabeça para baixo. Esse vídeo não tinha. O limiar de inclinação (0,05) vem da dispersão do próprio vídeo, não de um caso de leitura. Na primeira edição de um vídeo lido do roteiro, confira a folha: se marcou demais, suba `LIMIAR_INCLINACAO`; se deixou passar leitura clara, desça. Anote aqui.
