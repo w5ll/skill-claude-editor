@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>welldit</title>
+<style>
+  @font-face { font-family: "FontePerfil"; src: url("/fonte.ttf"); font-display: swap; }
+  :root { --fundo: #16161f; --fundo-profundo: #0a0a12; --cartao: #1a1a24; --linha: #333446; --destaque: #a8b4d4;
+          --texto: #eaefef; --rotulo: #8f97ab; --falha: #f0a3a3; }
+  html, body { margin: 0; background: var(--fundo-profundo); color: var(--texto); min-height: 100%;
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 520px; margin: 0 auto; padding: 64px 16px; }
+  h1 { font-family: "FontePerfil", sans-serif; font-size: 22px; margin: 0 0 8px; }
+  .cartao { background: var(--cartao); border: 1px solid var(--linha); border-radius: 14px; padding: 20px; }
+  p { color: var(--rotulo); }
+  label { display: block; margin: 16px 0 6px; font-size: 13px; color: var(--rotulo); }
+  input { width: 100%; box-sizing: border-box; font: inherit; color: var(--texto); background: var(--fundo);
+    border: 1px solid var(--linha); border-radius: 8px; padding: 10px; }
+  button { margin-top: 12px; font: inherit; color: var(--fundo-profundo); background: var(--destaque); border: 0;
+    border-radius: 8px; padding: 10px 16px; cursor: pointer; font-weight: 600; }
+  .erro { color: var(--falha); margin-top: 12px; display: none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>welldit</h1>
+  <div class="cartao">
+    <p>Esta tela precisa de uma sessão. Abra o endereço completo que o painel mostrou no terminal quando foi aberto
+       (ele termina com <code>?s=</code> e um código), ou cole o código aqui.</p>
+    <label for="codigo">Código da sessão</label>
+    <input id="codigo" autocomplete="off" spellcheck="false" autofocus>
+    <button id="entrar">Entrar</button>
+    <div class="erro" id="erro">Esse código não confere. Ele muda toda vez que o painel é aberto.</div>
+  </div>
+</main>
+<script>
+  const campo = document.getElementById("codigo");
+  if (new URLSearchParams(location.search).has("s")) document.getElementById("erro").style.display = "block";
+  const entrar = () => { const v = campo.value.trim(); if (v) location.href = "/?s=" + encodeURIComponent(v); };
+  document.getElementById("entrar").onclick = entrar;
+  campo.addEventListener("keydown", (e) => { if (e.key === "Enter") entrar(); });
+</script>
+</body>
+</html>

@@ -13,7 +13,7 @@ Sempre em português, com acentuação, sem travessão e sem termo em inglês se
 
 ## Arquivos de apoio
 
-Leia só o que a etapa pede. Em `referencias/`: `fluxo-manual.md` (cada etapa, o cartão, a entrega), `cortes.md`, `legendas.md`, `elementos-3d.md`, `rosto-e-camera.md`, `gancho-e-olhar.md`, `som-e-imagem.md` (volume, ruído, HDR, formato, música), `fatos.md`, `imagens.md`, `cenas.md`, `series.md` (jeito de editar de um conjunto de vídeos), `publicacao.md` (capa, texto do post, limites do Instagram), `orquestrador.md` (o `editar.py` por dentro), `gravacao.md` (dicas para a pessoa), `instalacao.md`. O perfil de marca está em `perfis/NOME/marca.json`. Scripts em `scripts/`; todos aceitam `--help`.
+Leia só o que a etapa pede. Em `referencias/`: `fluxo-manual.md` (cada etapa, o cartão, a entrega), `cortes.md`, `legendas.md`, `elementos-3d.md`, `rosto-e-camera.md`, `gancho-e-olhar.md`, `som-e-imagem.md` (volume, ruído, HDR, formato, música), `fatos.md`, `imagens.md`, `cenas.md`, `series.md` (jeito de editar de um conjunto de vídeos), `publicacao.md` (capa, texto do post, limites do Instagram), `orquestrador.md` (o `editar.py` por dentro), `painel.md` (o painel que executa), `gravacao.md` (dicas para a pessoa), `instalacao.md`. O perfil de marca está em `perfis/NOME/marca.json`. Scripts em `scripts/`; todos aceitam `--help`.
 
 ## O fluxo
 
@@ -65,7 +65,7 @@ Mudança pontual ("legenda maior", "volta a frase do 0:30") mexe só no que foi 
 
 ## Painel no navegador
 
-A pessoa pode acompanhar a edição pelo painel (`python scripts/painel.py [--perfil NOME]`, `http://localhost:8765`). Nunca o abra por conta própria. Se perguntarem "em que pé está", mande olhar o painel ou rode `editar.py estado`.
+A pessoa pode editar e acompanhar pelo painel (`python scripts/painel.py [--perfil NOME]`): ela envia os vídeos, preenche o cartão e aprova os portões com cliques, e o painel roda o `editar.py`. Conversa e painel leem o mesmo `trabalho.json`: dá para começar num e terminar no outro. Nunca abra o painel por conta própria. Se perguntarem "em que pé está", rode `editar.py estado`. Se a pessoa pedir "revisar na conversa" um portão do painel, ele já deixou `pedidos/<portao>.json`: leia, revise e aprove com `editar.py aprovar --seguir`. Veja `referencias/painel.md`.
 
 ## Quando um script falha
 

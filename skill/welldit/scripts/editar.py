@@ -42,6 +42,14 @@ SCRIPTS = Path(__file__).resolve().parent
 LINHAS_POR_ETAPA = 1
 MAX_RESUMO = 150
 
+class Cancelado(Exception):
+    """O executor levanta isto quando a pessoa cancela: a etapa vira interrompida, não falha."""
+
+
+class PedidoRecusado(Exception):
+    """Um pedido que não pode ser atendido (resposta incompleta, portão errado...). O painel mostra a mensagem."""
+
+
 ESCOLHAS_PADRAO = {
     "ritmo": "natural", "formato": "original", "hdr": None, "ruido": "auto", "termos": [],
     "legenda": {"ligada": True, "palavras": 3, "posicao": "auto", "tamanho": 0.046, "maiusculas": False, "destaque": True},
@@ -498,6 +506,9 @@ def resumo_da_etapa(nome: str, pasta: Path, texto: str) -> str:
             v = ler_json(pasta / "inspecao.json")["videos"]
             return (f"{len(v)} vídeo(s), {tempo(sum(x['duracao'] for x in v))}, {v[0]['largura']}x{v[0]['altura']}"
                     f"{', HDR' if any(x['hdr'] for x in v) else ''}")
+        if nome == "transcrever":
+            n = sum(len(ler_json(f)["palavras"]) for f in (pasta / "transcricoes").glob("*.json"))
+            return f"{n} palavras"
         if nome == "cortes":
             c = ler_json(pasta / "cortes.json")
             return (f"{tempo(c['duracao_original'])} → {tempo(c['duracao_final'])} em {len(c['trechos'])} trechos, "
@@ -581,7 +592,14 @@ def proximo(pasta: Path, executor=executar_subprocesso, saida=print) -> str:
             t0 = time.time()
             texto = ""
             for script, args, opcional in cmds:
-                codigo, texto = executor([script, *args], pasta / "etapas" / f"{e.nome}.log")
+                try:
+                    codigo, texto = executor([script, *args], pasta / "etapas" / f"{e.nome}.log")
+                except Cancelado:
+                    reg.update(estado="interrompida", fim=agora(), resumo="cancelada")
+                    reg.pop("pid", None)
+                    salvar(pasta, t)
+                    saida(f"↺ {e.titulo}: cancelada. Para continuar: editar.py proximo --pasta {curto(pasta)}")
+                    return "cancelado"
                 if codigo != 0 and not opcional:
                     reg.update(estado="falhou", fim=agora(), resumo=_resumo_da_saida(texto.replace(str(pasta) + "/", "")))
                     salvar(pasta, t)
@@ -617,18 +635,18 @@ def aprovar(pasta: Path, portao: str | None, resposta: str | None) -> str:
     t = carregar(pasta)
     g = t.get("portao")
     if not g:
-        erro("não há portão aberto")
+        raise PedidoRecusado("não há portão aberto")
     if portao and portao != g["nome"]:
-        erro(f"o portão aberto é {g['nome']}, não {portao}")
+        raise PedidoRecusado(f"o portão aberto é {g['nome']}, não {portao}")
     if g["nome"] == "cartao":
         faltam = aplicar_resposta(t, ler_json(pasta / "inspecao.json"), resposta or "")
         if faltam:                 # nada é gravado pela metade: as letras das perguntas não mudam entre uma tentativa e outra
-            erro("faltam respostas: " + "; ".join(faltam), 1)
+            raise PedidoRecusado("faltam respostas: " + "; ".join(faltam))
     resp = pasta / "respostas" / f"{g['nome']}.json"
     if resp.exists():
         r = ler_json(resp)
         if r.get("aprovado") is not True:
-            erro(f"a resposta de {g['nome']} não aprova ({r.get('notas', 'sem notas')}): ajuste e responda de novo", 1)
+            raise PedidoRecusado(f"a resposta de {g['nome']} não aprova ({r.get('notas', 'sem notas')}): ajuste e responda de novo")
     t.setdefault("aprovacoes", []).append({"portao": g["nome"], "etapa_hash": g["etapa_hash"], "resposta": resposta or "ok",
                                            "quando": agora(), "quem": "pessoa"})
     t["portao"] = None
@@ -653,12 +671,12 @@ def _valor(txt: str):
 def ajustar(pasta: Path, escolha: str) -> list[str]:
     """Muda uma escolha (chave ou chave.sub=valor). Devolve as etapas que serão refeitas."""
     if "=" not in escolha:
-        erro("use chave=valor, por exemplo camera=leve ou legenda.palavras=2")
+        raise PedidoRecusado("use chave=valor, por exemplo camera=leve ou legenda.palavras=2")
     caminho, valor = escolha.split("=", 1)
     chaves = caminho.split(".")
     t = carregar(pasta)
     if chaves[0] not in ESCOLHAS_PADRAO:
-        erro(f"escolha desconhecida: {chaves[0]} (use {', '.join(ESCOLHAS_PADRAO)})")
+        raise PedidoRecusado(f"escolha desconhecida: {chaves[0]} (use {', '.join(ESCOLHAS_PADRAO)})")
     antes = {e.nome: situacao(t, e, pasta) for e in ETAPAS}
     alvo = t["escolhas"]
     for k in chaves[:-1]:
@@ -671,7 +689,7 @@ def ajustar(pasta: Path, escolha: str) -> list[str]:
 
 def refazer(pasta: Path, nome: str):
     if nome not in POR_NOME:
-        erro(f"etapa desconhecida: {nome} (use {', '.join(POR_NOME)})")
+        raise PedidoRecusado(f"etapa desconhecida: {nome} (use {', '.join(POR_NOME)})")
     t = carregar(pasta)
     t["etapas"].pop(nome, None)
     t["portao"] = None
@@ -736,6 +754,13 @@ def novo(videos: list[Path], serie: str | None, perfil: str | None, tema: str | 
 # ---------- linha de comando ----------
 
 def main():
+    try:
+        _main()
+    except PedidoRecusado as e:
+        erro(str(e), 1)
+
+
+def _main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("acao", choices=["novo", "proximo", "estado", "cartao", "aprovar", "ajustar", "refazer"])
     ap.add_argument("alvo", nargs="*", help="novo: os vídeos · aprovar: o portão · refazer: a etapa")
@@ -759,7 +784,7 @@ def main():
         erro("informe --pasta")
     pasta = a.pasta.resolve()
     if a.acao == "proximo":
-        sys.exit({"portao": 0, "fim": 0, "falhou": 1}[proximo(pasta)])
+        sys.exit({"portao": 0, "fim": 0, "falhou": 1, "cancelado": 0}[proximo(pasta)])
     elif a.acao == "estado":
         t = carregar(pasta)
         print(json.dumps(estado_json(t, pasta), ensure_ascii=False) if a.json else "\n".join(linhas_do_estado(t, pasta)))
@@ -770,7 +795,7 @@ def main():
         print(texto_do_cartao(t, ler_json(pasta / "inspecao.json")))
     elif a.acao == "aprovar":
         if a.seguir:
-            sys.exit({"portao": 0, "fim": 0, "falhou": 1}[aprovar_e_seguir(pasta, a.alvo[0] if a.alvo else None, a.resposta)])
+            sys.exit({"portao": 0, "fim": 0, "falhou": 1, "cancelado": 0}[aprovar_e_seguir(pasta, a.alvo[0] if a.alvo else None, a.resposta)])
         nome = aprovar(pasta, a.alvo[0] if a.alvo else None, a.resposta)
         print(f"ok  portão {nome} aprovado. Siga com: editar.py proximo --pasta {curto(pasta)}")
     elif a.acao == "ajustar":

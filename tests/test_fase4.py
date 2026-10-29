@@ -134,7 +134,7 @@ class TestPortoes(Base):
         self.rodar(pasta, falso)
         antes = editar.texto_do_cartao(editar.carregar(pasta), INSPECAO)
         for resposta in ("", "A", "A,B", "C"):
-            with self.assertRaises(SystemExit, msg=resposta):
+            with self.assertRaises(editar.PedidoRecusado, msg=resposta):
                 editar.aprovar(pasta, None, resposta)
         self.assertEqual(editar.carregar(pasta)["portao"]["nome"], "cartao")
         self.assertEqual(editar.texto_do_cartao(editar.carregar(pasta), INSPECAO), antes)    # tentativa incompleta não muda o cartão
@@ -148,7 +148,7 @@ class TestPortoes(Base):
         pasta, falso = self.novo(), Falso()
         self.rodar(pasta, falso)
         editar.ajustar(pasta, "camera=leve")
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(editar.PedidoRecusado):
             editar.aprovar(pasta, None, "B,C")
 
     def test_pedido_do_portao_de_julgamento(self):
@@ -164,7 +164,7 @@ class TestPortoes(Base):
         self.aprovar_tudo_ate(pasta, falso, "cortes")
         (pasta / "respostas").mkdir()
         (pasta / "respostas" / "cortes.json").write_text(json.dumps({"aprovado": False, "notas": "falta o fecho"}))
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(editar.PedidoRecusado):
             editar.aprovar(pasta, "cortes", None)
         (pasta / "respostas" / "cortes.json").write_text(json.dumps({"aprovado": True}))
         self.assertEqual(editar.aprovar(pasta, "cortes", None), "cortes")
@@ -240,9 +240,32 @@ class TestAprovarESeguir(Base):
     def test_resposta_incompleta_nao_roda_nada(self):
         pasta, falso = self.novo(), Falso()
         self.rodar(pasta, falso)
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(editar.PedidoRecusado):
             editar.aprovar_e_seguir(pasta, None, "A", falso, self.saida.append)
         self.assertEqual(falso.scripts(), ["inspecionar.py"])
+
+
+class TestCancelar(Base):
+    def test_cancelar_deixa_a_etapa_interrompida_e_retomar_continua(self):
+        pasta = self.novo()
+
+        class Cancela(Falso):
+            def __call__(self, argv, log):
+                if argv[0] == "transcrever.py":
+                    raise editar.Cancelado()
+                return super().__call__(argv, log)
+
+        falso = Cancela()
+        self.rodar(pasta, falso)
+        editar.aprovar(pasta, None, "A,C")
+        self.assertEqual(self.rodar(pasta, falso), "cancelado")
+        t = editar.carregar(pasta)
+        self.assertEqual(t["etapas"]["transcrever"]["estado"], "interrompida")
+        self.assertNotIn("falhou", [e["estado"] for e in t["etapas"].values()])
+        self.assertTrue(any("cancelada" in l for l in self.saida))
+        melhor = Falso()
+        self.assertEqual(self.rodar(pasta, melhor), "portao")          # retomou e chegou nos cortes
+        self.assertEqual(melhor.scripts()[0], "transcrever.py")
 
 
 class TestRetomadaEInvalidacao(Base):
@@ -301,9 +324,9 @@ class TestRetomadaEInvalidacao(Base):
 
     def test_ajustar_escolha_desconhecida_recusa(self):
         pasta = self.novo()
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(editar.PedidoRecusado):
             editar.ajustar(pasta, "inventada=1")
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(editar.PedidoRecusado):
             editar.ajustar(pasta, "semigual")
 
 

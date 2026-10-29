@@ -1,5 +1,7 @@
 # Fase 5. Painel que executa
 
+> **Status: implementada** (29/10/2026) e testada com o painel real, os scripts reais e um trecho de 25 s do vídeo de planejamento (do bruto à entrega aprovada, só pela API e vista numa tela de navegador). As decisões que mudaram estão em [Como ficou](#como-ficou).
+
 Segunda fase da trilha A. O painel (`painel.py`) deixa de só mostrar e passa a **rodar a edição inteira sem abrir uma conversa**: a pessoa envia os vídeos, preenche o cartão num formulário, aprova os portões e acompanha o progresso. Usa o `editar.py` e o `trabalho.json` da Fase 4; nenhuma etapa nova de edição.
 
 ## Objetivo
@@ -61,3 +63,18 @@ Um trabalhador único, fora do servidor HTTP, roda `editar.proximo` de uma ediç
 
 ## Fora desta fase
 Revisar cortes e legenda na tela (Fase 6), elementos, zoom e som na tela e os botões de correção (Fase 7), e Claude por trás (Fase 8). Acesso de outro computador da rede (não é objetivo: o painel é só local).
+
+## Como ficou
+
+- **Código de sessão no cookie, não no endereço**: o painel abre em `/?s=CODIGO`, troca por um cookie `HttpOnly`/`SameSite=Strict` e redireciona para `/`. A página sem sessão responde 401 e pede o código.
+- **Ações como funções fixas** (`Acoes`), separadas do servidor HTTP e do `editar.py`. O painel nunca monta uma linha de comando: o que roda é `editar.proximo`, numa fila de um trabalhador só.
+- **Erros de negócio viram mensagem**: o `editar.py` passou a levantar `PedidoRecusado` (e `Cancelado`) em vez de encerrar o processo, para o painel mostrar o motivo ("faltam respostas: ...") em vez de um erro mudo. A linha de comando continua igual.
+- **Cancelar**: cada script roda como processo próprio (`start_new_session`), e cancelar mata o grupo inteiro (um teste confirma que o processo filho também morre). A etapa fica `interrompida`, não `falhou`.
+- **Estado em cache** por arquivo: a cada 2 s o painel lê o estado de todas as edições, e calcular o hash das etapas toda vez custaria megabytes. O estado só é recalculado quando algum `.json` da pasta muda.
+- **Defeito achado nos testes e corrigido**: com a pasta do projeto num caminho com link simbólico (o `/var` do macOS), o painel quebrava (erro 500). Agora resolve o caminho ao abrir.
+- **Defeitos de tela achados olhando a captura**: link azul padrão ilegível no tema escuro, resumos cortados no meio da palavra nas pastilhas, e o caminho inteiro na linha de entrega do cartão.
+- **Antes não havia nenhuma autenticação**, nem no envio de arquivos; agora tudo exige a sessão.
+
+## Não coberto
+- Revisar cortes e legenda na tela (Fase 6) e elementos, zoom e som (Fase 7): os portões de julgamento só têm **Aprovar** e **Copiar pedido para o Claude**.
+- Acesso de outro computador, vários usuários ao mesmo tempo, e fila que sobrevive a fechar o painel.
