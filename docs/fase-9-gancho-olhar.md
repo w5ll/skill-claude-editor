@@ -26,8 +26,8 @@ Lê `cortes.json` e as transcrições. Olha os primeiros 3 s do vídeo **já cor
 | Começa rápido | a primeira palavra sai em até 0,3 s |
 | Sem enrolação | a primeira frase não abre com saudação ou muleta ("oi", "olá", "e aí", "então", "bom", "gente", "pessoal", "fala") |
 | Fala com a pessoa | tem "você", "vocês", "seu", "sua", "te" ou uma pergunta nos 3 s |
-| Promessa ou tensão | tem número, negação forte ("nunca", "nenhum", "não"), "erro", "segredo", "problema", "motivo", "como", "por que" |
-| Frase curta | a primeira frase tem de 3 a 14 palavras (e o primeiro bloco falado cabe em 4 s) |
+| Promessa ou tensão | tem número, negação forte ("nunca", "nenhum", "ninguém", "jamais"), "erro", "segredo", "problema", "motivo", "como", "porque" ("não" sozinho é comum demais e não conta) |
+| Frase curta | a primeira frase tem de 3 a 14 palavras e dura até 5 s |
 
 Grava `gancho.json` com a nota, o texto dos 3 s, os sinais que faltaram e as **propostas**, da mais leve à mais forte:
 

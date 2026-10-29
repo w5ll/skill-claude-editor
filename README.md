@@ -10,7 +10,7 @@ Para instalar no seu Mac, veja [Instalar no seu Mac, com o VS Code](#instalar-no
 2. A skill olha o vídeo e mostra um **cartão com todos os ajustes** (ritmo, legenda, som, formato, cor). Nada é editado antes do seu "ok".
 3. Transcreve a fala no próprio computador, palavra por palavra.
 4. Corta pausas longas, respirações, erros, frases repetidas e começos errados. O corte é medido na onda do som, para não comer sílaba.
-5. Acha o seu rosto em cada trecho, 10 vezes por segundo.
+5. Acha o seu rosto em cada trecho, 10 vezes por segundo. Com isso, **avalia o gancho** (os 3 primeiros segundos, nota de 0 a 5) e propõe cortar a saudação ou puxar do meio uma frase mais forte, e **marca os trechos em que você lê** (cabeça abaixada ou virada) para você decidir entre outra tomada, corte ou zoom. Só sugere; nada muda sem o seu "ok".
 6. Coloca a legenda no padrão da marca: Sora ExtraBold, até 3 palavras por vez, palavra falada em azul. Se ela fosse cobrir a boca ou o queixo, desce ou sobe sozinha.
 7. Faz os **elementos 3D do carrossel** entrarem animados quando você fala a palavra certa: "WhatsApp" chama a mensagem digitando, "cinco minutos" o relógio com o rótulo "5 minutos", "funil" o funil com leads caindo. Eles procuram um lugar que não cubra o rosto. Também tem o modo tela cheia, que vira um slide do carrossel por um instante. Quando você fala de uma ideia que nenhum dos 12 elementos prontos representa (direção, método, sorte, estar à deriva), a skill **desenha um elemento novo** só para ela: bússola, escada, engrenagem, trevo. Você vê uma **folha de prévia** (cada elemento em três instantes, sobre o fundo da marca e sobre o seu próprio vídeo) e só entra o que você aprovar. Os que você gostar podem ficar no catálogo para os próximos vídeos.
 8. Se você pedir, dá **zoom de ênfase**: alterna o enquadramento a cada frase, como se fossem duas câmeras, e aproxima nas palavras fortes ("nunca", números, "dobro").
@@ -219,6 +219,7 @@ skill/edicao-video-well/         ← a skill (é isso que vira o arquivo .skill)
     legendas.md                  estilo, posição, grafia dos termos
     elementos-3d.md              catálogo dos elementos 3D, modos, critério e como desenhar elementos novos
     rosto-e-camera.md            rosto (legenda e elementos fora dele) e zoom de ênfase
+    gancho-e-olhar.md            nota do começo, propostas de gancho, leitura e olhar para baixo
     som-e-imagem.md              volume, ruído, estouro, eco, música, efeitos, HDR, formato, cor
     gravacao.md                  dicas para gravar de um jeito que edita melhor
     instalacao.md                o que precisa estar instalado
