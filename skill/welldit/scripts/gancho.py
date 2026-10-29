@@ -1,7 +1,7 @@
 """Gancho: avalia se os 3 primeiros segundos do vídeo cortado prendem e propõe melhorias.
 
 Uso:
-    python gancho.py avaliar --pasta saida/2026-10-22_tema
+    python gancho.py avaliar --pasta saida/2026-10-22_tema [--perfil NOME]
     python gancho.py aplicar --pasta saida/2026-10-22_tema --proposta puxar_frase [--frase 0]
     python gancho.py aplicar --pasta saida/2026-10-22_tema --proposta cortar_abertura
 
@@ -29,7 +29,7 @@ import shutil
 from pathlib import Path
 
 from camera import NUMEROS, normalizar
-from comum import erro, ler_json, salvar_json, tempo
+from comum import carregar_marca, definir_perfil, erro, ler_json, salvar_json, tempo
 
 JANELA = 3.0                 # segundos olhados no começo
 RAPIDO = 0.3                 # primeira palavra até aqui
@@ -174,7 +174,7 @@ def candidatas(frases: list[dict], limite_nota: int) -> list[dict]:
     return sorted(saida, key=lambda c: (-c["nota"], c["inicio"]))[:3]
 
 
-def propor(trechos: list[dict], pal: list[list[dict]], duracao_video: float) -> dict:
+def propor(trechos: list[dict], pal: list[list[dict]], duracao_video: float, pacotes: list[str] | None = None) -> dict:
     frases = frases_do_corte(trechos, pal)
     palavras_saida = [w for f in frases for w in f["ws"]]
     ab = avaliar_abertura(frases, palavras_saida)
@@ -195,7 +195,7 @@ def propor(trechos: list[dict], pal: list[list[dict]], duracao_video: float) -> 
                                         f"{cands[0]['nota']} e prende mais. Ela sai do lugar e vai para o começo"})
     try:
         from elementos import sugerir
-        itens = sugerir(palavras_saida, duracao_video, "tela", 6.0)
+        itens = sugerir(palavras_saida, duracao_video, "tela", 6.0, None, pacotes)
         itens = [i for i in itens if i["inicio"] < JANELA]
         if itens:
             propostas.append({"tipo": "tela_cheia", "elemento": itens[0]["elemento"],
@@ -271,7 +271,9 @@ def main():
     ap.add_argument("--pasta", type=Path, required=True)
     ap.add_argument("--proposta", choices=["puxar_frase", "cortar_abertura"])
     ap.add_argument("--frase", type=int, default=0, help="puxar_frase: qual candidata (0 é a melhor)")
+    ap.add_argument("--perfil", help="perfil de marca (padrão: o da pasta do trabalho)")
     a = ap.parse_args()
+    definir_perfil(a.perfil)
     pasta = a.pasta.resolve()
     arq_cortes = pasta / "cortes.json"
     if not arq_cortes.exists():
@@ -281,7 +283,7 @@ def main():
     saida = pasta / "gancho.json"
 
     if a.acao == "avaliar":
-        r = propor(cortes["trechos"], pal, cortes.get("duracao_final", 0.0))
+        r = propor(cortes["trechos"], pal, cortes.get("duracao_final", 0.0), carregar_marca(pasta=pasta)["gatilhos"])
         r["cortes_sha"] = sha(arq_cortes)
         salvar_json(saida, r)
         ab = r["abertura"]
