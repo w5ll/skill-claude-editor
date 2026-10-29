@@ -54,7 +54,7 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 
 - [x] **Fase 4.** Orquestrador e estado da edição (`editar.py`, `trabalho.json`, modelos de edição) · _Lucas_ ([especificação](docs/fase-4-orquestrador.md))
 - [x] **Fase 5.** Painel que executa: formulário do cartão, fila, aprovações, senha de sessão · _Lucas_ ([especificação](docs/fase-5-painel-executa.md))
-- [ ] **Fase 6.** Revisão de cortes e legenda no painel · _Well (proposta)_
+- [x] **Fase 6.** Revisão de cortes e legenda no painel · _Lucas_ ([especificação](docs/fase-6-revisao-na-tela.md))
 - [ ] **Fase 7.** Elementos, zoom e som no painel, conferência com botões de correção · _Well (proposta)_
 - [ ] **Fase 8.** Claude por trás, opcional: revisar cortes e desenhar elementos pelo painel · _Well (proposta)_
 
@@ -83,6 +83,7 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 | 12 | Lucas | a anotar | a anotar | PR #4 |
 | 4 | Lucas | a anotar | a anotar | PR #6 |
 | 5 | Lucas | a anotar | a anotar | PR #7 |
+| 6 | Lucas | a anotar | a anotar | PR #8 |
 
 Referência informada (Sonnet 5.5, esforço médio): a Fase 2 e o planejamento custaram cerca de **2% do plano semanal**, e a Fase 3 mais cerca de **3 pontos**, indo a 5%. Números lidos no Claude Code por quem rodou a fase, sem casa decimal.
 
@@ -220,7 +221,9 @@ O navegador abre sozinho num endereço com um **código de sessão** (`http://lo
 - **Envia vídeos:** arraste os brutos para a página. Eles vão para `material-bruto` e nunca sobrescrevem um arquivo com o mesmo nome.
 - **Começa uma edição:** marque os vídeos, escolha a série e o perfil (se tiver) e clique em **Começar a edição**.
 - **Preenche o cartão:** o formulário já vem com o recomendado marcado (cor padrão, redução de ruído) e uma área de "Ajustes rápidos". Clique em **Aprovar e começar**.
-- **Aprova as etapas:** quando a edição precisa da sua decisão (cortes, elementos, legenda, amostra), ela para e mostra o que decidir, com **Aprovar e seguir** ou **Copiar pedido para o Claude**, se você preferir revisar na conversa.
+- **Revisa os cortes na tela:** a fala inteira em frases, com o que fica e o que sai. Um clique tira ou volta uma frase, a duração final muda ao vivo (com a sua meta, se tiver), você ouve qualquer frase e qualquer **emenda**, o painel aponta os pontos para olhar (palavra duvidosa, fala não reconhecida, repetição, fim da gravação) e dá para desfazer.
+- **Revisa a legenda na tela:** o texto de cada bloco, com a prévia sobre o quadro do vídeo, e **Corrigir em todos** para trocar uma palavra em todas as legendas.
+- **Aprova as etapas:** quando a edição precisa da sua decisão (elementos, amostra e o resto), ela para e mostra o que decidir, com **Aprovar e seguir** ou **Copiar pedido para o Claude**, se você preferir revisar na conversa.
 - **Acompanha:** as etapas, a porcentagem das longas e a fila (uma edição por vez; as outras esperam). Dá para **Cancelar** e **Retomar** de onde parou.
 - **Recebe a entrega:** assiste às versões, vê as folhas de quadros e a conferência, clica em **Aprovar entrega** e em **Abrir a pasta**.
 
