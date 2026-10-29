@@ -2,18 +2,19 @@
 
 Uso:
     python legendas.py --pasta saida/2026-10-22_tema [--palavras 3] [--posicao auto|baixo|meio|alto]
-        [--maiusculas] [--sem-destaque]
+        [--maiusculas] [--sem-destaque] [--perfil NOME]
     python legendas.py --pasta saida/2026-10-22_tema --reaproveitar
         (refaz o .ass e o .srt a partir de legendas.json editado à mão)
 
 Grava:
 - legendas.json   os blocos de texto com tempo (é aqui que se corrige grafia)
 - legendas.ass    o desenho da legenda que vai queimado no vídeo
-- legendas.srt    arquivo de legenda separado, se o Well quiser subir à parte
+- legendas.srt    arquivo de legenda separado, se a pessoa quiser subir à parte
 
-Padrão visual (marca do Well): Sora ExtraBold, texto #eaefef com contorno escuro,
-palavra que está sendo falada em #a8b4d4, até 3 palavras por vez, fora do rosto e
-dentro da área segura do Instagram (longe dos botões da direita e da legenda do post).
+Visual: o do perfil de marca (perfis/NOME/marca.json). No perfil padrão, arven: Sora ExtraBold,
+texto #eaefef com contorno escuro, palavra que está sendo falada em #a8b4d4. Até 3 palavras
+por vez, fora do rosto e dentro da área segura do Instagram (longe dos botões da direita e da
+legenda do post). Os "termos" do perfil corrigem a caixa e a acentuação de marcas e termos.
 
 Posição auto (padrão): fica embaixo, como sempre. Com rosto.json (rosto.py), cada bloco
 confere se cobre olhos, boca ou queixo, já com o zoom da câmera (camera.json). Se cobrir,
@@ -28,8 +29,10 @@ import argparse
 import re
 from pathlib import Path
 
-from comum import (PASTA_SKILL, dimensoes_saida, erro, fps_racional, ler_json, salvar_json,
-                   trechos_no_quadro)
+import unicodedata
+
+from comum import (arquivo_da_fonte, assinatura_da_marca, carregar_marca, definir_perfil,
+                   dimensoes_saida, erro, fps_racional, ler_json, salvar_json, trechos_no_quadro)
 
 PAUSA_QUEBRA = 0.30   # pausa que fecha um bloco de legenda
 TEMPO_MINIMO = 0.45   # cada bloco fica pelo menos isso na tela
@@ -50,9 +53,9 @@ def limpar(p: str) -> str:
 class Medidor:
     """Largura real do texto na fonte da legenda (não dá para estimar contando letras)."""
 
-    def __init__(self, tamanho_px: float):
+    def __init__(self, tamanho_px: float, arquivo_fonte: Path):
         from fontTools.ttLib import TTFont
-        fonte = TTFont(PASTA_SKILL / "assets" / "fontes" / "Sora-ExtraBold.ttf")
+        fonte = TTFont(arquivo_fonte)
         self.mapa = fonte.getBestCmap()
         self.avancos = fonte["hmtx"].metrics
         self.escala = tamanho_px / fonte["head"].unitsPerEm
@@ -61,6 +64,26 @@ class Medidor:
     def __call__(self, texto: str) -> float:
         total = sum(self.avancos.get(self.mapa.get(ord(c)), (self.padrao, 0))[0] for c in texto)
         return total * self.escala
+
+
+def _sem_acento(t: str) -> str:
+    t = unicodedata.normalize("NFKD", t.lower())
+    return "".join(c for c in t if not unicodedata.combining(c))
+
+
+def corrigir_termos(palavras: list[dict], termos: list[str]) -> list[dict]:
+    """Grafia certa das marcas e termos do perfil: só a caixa e a acentuação de palavras soltas
+    ("whatsapp" vira "WhatsApp"). Termo de várias palavras não entra. A pontuação fica como está."""
+    mapa = {_sem_acento(t): t for t in termos if t and " " not in t.strip()}
+    if not mapa:
+        return palavras
+    saida = []
+    for w in palavras:
+        m = re.fullmatch(r"(\W*)(.*?)(\W*)", w["p"], flags=re.S)
+        miolo = m.group(2) if m else w["p"]
+        certo = mapa.get(_sem_acento(miolo))
+        saida.append({**w, "p": f"{m.group(1)}{certo}{m.group(3)}"} if certo and m else w)
+    return saida
 
 
 def palavras_no_corte(pasta: Path, cortes: dict, fps) -> list[dict]:
@@ -198,9 +221,9 @@ def posicionar(blocos: list[dict], estilo: dict, pasta: Path, medir) -> list[str
     return avisos
 
 
-def gerar_ass(blocos, largura, altura, estilo) -> str:
-    marca = ler_json(PASTA_SKILL / "marca.json")
+def gerar_ass(blocos, largura, altura, estilo, marca) -> str:
     cores = marca["cores"]
+    leg = marca["legenda"]
     tamanho = round(altura * estilo["tamanho"])
     contorno = max(2, round(tamanho * 0.09))
     alinhamento = {"auto": 2, "baixo": 2, "meio": 5, "alto": 8}[estilo["posicao"]]
@@ -208,7 +231,8 @@ def gerar_ass(blocos, largura, altura, estilo) -> str:
     margem_v = {"auto": round(altura * 0.24), "baixo": round(altura * 0.24), "meio": round(altura * 0.04),
                 "alto": round(altura * 0.16)}[estilo["posicao"]]
     margem_h = round(largura * (1 - LARGURA_UTIL) / 2)
-    texto, destaque, sombra = cor_ass(cores["texto"]), cor_ass(cores["destaque"]), cor_ass(cores["fundo_profundo"])
+    texto, destaque, sombra = (cor_ass(cores[leg["cor_texto"]]), cor_ass(cores[leg["cor_palavra_falada"]]),
+                               cor_ass(cores[leg["cor_contorno"]]))
     linhas = [
         "[Script Info]", "ScriptType: v4.00+", f"PlayResX: {largura}", f"PlayResY: {altura}",
         "WrapStyle: 0", "ScaledBorderAndShadow: yes", "",
@@ -216,7 +240,7 @@ def gerar_ass(blocos, largura, altura, estilo) -> str:
         "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, "
         "Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, "
         "MarginR, MarginV, Encoding",
-        f"Style: Legenda,Sora ExtraBold,{tamanho},{texto},{texto},{sombra},&H80{sombra[4:]},0,0,0,0,100,100,0,0,1,"
+        f"Style: Legenda,{leg['fonte']},{tamanho},{texto},{texto},{sombra},&H80{sombra[4:]},0,0,0,0,100,100,0,0,1,"
         f"{contorno},{max(1, contorno // 2)},{alinhamento},{margem_h},{margem_h},{margem_v},1",
         "", "[Events]", "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
     ]
@@ -258,9 +282,13 @@ def main():
     ap.add_argument("--maiusculas", action="store_true")
     ap.add_argument("--sem-destaque", action="store_true", help="não pinta a palavra falada")
     ap.add_argument("--reaproveitar", action="store_true", help="usa legendas.json já editado")
+    ap.add_argument("--perfil", help="perfil de marca (padrão: o da pasta do trabalho)")
     a = ap.parse_args()
     from comum import andamento, andamento_fim
     andamento(a.pasta, "montando a legenda")
+    definir_perfil(a.perfil)
+    marca = carregar_marca(pasta=a.pasta)
+    fonte = arquivo_da_fonte(marca)
 
     insp = ler_json(a.pasta / "inspecao.json")["videos"][0]
     cortes_arq = a.pasta / "cortes.json"
@@ -281,18 +309,19 @@ def main():
         estilo = {"palavras": a.palavras, "posicao": a.posicao, "tamanho": a.tamanho,
                   "maiusculas": a.maiusculas, "destaque": not a.sem_destaque,
                   "formato": a.formato, "largura": largura, "altura": altura}
-        medir = Medidor(altura * a.tamanho)
+        medir = Medidor(altura * a.tamanho, fonte)
         limite = largura * LARGURA_UTIL
         caixa = (lambda t: t.upper()) if a.maiusculas else (lambda t: t)
-        blocos = agrupar(palavras_no_corte(a.pasta, cortes, fps), a.palavras,
-                         cabe=lambda t: medir(caixa(t)) <= limite)
+        falas = corrigir_termos(palavras_no_corte(a.pasta, cortes, fps), marca["termos"])
+        blocos = agrupar(falas, a.palavras, cabe=lambda t: medir(caixa(t)) <= limite)
 
     from camera import assinatura_camera
-    avisos = posicionar(blocos, estilo, a.pasta.resolve(), Medidor(altura * estilo["tamanho"]))
+    avisos = posicionar(blocos, estilo, a.pasta.resolve(), Medidor(altura * estilo["tamanho"], fonte))
     estilo["camera"] = assinatura_camera(a.pasta.resolve())
+    estilo["perfil"] = {"nome": marca["perfil"], "assinatura": assinatura_da_marca(marca)}
     salvar_json(destino, {"estilo": estilo, "blocos": blocos})
 
-    ass = gerar_ass(blocos, estilo["largura"], estilo["altura"], estilo)
+    ass = gerar_ass(blocos, estilo["largura"], estilo["altura"], estilo, marca)
     (a.pasta / "legendas.ass").write_text(ass, encoding="utf-8")
     (a.pasta / "legendas.srt").write_text(gerar_srt(blocos), encoding="utf-8")
     print(f"{len(blocos)} blocos de legenda")

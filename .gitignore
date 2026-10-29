@@ -21,3 +21,9 @@ __pycache__/
 !skill/edicao-video-well/assets/sons/**/*.mp3
 .painel/
 saida/*/andamento.json
+
+# perfis de marca pessoais não vão para o git (só o arven, o modelo e a explicação)
+skill/edicao-video-well/perfis/*
+!skill/edicao-video-well/perfis/arven/
+!skill/edicao-video-well/perfis/_modelo/
+!skill/edicao-video-well/perfis/LEIA.md

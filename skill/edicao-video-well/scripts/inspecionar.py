@@ -114,8 +114,13 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("videos", nargs="+", type=Path)
     ap.add_argument("--pasta", type=Path, required=True, help="pasta do trabalho (saida/AAAA-MM-DD_tema)")
+    ap.add_argument("--perfil", help="perfil de marca desta edição (perfis/NOME); fica gravado na pasta do trabalho")
     a = ap.parse_args()
     exigir("ffmpeg")
+    from comum import carregar_marca, definir_perfil, nome_do_perfil
+    definir_perfil(a.perfil)
+    marca = carregar_marca(pasta=a.pasta)        # recusa perfil que não existe antes de gastar tempo
+    salvar_json(a.pasta / "perfil.json", {"perfil": marca["perfil"]})
     from comum import andamento, andamento_fim
     andamento(a.pasta, "inspecionando", detalhe=", ".join(v.name for v in a.videos))
 
@@ -131,6 +136,7 @@ def main():
         for p in v["pendencias"]:
             print(f"  atenção: {p}")
     andamento_fim(a.pasta, "inspecionado")
+    print(f"perfil de marca: {marca['perfil']}")
     print(f"ok  {a.pasta / 'inspecao.json'}")
 
 

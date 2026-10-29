@@ -3,8 +3,13 @@
 Uso:
     python propor_cortes.py --pasta saida/2026-10-22_tema [--ritmo natural|dinamico]
         [--videos A.mp4 B.mp4]   (padrão: os vídeos de inspecao.json, na mesma ordem)
+        [--perfil NOME]
 
 Lê inspecao.json e transcricoes/, grava cortes.json e mostra a lista de trechos.
+
+Avisos obrigatórios: as frases de "avisos_obrigatorios" do perfil de marca nunca podem ser
+cortadas. O script procura cada uma na fala; se algum pedaço dela ficar fora dos trechos que
+sobram, ela entra em "PARA CONFERIR". Se ficar inteira, o script diz que foi mantida.
 
 Como mede:
 - Os pontos de corte vêm do áudio, medido a cada 10 ms. O limiar entre fala e
@@ -29,7 +34,7 @@ from pathlib import Path
 
 import numpy as np
 
-from comum import carregar_mono, envelope_db, erro, ler_json, salvar_json, tempo
+from comum import carregar_marca, carregar_mono, definir_perfil, envelope_db, erro, ler_json, salvar_json, tempo
 from fala import PASSO, medir_fala
 
 RITMOS = {
@@ -109,6 +114,46 @@ def frases(palavras: list[dict]) -> list[list[int]]:
 
 def parecido(a: list[str], b: list[str]) -> float:
     return difflib.SequenceMatcher(None, a, b).ratio()
+
+
+def achar_aviso(aviso: str, palavras: list[dict]) -> list[tuple[int, int]]:
+    """Onde a frase do aviso aparece na fala (pode ser dita mais de uma vez): lista de (primeira, última palavra)."""
+    alvo = [normalizar(p) for p in aviso.split() if normalizar(p)]
+    norm = [normalizar(w["p"]) for w in palavras]
+    candidatos = []
+    for i in range(len(norm) - len(alvo) + 1):
+        sem = parecido(norm[i:i + len(alvo)], alvo)
+        if sem >= 0.8:
+            candidatos.append((sem, i, i + len(alvo) - 1))
+    achados, ocupado = [], set()
+    for sem, i, j in sorted(candidatos, key=lambda c: (-c[0], c[1])):      # as mais parecidas primeiro
+        if not ocupado & set(range(i, j + 1)):
+            achados.append((i, j))
+            ocupado |= set(range(i, j + 1))
+    return sorted(achados)
+
+
+def conferir_avisos(avisos: list[str], falas: dict[int, list[dict]], trechos: list[dict]) -> list[dict]:
+    """Para cada aviso obrigatório: mantido inteiro (em alguma das vezes que foi dito), cortado ou não encontrado."""
+    saida = []
+    for aviso in avisos:
+        ocorrencias = []
+        for vid, palavras in falas.items():
+            mantidos = [(t["inicio"], t["fim"]) for t in trechos if t["video"] == vid]
+            for i, j in achar_aviso(aviso, palavras):
+                fora = [w["p"] for w in palavras[i:j + 1]
+                        if not any(a <= (w["i"] + w["f"]) / 2 < b for a, b in mantidos)]
+                ocorrencias.append({"video": vid, "tempo": round(palavras[i]["i"], 2), "cortadas": fora})
+        if not ocorrencias:
+            saida.append({"aviso": aviso, "estado": "nao_encontrado"})
+            continue
+        inteira = next((o for o in ocorrencias if not o["cortadas"]), None)
+        if inteira:
+            saida.append({"aviso": aviso, "estado": "mantido", "video": inteira["video"], "tempo": inteira["tempo"]})
+        else:   # nenhuma vez ficou inteira: mostra a que perdeu menos palavras
+            o = min(ocorrencias, key=lambda o: len(o["cortadas"]))
+            saida.append({"aviso": aviso, "estado": "cortado", **o})
+    return saida
 
 
 def achar_repeticoes(palavras: list[dict], env: np.ndarray, duracao: float):
@@ -266,9 +311,12 @@ def main():
     ap.add_argument("--pasta", type=Path, required=True)
     ap.add_argument("--ritmo", choices=sorted(RITMOS), default="natural")
     ap.add_argument("--videos", nargs="*", type=Path)
+    ap.add_argument("--perfil", help="perfil de marca (padrão: o da pasta do trabalho)")
     a = ap.parse_args()
     from comum import andamento, andamento_fim
     andamento(a.pasta, "propondo os cortes")
+    definir_perfil(a.perfil)
+    marca = carregar_marca(pasta=a.pasta)
 
     if a.videos:
         arquivos = [str(v.resolve()) for v in a.videos]
@@ -304,6 +352,18 @@ def main():
                     "motivo": f"mesma frase dos trechos {x} e {y}: escolher a melhor tomada e apagar a outra",
                     "texto": tr[y]["texto"]})
 
+    # Avisos obrigatórios do perfil: nunca podem ser cortados.
+    if marca["avisos_obrigatorios"]:
+        falas = {vid: ler_json(a.pasta / "transcricoes" / f"{Path(arq).stem}.json")["palavras"]
+                 for vid, arq in enumerate(arquivos)}
+        resultado["avisos_obrigatorios"] = conferir_avisos(marca["avisos_obrigatorios"], falas, resultado["trechos"])
+        for av in resultado["avisos_obrigatorios"]:
+            if av["estado"] == "cortado":
+                resultado["conferir"].append({
+                    "video": av["video"], "tempo": av["tempo"],
+                    "motivo": "aviso obrigatório do perfil cortado em parte (não pode): " + ", ".join(av["cortadas"]),
+                    "texto": av["aviso"]})
+
     final = sum(t["fim"] - t["inicio"] for t in resultado["trechos"])
     resultado["duracao_original"] = round(total, 2)
     resultado["duracao_final"] = round(final, 2)
@@ -320,6 +380,11 @@ def main():
         if not r["motivo"].startswith("pausa"):
             print(f"  v{r['video']} {tempo(r['inicio'])}-{tempo(r['fim'])}  {r['motivo']}"
                   f"{': ' + r['texto'] if r.get('texto') else ''}")
+    for av in resultado.get("avisos_obrigatorios", []):
+        if av["estado"] == "mantido":
+            print(f"\naviso obrigatório mantido inteiro: v{av['video']} {tempo(av['tempo'])}  {av['aviso']}")
+        elif av["estado"] == "nao_encontrado":
+            print(f"\naviso obrigatório que não aparece na fala (confira se a pessoa o disse): {av['aviso']}")
     if resultado["conferir"]:
         print("\nPARA CONFERIR")
         for c in resultado["conferir"]:

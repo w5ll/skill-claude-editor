@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Painel de edição</title>
+<title>welldit</title>
 <style>
-  @font-face { font-family: "Sora ExtraBold"; src: url("/fonte.ttf"); font-display: swap; }
+  @font-face { font-family: "FontePerfil"; src: url("/fonte.ttf"); font-display: swap; }
   :root {
     --fundo: #16161f; --fundo-profundo: #0a0a12; --cartao: #1a1a24; --linha: #333446;
     --destaque: #a8b4d4; --texto: #eaefef; --apoio: #b4bccd; --rotulo: #8f97ab; --metal: #7f8caa;
@@ -14,13 +14,15 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--fundo-profundo); color: var(--texto);
     font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-  .topo { position: sticky; top: 0; z-index: 5; background: rgba(10,10,18,.92); backdrop-filter: blur(8px);
+  .topo { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--fundo-profundo) 92%, transparent); backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--linha); }
   .topo .dentro, main { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
   .topo .dentro { display: flex; align-items: center; gap: 12px; height: 60px; }
-  h1, h2, .titulo { font-family: "Sora ExtraBold", sans-serif; letter-spacing: -.01em; }
+  h1, h2, .titulo { font-family: "FontePerfil", sans-serif; letter-spacing: -.01em; }
   h1 { font-size: 18px; margin: 0; }
   h1 span { color: var(--destaque); }
+  .rodape { max-width: 1080px; margin: 0 auto; padding: 0 16px 28px; font-size: 12px; color: var(--rotulo); }
+  .rodape:empty { display: none; }
   .conexao { margin-left: auto; font-size: 13px; color: var(--rotulo); display: flex; align-items: center; gap: 6px; }
   .bolinha { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); }
   .bolinha.fora { background: var(--falha); }
@@ -30,7 +32,7 @@
   .soltar { display: block; border: 2px dashed var(--linha); border-radius: 14px; padding: 28px 16px; text-align: center;
     cursor: pointer; transition: border-color .15s, background .15s; }
   .soltar:hover, .soltar.em-cima { border-color: var(--destaque); background: rgba(168,180,212,.06); }
-  .soltar strong { font-family: "Sora ExtraBold", sans-serif; font-size: 17px; display: block; margin-bottom: 4px; }
+  .soltar strong { font-family: "FontePerfil", sans-serif; font-size: 17px; display: block; margin-bottom: 4px; }
   .soltar small { color: var(--rotulo); }
   .fila { margin-top: 12px; display: grid; gap: 8px; }
   .envio { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: 14px; }
@@ -102,7 +104,7 @@
 </head>
 <body>
 <div class="topo"><div class="dentro">
-  <h1>Edição de vídeo <span>@lunardiwell</span></h1>
+  <h1>welldit <span id="marca-nome"></span></h1>
   <div class="conexao"><i class="bolinha" id="bolinha"></i><span id="conexao">conectando</span></div>
 </div></div>
 
@@ -127,6 +129,7 @@
     <div id="trabalhos"><p class="vazio">Carregando...</p></div>
   </section>
 </main>
+<footer class="rodape" id="rodape"></footer>
 
 <div class="modal" id="modal">
   <div class="caixa">
@@ -303,6 +306,20 @@ function desenharTrabalhos(estado) {
   caixa.querySelector(".vazio")?.remove();
 }
 
+/* Perfil de marca: nome, cores e créditos vêm de perfis/NOME/marca.json (o painel padrão é o do perfil arven). */
+async function aplicarMarca() {
+  try {
+    const m = await (await fetch("/marca.json", {cache: "no-store"})).json();
+    const c = m.cores || {}, raiz = document.documentElement.style;
+    const mapa = {"--fundo": "fundo", "--fundo-profundo": "fundo_profundo", "--cartao": "cartao", "--linha": "linha",
+      "--destaque": "destaque", "--texto": "texto", "--apoio": "apoio", "--rotulo": "rotulo", "--metal": "elemento_3d"};
+    for (const [variavel, chave] of Object.entries(mapa)) if (c[chave]) raiz.setProperty(variavel, c[chave]);
+    document.getElementById("marca-nome").textContent = m.nome || "";
+    document.getElementById("rodape").textContent = m.creditos || "";
+    document.title = m.nome ? `welldit · ${m.nome}` : "welldit";
+  } catch (e) { /* sem perfil: fica o visual padrão do arquivo */ }
+}
+
 async function atualizar() {
   try {
     const r = await fetch("/api/estado", {cache: "no-store"});
@@ -329,6 +346,7 @@ $("#fechar").onclick = fechar;
 $("#modal").addEventListener("click", (ev) => { if (ev.target.id === "modal") fechar(); });
 document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") fechar(); });
 
+aplicarMarca();
 atualizar();
 setInterval(atualizar, 2000);
 </script>

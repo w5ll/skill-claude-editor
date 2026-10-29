@@ -30,8 +30,8 @@ from pathlib import Path
 
 import numpy as np
 
-from comum import (PASTA_FONTES, dimensoes_saida, erro, exigir, fps_racional, ler_json,
-                   medir_volume, salvar_json, tempo, trechos_no_quadro)
+from comum import (arquivo_da_fonte, assinatura_da_marca, carregar_marca, definir_perfil, dimensoes_saida, erro,
+                   exigir, fps_racional, ler_json, medir_volume, salvar_json, tempo, trechos_no_quadro)
 
 TAXA = 48000
 SUAVE = 0.008  # 8 ms de entrada e saída em cada emenda
@@ -131,7 +131,8 @@ def grafo_base(grupos, videos, fps, largura, altura, hdr, hdr_por_arquivo) -> tu
     return entradas, grafos, "[v0]"
 
 
-def grafo_camadas(atual: str, primeiro_elemento: int, elementos: list, ass: Path | None) -> tuple[list[str], str]:
+def grafo_camadas(atual: str, primeiro_elemento: int, elementos: list, ass: Path | None,
+                  pasta_fontes: Path) -> tuple[list[str], str]:
     grafos = []
     for k, el in enumerate(elementos):
         grafos.append(f"[{primeiro_elemento + k}:v]format=rgba,setpts=PTS-STARTPTS+{el['inicio']:.3f}/TB[e{k}]")
@@ -141,7 +142,7 @@ def grafo_camadas(atual: str, primeiro_elemento: int, elementos: list, ass: Path
         grafos.append(f"{atual}format=yuv420p[vf]")
         atual = "[vf]"
     if ass is not None:
-        grafos.append(f"{atual}ass=filename='{caminho_filtro(ass)}':fontsdir='{caminho_filtro(PASTA_FONTES)}'[vl]")
+        grafos.append(f"{atual}ass=filename='{caminho_filtro(ass)}':fontsdir='{caminho_filtro(pasta_fontes)}'[vl]")
         atual = "[vl]"
     return grafos, atual
 
@@ -250,6 +251,7 @@ def main():
     ap.add_argument("--sem-elementos", action="store_true", help="ignora elementos.json")
     ap.add_argument("--sem-som", action="store_true", help="ignora som.json (sem música e sem efeitos)")
     ap.add_argument("--nome", help="nome base do arquivo final (padrão: nome da pasta)")
+    ap.add_argument("--perfil", help="perfil de marca (padrão: o da pasta do trabalho)")
     a = ap.parse_args()
     exigir("ffmpeg")
 
@@ -276,6 +278,8 @@ def main():
     if camera is not None and a.hdr == "manter":
         erro("o zoom de ênfase não funciona com --hdr manter; use --hdr sdr ou rode camera.py desligar")
 
+    definir_perfil(a.perfil)
+    marca = carregar_marca(pasta=pasta)
     ass = pasta / "legendas.ass"
     usar_legenda = not a.sem_legenda
     if usar_legenda:
@@ -285,6 +289,10 @@ def main():
         if (estilo["largura"], estilo["altura"]) != (largura, altura):
             erro(f"a legenda foi feita para {estilo['largura']}x{estilo['altura']} e o vídeo sai "
                  f"{largura}x{altura}: rode legendas.py com o mesmo --formato")
+        feita_com = estilo.get("perfil")          # legenda de antes dos perfis não tem este campo: vale
+        if feita_com and feita_com.get("assinatura") != assinatura_da_marca(marca):
+            erro(f"a legenda foi feita com o perfil de marca \"{feita_com.get('nome')}\" (ou ele mudou) e este vídeo "
+                 f"usa \"{marca['perfil']}\": rode legendas.py de novo")
         if estilo.get("posicao") == "auto" and estilo.get("camera") != assinatura_camera(pasta):
             erro("a câmera ou o rosto mudaram depois da legenda: rode legendas.py --reaproveitar")
 
@@ -341,7 +349,8 @@ def main():
 
         if camera is None:
             idx_audio = len(grupos)
-            g_camadas, atual = grafo_camadas(rot_base, idx_audio + 1, elementos, ass if usar_legenda else None)
+            g_camadas, atual = grafo_camadas(rot_base, idx_audio + 1, elementos, ass if usar_legenda else None,
+                                               arquivo_da_fonte(marca).parent)
             grafos = grafos_base + g_camadas + [f"[{idx_audio}:a]{filtro_audio}[ac]"]
             cmd = (["ffmpeg"] + log + entradas + ["-i", str(wav)] + elem_in +
                    ["-filter_complex", ";".join(grafos), "-map", atual, "-map", "[ac]"] + corte +
@@ -351,7 +360,8 @@ def main():
         else:
             cmd_base = (["ffmpeg"] + log + entradas + ["-filter_complex", ";".join(grafos_base), "-map", rot_base,
                         "-f", "rawvideo", "-pix_fmt", "yuv420p", "-"])
-            g_camadas, atual = grafo_camadas("[0:v]", 2, elementos, ass if usar_legenda else None)
+            g_camadas, atual = grafo_camadas("[0:v]", 2, elementos, ass if usar_legenda else None,
+                                           arquivo_da_fonte(marca).parent)
             grafos = g_camadas + [f"[1:a]{filtro_audio}[ac]"]
             if not g_camadas:
                 grafos = ["[0:v]null[vq]"] + grafos

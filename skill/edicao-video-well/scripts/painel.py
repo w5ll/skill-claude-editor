@@ -1,7 +1,7 @@
 """Painel da edição no navegador: enviar vídeos brutos e ver em que etapa cada edição está.
 
 Uso (da pasta do projeto, com o .venv ativo):
-    python skill/edicao-video-well/scripts/painel.py [--porta 8765] [--sem-abrir]
+    python skill/edicao-video-well/scripts/painel.py [--porta 8765] [--sem-abrir] [--perfil NOME]
 
 Abre http://localhost:8765 no navegador. Só funciona no próprio computador (não fica
 visível na rede). Para parar: Ctrl+C no terminal.
@@ -36,9 +36,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
+from comum import arquivo_da_fonte, carregar_marca, definir_perfil
+
 PASTA_SKILL = Path(__file__).resolve().parent.parent
 MOLDE = PASTA_SKILL / "templates" / "painel.html"
-FONTE = PASTA_SKILL / "assets" / "fontes" / "Sora-ExtraBold.ttf"
 EXTENSOES = {".mov", ".mp4", ".m4v", ".mkv", ".webm", ".avi", ".txt", ".md", ".docx", ".pdf"}
 BLOCO = 1024 * 1024
 
@@ -191,7 +192,7 @@ def _tempo(s) -> str:
     return f"{m}:{seg:02d}"
 
 
-def criar_handler(painel: Painel):
+def criar_handler(painel: Painel, marca: dict):
     class Handler(BaseHTTPRequestHandler):
         server_version = "PainelEdicao/1"
 
@@ -260,9 +261,10 @@ def criar_handler(painel: Painel):
                 self.end_headers()
                 self.wfile.write(corpo)
             elif url.path == "/fonte.ttf":
-                self._arquivo(FONTE, "font/ttf")
+                self._arquivo(arquivo_da_fonte(marca), "font/ttf")
             elif url.path == "/marca.json":
-                self._arquivo(PASTA_SKILL / "marca.json", "application/json")
+                publica = {k: v for k, v in marca.items() if not k.startswith("_")}   # sem o caminho da pasta
+                self._json(publica)
             elif url.path == "/api/estado":
                 self._json(painel.estado())
             elif url.path == "/arquivo":
@@ -329,11 +331,14 @@ def main():
     ap.add_argument("--raiz", type=Path, default=PASTA_SKILL.parent.parent,
                     help="pasta do projeto (onde ficam material-bruto/ e saida/)")
     ap.add_argument("--sem-abrir", action="store_true", help="não abre o navegador")
+    ap.add_argument("--perfil", help="perfil de marca do painel (nome, cores, fonte e créditos); padrão: arven")
     a = ap.parse_args()
+    definir_perfil(a.perfil)
+    marca = carregar_marca()
     painel = Painel(a.raiz.resolve())
-    servidor = ThreadingHTTPServer(("127.0.0.1", a.porta), criar_handler(painel))
+    servidor = ThreadingHTTPServer(("127.0.0.1", a.porta), criar_handler(painel, marca))
     url = f"http://localhost:{a.porta}"
-    print(f"painel aberto em {url}  (Ctrl+C para parar)")
+    print(f"painel aberto em {url}  (Ctrl+C para parar) · perfil de marca: {marca['perfil']}")
     print(f"vídeos brutos: {painel.bruto}")
     if not a.sem_abrir:
         threading.Timer(0.6, lambda: webbrowser.open(url)).start()

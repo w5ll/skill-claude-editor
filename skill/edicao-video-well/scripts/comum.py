@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
+import os
+import re
 import shutil
 import subprocess
 import sys
@@ -13,6 +16,10 @@ import numpy as np
 
 PASTA_SKILL = Path(__file__).resolve().parent.parent
 PASTA_FONTES = PASTA_SKILL / "assets" / "fontes"
+PASTA_PERFIS = PASTA_SKILL / "perfis"
+PERFIL_PADRAO = "arven"
+CORES_DA_MARCA = ["fundo", "fundo_profundo", "cartao", "linha", "elemento_3d", "destaque", "texto", "apoio", "rotulo"]
+PACOTES_DE_GATILHOS = ["geral", "marketing", "juridico"]
 TAXA_ANALISE = 16000  # áudio mono usado para medir fala e transcrever
 
 
@@ -43,6 +50,114 @@ def salvar_json(caminho, dados):
     caminho = Path(caminho)
     caminho.parent.mkdir(parents=True, exist_ok=True)
     caminho.write_text(json.dumps(dados, ensure_ascii=False, indent=2), encoding="utf-8")
+
+# ---------- perfil de marca ----------
+# O perfil (perfis/<nome>/marca.json) tem as cores, a fonte, o nome e as regras de quem edita.
+# Escolha, da mais forte para a mais fraca: definir_perfil() (o --perfil do script), o perfil.json
+# da pasta do trabalho, a variável WELLDIT_PERFIL e o perfil padrão.
+
+_PERFIL_FORCADO: list[str] = []
+
+
+def definir_perfil(nome: str | None):
+    """Chamado pelos scripts logo depois de ler o --perfil."""
+    _PERFIL_FORCADO[:] = [nome] if nome else []
+
+
+def nome_do_perfil(pasta=None, perfil: str | None = None) -> str:
+    if perfil:
+        return perfil
+    if _PERFIL_FORCADO:
+        return _PERFIL_FORCADO[0]
+    if pasta is not None and (Path(pasta) / "perfil.json").exists():
+        try:
+            nome = json.loads((Path(pasta) / "perfil.json").read_text(encoding="utf-8")).get("perfil")
+        except (OSError, ValueError):
+            nome = None
+        if nome:
+            return nome
+    return os.environ.get("WELLDIT_PERFIL") or PERFIL_PADRAO
+
+
+def perfis_disponiveis() -> list[str]:
+    if not PASTA_PERFIS.exists():
+        return []
+    return sorted(p.name for p in PASTA_PERFIS.iterdir() if (p / "marca.json").exists())
+
+
+def procurar_na_marca(pasta_perfil: Path, relativo: str) -> Path | None:
+    """Um arquivo do perfil: primeiro na pasta dele, depois na pasta da skill (fontes padrão)."""
+    for base in (pasta_perfil, PASTA_SKILL):
+        arq = (base / relativo).resolve()
+        if arq.is_file():
+            return arq
+    return None
+
+
+def problemas_da_marca(marca: dict, pasta_perfil: Path) -> list[str]:
+    """O que está errado no marca.json, em português."""
+    problemas = []
+    for campo in ("nome", "cores", "legenda"):
+        if campo not in marca:
+            problemas.append(f'falta o campo "{campo}"')
+    cores = marca.get("cores", {})
+    for c in CORES_DA_MARCA:
+        if c not in cores:
+            problemas.append(f'falta a cor "{c}" em cores')
+        elif not re.fullmatch(r"#[0-9a-fA-F]{6}", str(cores[c])):
+            problemas.append(f'a cor "{c}" ({cores[c]}) deve estar no formato #rrggbb')
+    leg = marca.get("legenda", {})
+    for campo in ("fonte", "arquivo_fonte"):
+        if campo not in leg:
+            problemas.append(f'falta "{campo}" em legenda')
+    if leg.get("arquivo_fonte") and not procurar_na_marca(pasta_perfil, leg["arquivo_fonte"]):
+        problemas.append(f'não achei a fonte {leg["arquivo_fonte"]} (procurei na pasta do perfil e na da skill)')
+    for chave in ("cor_texto", "cor_palavra_falada", "cor_contorno"):
+        if leg.get(chave) and leg[chave] not in cores:
+            problemas.append(f'legenda.{chave} usa "{leg[chave]}", que não é uma das cores')
+    for g in marca.get("gatilhos", []):
+        if g not in PACOTES_DE_GATILHOS:
+            problemas.append(f'pacote de gatilhos desconhecido: "{g}" (use {", ".join(PACOTES_DE_GATILHOS)})')
+    for campo in ("avisos_obrigatorios", "termos", "gatilhos"):
+        if campo in marca and not isinstance(marca[campo], list):
+            problemas.append(f'"{campo}" deve ser uma lista')
+    return problemas
+
+
+def carregar_marca(perfil: str | None = None, pasta=None) -> dict:
+    """O perfil de marca escolhido, já com os campos opcionais preenchidos."""
+    nome = nome_do_perfil(pasta, perfil)
+    arq = PASTA_PERFIS / nome / "marca.json"
+    if not re.fullmatch(r"[\w-]+", nome) or not arq.exists():
+        erro(f'não existe o perfil "{nome}". Perfis disponíveis: {", ".join(perfis_disponiveis()) or "nenhum"}. '
+             "Para criar o seu: python scripts/perfil.py novo NOME")
+    marca = ler_json(arq)
+    problemas = problemas_da_marca(marca, arq.parent)
+    if problemas:
+        erro(f'o perfil "{nome}" tem problema: ' + "; ".join(problemas))
+    marca.setdefault("arroba", "")
+    marca.setdefault("creditos", "")
+    marca.setdefault("gatilhos", ["geral"])
+    marca.setdefault("avisos_obrigatorios", [])
+    marca.setdefault("termos", [])
+    marca["legenda"].setdefault("cor_texto", "texto")
+    marca["legenda"].setdefault("cor_palavra_falada", "destaque")
+    marca["legenda"].setdefault("cor_contorno", "fundo_profundo")
+    marca["perfil"] = nome
+    marca["_pasta"] = str(arq.parent)
+    return marca
+
+
+def arquivo_da_fonte(marca: dict) -> Path:
+    return procurar_na_marca(Path(marca["_pasta"]), marca["legenda"]["arquivo_fonte"])
+
+
+def assinatura_da_marca(marca: dict) -> str:
+    """Resume tudo que muda o desenho (cores, fonte, @). Muda o perfil ou o arquivo, muda a assinatura."""
+    base = {"cores": marca["cores"], "legenda": marca["legenda"], "arroba": marca["arroba"],
+            "fonte": hashlib.sha1(arquivo_da_fonte(marca).read_bytes()).hexdigest()}
+    return hashlib.sha1(json.dumps(base, sort_keys=True).encode()).hexdigest()[:12]
+
 
 
 def sondar(arquivo) -> dict:

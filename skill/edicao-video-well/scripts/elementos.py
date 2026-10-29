@@ -1,10 +1,11 @@
-"""Elementos 3D que entram no vídeo quando o Well fala a palavra certa.
+"""Elementos 3D que entram no vídeo quando a pessoa fala a palavra certa.
 
 Uso:
     python elementos.py sugerir --pasta saida/2026-10-22_tema [--modo sobreposto|tela] [--intervalo 6]
     python elementos.py desenhar --pasta saida/2026-10-22_tema
     python elementos.py validar --pasta saida/2026-10-22_tema            (ou --arquivo desenho.svg --animacao girar)
     python elementos.py previa --pasta saida/2026-10-22_tema [--formato original@1080]
+    (todos aceitam --perfil NOME; sem ele vale o perfil da pasta do trabalho)
     python elementos.py promover NOME --pasta saida/2026-10-22_tema [--palavras "bussol,rumo"]
 
 sugerir  lê a fala já cortada e propõe elementos em elementos.json: "WhatsApp" chama a
@@ -54,13 +55,14 @@ import unicodedata
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-from comum import PASTA_SKILL, aviso, erro, fps_racional, ler_json, salvar_json, tempo, trechos_no_quadro
+from comum import (PACOTES_DE_GATILHOS, PASTA_SKILL, arquivo_da_fonte, assinatura_da_marca, aviso, carregar_marca,
+                   definir_perfil, erro, fps_racional, ler_json, salvar_json, tempo, trechos_no_quadro)
 
 ELEMENTOS = ["esfera", "anel", "cubo", "cristal", "mensagem", "funil", "relogio", "grafico",
              "alvo", "cadeado", "lupa", "furo"]
 
 # Começo de palavra (sem acento) -> elemento. A primeira regra que bate vale.
-GATILHOS = [
+GATILHOS_BASE = [
     ("whatsapp", "mensagem"), ("zap", "mensagem"), ("mensage", "mensagem"), ("respond", "mensagem"),
     ("respost", "mensagem"), ("convers", "mensagem"), ("atendiment", "mensagem"), ("direct", "mensagem"),
     ("minuto", "relogio"), ("hora", "relogio"), ("segundo", "relogio"), ("demor", "relogio"),
@@ -83,6 +85,13 @@ GATILHOS = [
     ("decis", "lupa"), ("enxerg", "lupa"), ("entend", "lupa"), ("clareza", "lupa"),
     ("disciplin", "cadeado"), ("metodo", "cadeado"), ("metodic", "cadeado"), ("rigor", "cadeado"),
 ]
+# Cada gatilho pertence a um pacote; o perfil de marca liga os pacotes que quer (campo "gatilhos").
+# geral: tudo que não está nos outros dois. marketing: atendimento, funil e público. juridico: OAB, ética, sigilo, contrato.
+PACOTE_MARKETING = {"whatsapp", "zap", "mensage", "respond", "respost", "convers", "atendiment", "direct",
+                    "funil", "etapa", "jornada", "lead", "contato", "publico", "nicho", "qualificad"}
+PACOTE_JURIDICO = {"oab", "etica", "sigilo", "contrato"}
+GATILHOS = [(pref, el, "marketing" if pref in PACOTE_MARKETING else "juridico" if pref in PACOTE_JURIDICO else "geral")
+            for pref, el in GATILHOS_BASE]
 # Palavras que só contam inteiras (o começo delas pega outras: "meta" x "metade").
 INTEIRAS = {"meta", "metas", "erro", "erros", "cedo"}
 
@@ -169,7 +178,8 @@ def carregar_catalogo() -> list[dict]:
 
 
 def sugerir(palavras: list[dict], duracao_video: float, modo: str, intervalo: float,
-            catalogo: list[dict] | None = None) -> list[dict]:
+            catalogo: list[dict] | None = None, pacotes: list[str] | None = None) -> list[dict]:
+    pacotes = set(pacotes if pacotes is not None else PACOTES_DE_GATILHOS)
     itens = []
     ultimo = -999.0
     norm = [normalizar(w["p"]) for w in palavras]
@@ -190,7 +200,9 @@ def sugerir(palavras: list[dict], duracao_video: float, modo: str, intervalo: fl
                 if any(norm[k].startswith(st) for st in ent["_stems"]):
                     elemento, entrada = f"gerado:{ent['nome']}", ent
                     break
-            for prefixo, el in ([] if entrada else GATILHOS):
+            for prefixo, el, pacote in ([] if entrada else GATILHOS):
+                if pacote not in pacotes:
+                    continue
                 if " " in prefixo:
                     junto = norm[k] + (norm[k + 1] if k + 1 < len(norm) else "")
                     if junto.startswith(prefixo.replace(" ", "")):
@@ -287,11 +299,12 @@ def resolver_posicao(item: dict, largura: int, altura: int, rostos, camera) -> s
             "use o modo tela ou tire o elemento")
 
 
-def pasta_do_item(pasta: Path, n: int, item: dict, largura: int, altura: int, fps, svg: str | None = None) -> Path:
+def pasta_do_item(pasta: Path, n: int, item: dict, largura: int, altura: int, fps, marca: dict,
+                  svg: str | None = None) -> Path:
     partes = [item["elemento"], item["modo"], item.get("texto", ""), item["duracao"],
               item.get("escala_usada", item.get("escala", 1.0)),
-              largura, altura, str(fps), ler_json(PASTA_SKILL / "marca.json")["cores"]]
-    if svg is not None:     # elemento gerado: o desenho e a animação entram na chave (os 12 prontos não mudam)
+              largura, altura, str(fps), assinatura_da_marca(marca)]   # cores, fonte e @ do perfil
+    if svg is not None:     # elemento gerado: o desenho e a animação entram na chave
         partes += [hashlib.sha1(svg.encode()).hexdigest(), item.get("animacao"), bool(item.get("parar"))]
     chave = json.dumps(partes, sort_keys=True)
     nome = item["elemento"].replace(":", "-")
@@ -506,7 +519,8 @@ JS_CAIXA = """() => {
 def cfg_pagina(item: dict, w: int, h: int, svg: str | None, marca: dict) -> dict:
     cfg = {"elemento": item["elemento"], "modo": item["modo"], "largura": w, "altura": h,
            "duracao": item["duracao"], "texto": item.get("texto", ""), "cores": marca["cores"],
-           "arroba": marca.get("arroba", "")}
+           "arroba": marca.get("arroba", ""),
+           "fonte": {"familia": marca["legenda"]["fonte"], "url": arquivo_da_fonte(marca).as_uri()}}
     if svg is not None:
         cfg.update(svg=svg, animacao=item.get("animacao"), parar=bool(item.get("parar")))
     return cfg
@@ -542,7 +556,7 @@ def desenhar(pasta: Path, largura: int, altura: int, fps) -> list[dict]:
         return []
     dados = ler_json(arq)
     itens = dados.get("itens", [])
-    marca = ler_json(PASTA_SKILL / "marca.json")
+    marca = carregar_marca(pasta=pasta)
     molde = (PASTA_SKILL / "templates" / "elementos.html").resolve().as_uri()
     from camera import Camera
     from rosto import Rostos
@@ -562,7 +576,7 @@ def desenhar(pasta: Path, largura: int, altura: int, fps) -> list[dict]:
         aviso_pos = resolver_posicao(item, largura, altura, rostos, camera)
         if aviso_pos:
             aviso(f"atenção: {aviso_pos}")
-        destino = pasta_do_item(pasta, n, item, largura, altura, fps, svgs.get(n))
+        destino = pasta_do_item(pasta, n, item, largura, altura, fps, marca, svgs.get(n))
         total = max(1, math.ceil(item["duracao"] * float(fps)))
         item["quadros"] = str(destino)
         item["video"] = str(destino / "elemento.mov")
@@ -615,7 +629,7 @@ def desenhar(pasta: Path, largura: int, altura: int, fps) -> list[dict]:
 
 def validar_itens(pasta: Path | None, arquivo: Path | None, animacao: str | None, parar: bool) -> int:
     """Valida os elementos gerados do elementos.json (ou um arquivo avulso). Devolve quantos têm erro."""
-    marca = ler_json(PASTA_SKILL / "marca.json")
+    marca = carregar_marca(pasta=pasta)
     alvos: list[tuple[str, str, dict]] = []
     if arquivo:
         item = {"elemento": f"gerado:{arquivo.stem}", "animacao": animacao, "parar": parar, "modo": "sobreposto",
@@ -687,7 +701,7 @@ def previa(pasta: Path, largura: int, altura: int, fps) -> Path:
     itens = ler_json(arq).get("itens", [])
     if not itens:
         erro("o elementos.json está vazio")
-    marca = ler_json(PASTA_SKILL / "marca.json")
+    marca = carregar_marca(pasta=pasta)
     cores = marca["cores"]
     cortes = ler_json(pasta / "cortes.json")
     insp = ler_json(pasta / "inspecao.json")["videos"]
@@ -696,7 +710,7 @@ def previa(pasta: Path, largura: int, altura: int, fps) -> Path:
     rostos = Rostos.carregar(pasta, largura, altura)
     camera = Camera.carregar(pasta, largura, altura)
     molde = (PASTA_SKILL / "templates" / "elementos.html").resolve().as_uri()
-    fonte = (PASTA_SKILL / "assets" / "fontes" / "Sora-ExtraBold.ttf").resolve().as_uri()
+    fonte = arquivo_da_fonte(marca).as_uri()
     tmp = pasta / "previa-tmp"
     shutil.rmtree(tmp, ignore_errors=True)
     tmp.mkdir()
@@ -763,15 +777,15 @@ def previa(pasta: Path, largura: int, altura: int, fps) -> Path:
             f'<span>{c["t"]:.1f} s</span></div>' for c in ln["celulas"])
         corpo.append(f'<div class="linha"><div class="info">{"".join(info)}</div>{escuras}{quadros}</div>')
     html = f"""<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><style>
-@font-face {{ font-family: "Sora ExtraBold"; src: url("{fonte}"); }}
+@font-face {{ font-family: "FontePerfil"; src: url("{fonte}"); }}
 body {{ margin: 0; padding: 24px; background: {cores['fundo_profundo']}; color: {cores['texto']};
         font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; width: max-content; }}
-h1 {{ font: 22px "Sora ExtraBold"; margin: 0 0 4px; }}
+h1 {{ font: 22px "FontePerfil"; margin: 0 0 4px; }}
 .sub {{ color: {cores['rotulo']}; font-size: 14px; margin-bottom: 18px; }}
 .linha {{ display: flex; gap: 10px; align-items: center; margin-bottom: 14px; padding-bottom: 14px;
           border-bottom: 1px solid #ffffff1a; }}
 .info {{ width: 290px; flex: none; }}
-.nome {{ font: 24px "Sora ExtraBold"; }}
+.nome {{ font: 24px "FontePerfil"; }}
 .novo {{ font: 12px -apple-system, Arial; background: {cores['destaque']}; color: {cores['fundo_profundo']};
          padding: 2px 8px; border-radius: 9px; vertical-align: middle; font-weight: 700; }}
 .tempo {{ margin: 4px 0; color: {cores['destaque']}; font-size: 15px; }}
@@ -826,7 +840,7 @@ def promover(pasta: Path, nome: str, palavras: list[str] | None) -> dict:
     if not palavras:
         erro("diga as palavras que chamam o elemento: --palavras \"bussol,rumo\" (começo da palavra, sem acento)")
     for p in palavras:
-        for prefixo, pronto in GATILHOS:
+        for prefixo, pronto, _pacote in GATILHOS:
             if " " not in prefixo and (p.startswith(prefixo) or prefixo.startswith(p)):
                 aviso(f'a palavra "{p}" também chama o elemento pronto {pronto}: no catálogo, o gerado vale primeiro')
                 break
@@ -861,7 +875,9 @@ def main():
     ap.add_argument("--modo", choices=["sobreposto", "tela"], default="sobreposto")
     ap.add_argument("--intervalo", type=float, default=6.0, help="segundos mínimos entre um elemento e outro")
     ap.add_argument("--formato", default="original")
+    ap.add_argument("--perfil", help="perfil de marca (padrão: o da pasta do trabalho)")
     a = ap.parse_args()
+    definir_perfil(a.perfil)
     if a.acao == "validar" and a.arquivo:
         sys.exit(1 if validar_itens(None, a.arquivo.resolve(), a.animacao, a.parar) else 0)
     if not a.pasta:
@@ -895,7 +911,8 @@ def main():
         if not palavras:
             erro("não há fala no corte")
         cortes = ler_json(pasta / "cortes.json")
-        itens = sugerir(palavras, cortes["duracao_final"], a.modo, a.intervalo, carregar_catalogo())
+        marca = carregar_marca(pasta=pasta)
+        itens = sugerir(palavras, cortes["duracao_final"], a.modo, a.intervalo, carregar_catalogo(), marca["gatilhos"])
         for it in itens:      # elemento do catálogo: o desenho vem para a pasta do trabalho
             if it.get("svg"):
                 copia = pasta / it["svg"]
