@@ -1,0 +1,19 @@
+{
+  "conferido_em": "2026-10-29",
+  "aviso": "Números de blogs e ferramentas de terceiros, que divergem entre si. Confira na ajuda oficial do Instagram antes de confiar e corrija aqui.",
+  "fontes": [
+    "https://argil.ai/blog/instagram-reel-size-e350f",
+    "https://www.hopperhq.com/blog/instagram-reel-size/",
+    "https://socialk.it/en/blog/instagram-reel-covers-guide"
+  ],
+  "duracao_s": {"aviso_acima": 90, "falha_acima": 180},
+  "arquivo_mb": {"aviso_acima": 650, "falha_acima": 4096},
+  "largura_px": {"aviso_abaixo": 1080, "falha_abaixo": 720},
+  "proporcao": {"largura": 9, "altura": 16, "tolerancia": 0.01},
+  "quadros_por_segundo": {"minimo": 23, "maximo": 60},
+  "codecs": {"video": ["h264", "hevc"], "audio": ["aac"]},
+  "texto_do_post": {"caracteres_falha_acima": 2200, "hashtags_aviso_acima": 5, "hashtags_falha_acima": 30},
+  "margens_em_1080x1920": {"topo": 250, "base": 400, "esquerda": 64, "direita": 120},
+  "grade_do_perfil": {"largura": 3, "altura": 4},
+  "titulo_da_capa": {"palavras_aviso_acima": 8, "palavras_falha_acima": 14, "altura_minima_px": 260}
+}
