@@ -1,5 +1,7 @@
 # Fase 4. Orquestrador e estado da edição
 
+> **Status: implementada** (29/10/2026) e testada com o vídeo de planejamento (um trecho de 25 s, do bruto à entrega, com os scripts reais e todos os portões). As decisões que ficaram diferentes da proposta estão em [Como ficou](#como-ficou).
+
 Primeira fase da trilha A. Um script novo, `editar.py`, que leva uma edição de uma etapa à seguinte, e um arquivo de estado, `trabalho.json`, que a conversa e o painel (Fase 5) leem e escrevem. **Nenhuma etapa existente muda**: o orquestrador só chama os scripts de hoje.
 
 ## Objetivo
@@ -84,7 +86,7 @@ editar.py refazer --pasta ... ETAPA  força uma etapa e invalida as seguintes
 
 ## Modelos de edição
 
-A **série** da Fase 11 já é o modelo: mesmo formato, mesmos campos. A Fase 4 acrescenta `series/_reels-padrao.json` (ritmo dinâmico, zoom leve, música calma, 1080x1920 a 60 quadros, ruído conforme a inspeção, cor padrão, amostra ligada) e faz o `novo` aceitar `--serie reels-padrao`. Sem série, valem os padrões da skill. Não se cria uma segunda pasta `modelos/`.
+A **série** da Fase 11 já é o modelo: mesmo formato, mesmos campos. A Fase 4 acrescenta `series/reels-padrao.json` (ritmo dinâmico, zoom leve, música calma, 1080x1920 a 60 quadros, ruído conforme a inspeção, cor padrão, amostra ligada) e faz o `novo` aceitar `--serie reels-padrao`. Sem série, valem os padrões da skill. Não se cria uma segunda pasta `modelos/`.
 
 ## Os portões de julgamento e a Fase 8
 
@@ -101,7 +103,7 @@ Isso mantém cada chamada de Claude pequena e sem laço de ferramentas, e dá um
 - `SKILL.md`: o fluxo passa a ser "`editar.py proximo`, leia o resumo, resolva o portão". O texto longo de cada etapa vai para as referências, lidas só quando a etapa pede (meta: o SKILL.md cai de cerca de 26 KB para menos de 10 KB).
 - `painel.py`: nada muda nesta fase (a Fase 5 passa a usar o `trabalho.json`).
 - `comum.py`: funções pequenas para ler e gravar o estado com escrita atômica.
-- README, `series/_reels-padrao.json`, `referencias/orquestrador.md`.
+- README, `series/reels-padrao.json`, `referencias/orquestrador.md`.
 
 ## Testes (`tests/test_fase4.py`)
 
@@ -125,3 +127,19 @@ O painel que executa (Fase 5), a revisão dos cortes e da legenda na tela (Fase 
 - **Quem responde os portões de julgamento** na Fase 8: `claude -p`, API com chave, ou os dois (recomendação: os dois atrás do mesmo protocolo, começando pelo `claude -p`). Confirmar nos termos de uso se o plano pode ser automatizado dessa forma.
 - **Quais portões ficam ligados por padrão** (a proposta acima liga o cartão, os cortes, os elementos e a legenda).
 - **Onde guardar o estado de quem usa o painel sem pasta de trabalho** (a Fase 5 decide).
+
+## Como ficou
+
+- **As 14 etapas e os portões** são os da tabela. O orquestrador vai até a entrega, não só até a amostra (o critério de pronto continuava sendo a amostra).
+- **O hash de cada etapa** junta as escolhas que a afetam, o conteúdo dos arquivos de que depende e a *execução* das etapas anteriores (um identificador novo a cada vez que a etapa roda). Assim, rodar de novo uma etapa sempre refaz as seguintes, mesmo que o resultado tenha saído igual.
+- **Aprovação vale para o hash**: refazer uma etapa reabre o portão dela. Revisão manual de um arquivo de saída (o `cortes.json` depois do portão) não reabre o portão da própria etapa, mas refaz as seguintes.
+- **Resposta do cartão**: uma letra por pendência, tudo de uma vez. Resposta incompleta não grava nada, para as letras não mudarem entre tentativas (um defeito que os testes pegaram na primeira versão).
+- **Resumo por etapa** lido dos arquivos que a etapa gerou, sem caminhos: "0:25,0 → 0:13,1 em 2 trechos", "gancho nota 2/5, 0 proposta(s); 0 trecho(s) de leitura".
+- **SKILL.md** caiu de 26.460 para menos de 8.000 bytes. O texto original de cada passo está em `referencias/fluxo-manual.md`, sem alteração. Um teste impede que ele volte a passar de 10 KB ou cite arquivo que não existe.
+- **Modelo "Reels padrão"**: `series/reels-padrao.json` (sem o sublinhado, para aparecer em `serie.py listar`).
+- **Teste com vídeo real**: do bruto à entrega num trecho de 25 s, com cinco portões. 2 s na inspeção, 7 s na transcrição e nos cortes, 5 s no rosto, no gancho e nos elementos, e 54 s na amostra, no vídeo inteiro e na conferência.
+
+## Não coberto
+- O `claude -p` e a API (Fase 8). O protocolo de pedidos e respostas dos portões de julgamento existe e é testado, mas ninguém responde sozinho ainda.
+- Etapas em paralelo (por exemplo, rosto e gancho ao mesmo tempo): rodam em fila.
+- Retomada no meio de uma etapa longa (a transcrição recomeça do zero se for interrompida).

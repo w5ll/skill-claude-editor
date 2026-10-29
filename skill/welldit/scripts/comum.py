@@ -162,6 +162,15 @@ def assinatura_da_marca(marca: dict) -> str:
 
 
 
+def salvar_json_atomico(caminho, dados):
+    """Grava num arquivo temporário e troca: quem lê nunca vê o arquivo pela metade (o painel lê enquanto o script grava)."""
+    caminho = Path(caminho)
+    caminho.parent.mkdir(parents=True, exist_ok=True)
+    tmp = caminho.with_name("." + caminho.name + ".tmp")
+    tmp.write_text(json.dumps(dados, ensure_ascii=False, indent=2), encoding="utf-8")
+    tmp.replace(caminho)
+
+
 def sondar(arquivo) -> dict:
     """Metadados do vídeo pelo ffprobe."""
     exigir("ffprobe")

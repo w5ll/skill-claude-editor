@@ -10,6 +10,8 @@ Para instalar no seu Mac, veja [Instalar no seu Mac, com o VS Code](#instalar-no
 
 ## Como funciona
 
+**Em uma linha por etapa:** o `editar.py` roda as etapas da lista abaixo na ordem, para nos pontos em que é preciso a sua decisão (o cartão de ajustes, os cortes, os elementos, a legenda) e retoma de onde parou se for interrompido. Cada etapa imprime uma linha, e o detalhe fica num arquivo de registro. Veja `referencias/orquestrador.md`.
+
 1. Você manda o vídeo bruto (e o roteiro, se tiver): *"edita esse vídeo da dica rápida"*.
 2. A skill olha o vídeo e mostra um **cartão com todos os ajustes** (ritmo, legenda, som, formato, cor). Nada é editado antes do seu "ok".
 3. Transcreve a fala no próprio computador, palavra por palavra.
@@ -50,7 +52,7 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 
 **Trilha A: painel que roda a edição** (nesta ordem)
 
-- [ ] **Fase 4.** Orquestrador e estado da edição (`editar.py`, `trabalho.json`, modelos de edição) · _Lucas, em andamento_ ([especificação](docs/fase-4-orquestrador.md))
+- [x] **Fase 4.** Orquestrador e estado da edição (`editar.py`, `trabalho.json`, modelos de edição) · _Lucas_ ([especificação](docs/fase-4-orquestrador.md))
 - [ ] **Fase 5.** Painel que executa: formulário do cartão, fila, aprovações, senha de sessão · _Well (proposta)_
 - [ ] **Fase 6.** Revisão de cortes e legenda no painel · _Well (proposta)_
 - [ ] **Fase 7.** Elementos, zoom e som no painel, conferência com botões de correção · _Well (proposta)_
@@ -79,6 +81,7 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 | 10 | Lucas | a anotar | a anotar | PR #2 |
 | 11 | Lucas | a anotar | a anotar | PR #3 |
 | 12 | Lucas | a anotar | a anotar | PR #4 |
+| 4 | Lucas | a anotar | a anotar | PR #6 |
 
 Referência informada (Sonnet 5.5, esforço médio): a Fase 2 e o planejamento custaram cerca de **2% do plano semanal**, e a Fase 3 mais cerca de **3 pontos**, indo a 5%. Números lidos no Claude Code por quem rodou a fase, sem casa decimal.
 
@@ -258,6 +261,8 @@ skill/welldit/         ← a skill (é isso que vira o arquivo .skill)
     fatos.md                     números, datas, fontes e afirmações a confirmar
     imagens.md                   imagens de apoio: licenças, registro e créditos
     cenas.md                     cenas explicativas: lista, antes e depois, número, de-para
+    orquestrador.md              o editar.py por dentro: etapas, portões, retomada, saída curta
+    fluxo-manual.md              o passo a passo completo de cada etapa (o SKILL.md só aponta para ele)
     gravacao.md                  dicas para gravar de um jeito que edita melhor
     instalacao.md                o que precisa estar instalado
   perfis/                        perfis de marca: arven (o padrão, elementos base ARVEN) e _modelo para copiar
