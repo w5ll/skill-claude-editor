@@ -64,10 +64,10 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 | Fase | Quem | Antes | Depois | Commit |
 | --- | --- | --- | --- | --- |
 | 1 | | | | |
-| 2 | Well | | | `402c088` |
-| 3 | Well | | | `09a07de` a `3222d12` |
+| 2 | Well | 0% | 2% (inclui o planejamento das fases) | `402c088` |
+| 3 | Well | 2% | 5% (cerca de 3 pontos) | `09a07de` a `f61ed7a` |
 
-Referência informada: a Fase 2 e o planejamento custaram cerca de **2% do plano semanal** (Sonnet 5.5, esforço médio).
+Referência informada (Sonnet 5.5, esforço médio): a Fase 2 e o planejamento custaram cerca de **2% do plano semanal**, e a Fase 3 mais cerca de **3 pontos**, indo a 5%. Números lidos no Claude Code por quem rodou a fase, sem casa decimal.
 
 ## Marca e perfis
 
