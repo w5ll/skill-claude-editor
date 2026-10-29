@@ -190,6 +190,8 @@ def planejar(pasta: Path, musica: str | None, efeitos: bool, abaixo: float, sobe
         for n, it in enumerate(sorted(itens, key=lambda x: x["inicio"])):
             if it["modo"] == "tela":
                 nome = cat["por_elemento"]["tela"]
+            elif it["elemento"].startswith("imagem:"):    # imagem de apoio: som próprio
+                nome = cat["por_elemento"].get("imagem")
             elif it["elemento"].startswith("gerado:"):   # elemento gerado: o som segue a animação dele
                 nome = it.get("som") or cat.get("por_animacao", {}).get(it.get("animacao"))
             else:

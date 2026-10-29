@@ -287,12 +287,15 @@ def resolver_posicao(item: dict, largura: int, altura: int, rostos, camera) -> s
             "use o modo tela ou tire o elemento")
 
 
-def pasta_do_item(pasta: Path, n: int, item: dict, largura: int, altura: int, fps, svg: str | None = None) -> Path:
+def pasta_do_item(pasta: Path, n: int, item: dict, largura: int, altura: int, fps, svg: str | None = None,
+                  imagem: str | None = None) -> Path:
     partes = [item["elemento"], item["modo"], item.get("texto", ""), item["duracao"],
               item.get("escala_usada", item.get("escala", 1.0)),
               largura, altura, str(fps), ler_json(PASTA_SKILL / "marca.json")["cores"]]
     if svg is not None:     # elemento gerado: o desenho e a animação entram na chave (os 12 prontos não mudam)
         partes += [hashlib.sha1(svg.encode()).hexdigest(), item.get("animacao"), bool(item.get("parar"))]
+    if imagem is not None:  # imagem de apoio: o conteúdo (SHA-256) entra na chave
+        partes += [imagem]
     chave = json.dumps(partes, sort_keys=True)
     nome = item["elemento"].replace(":", "-")
     return pasta / "elementos" / f"{n:02d}_{nome}_{hashlib.sha1(chave.encode()).hexdigest()[:8]}"
@@ -321,6 +324,21 @@ def abrir_navegador(p):
 
 def eh_gerado(item: dict) -> bool:
     return str(item.get("elemento", "")).startswith("gerado:")
+
+
+def eh_imagem(item: dict) -> bool:
+    return str(item.get("elemento", "")).startswith("imagem:")
+
+
+def imagem_do_item(item: dict) -> tuple[str, str]:
+    """(imagem como data URI, SHA-256): só de imagem registrada, com licença aceita e arquivo íntegro."""
+    from imagens import carregar_imagem
+    return carregar_imagem(item["elemento"].split(":", 1)[1])
+
+
+def molde_do_item(item: dict) -> str:
+    nome = "imagem.html" if eh_imagem(item) else "elementos.html"
+    return (PASTA_SKILL / "templates" / nome).resolve().as_uri()
 
 
 def _sem_ns(nome: str) -> str:
@@ -543,26 +561,29 @@ def desenhar(pasta: Path, largura: int, altura: int, fps) -> list[dict]:
     dados = ler_json(arq)
     itens = dados.get("itens", [])
     marca = ler_json(PASTA_SKILL / "marca.json")
-    molde = (PASTA_SKILL / "templates" / "elementos.html").resolve().as_uri()
     from camera import Camera
     from rosto import Rostos
     rostos = Rostos.carregar(pasta, largura, altura)
     camera = Camera.carregar(pasta, largura, altura)
     pendentes = []
     svgs: dict[int, str] = {}
+    imgs: dict[int, tuple[str, str]] = {}
     for n, item in enumerate(itens):
-        if eh_gerado(item):
+        if eh_imagem(item):
+            imgs[n] = imagem_do_item(item)
+        elif eh_gerado(item):
             svgs[n] = ler_svg(pasta, item)
             erros, _ = validar_svg(svgs[n], item.get("animacao"), bool(item.get("parar")))
             if erros:
                 erro(f"o desenho de {item['elemento']} não passou na validação (rode elementos.py validar): "
                      + "; ".join(erros))
         elif item["elemento"] not in ELEMENTOS:
-            erro(f"elemento desconhecido: {item['elemento']} (use {', '.join(ELEMENTOS)}, ou gerado:nome)")
+            erro(f"elemento desconhecido: {item['elemento']} (use {', '.join(ELEMENTOS)}, gerado:nome ou imagem:id)")
         aviso_pos = resolver_posicao(item, largura, altura, rostos, camera)
         if aviso_pos:
             aviso(f"atenção: {aviso_pos}")
-        destino = pasta_do_item(pasta, n, item, largura, altura, fps, svgs.get(n))
+        destino = pasta_do_item(pasta, n, item, largura, altura, fps, svgs.get(n),
+                                imgs[n][1] if n in imgs else None)
         total = max(1, math.ceil(item["duracao"] * float(fps)))
         item["quadros"] = str(destino)
         item["video"] = str(destino / "elemento.mov")
@@ -581,9 +602,12 @@ def desenhar(pasta: Path, largura: int, altura: int, fps) -> list[dict]:
                 if destino.exists():
                     shutil.rmtree(destino)
                 pagina = nav.new_page(viewport={"width": w, "height": h}, device_scale_factor=1)
-                pagina.goto(molde)
+                pagina.goto(molde_do_item(item))
                 pagina.evaluate("document.fonts.ready")
-                pagina.evaluate("cfg => montar(cfg)", cfg_pagina(item, w, h, svgs.get(n), marca))
+                cfg = cfg_pagina(item, w, h, svgs.get(n), marca)
+                if n in imgs:
+                    cfg["imagem"] = imgs[n][0]
+                pagina.evaluate("cfg => montar(cfg)", cfg)
                 pagina.evaluate("document.fonts.ready")
                 if n in svgs:
                     problema = problema_de_margem(pagina)
@@ -695,7 +719,6 @@ def previa(pasta: Path, largura: int, altura: int, fps) -> Path:
     from rosto import Rostos
     rostos = Rostos.carregar(pasta, largura, altura)
     camera = Camera.carregar(pasta, largura, altura)
-    molde = (PASTA_SKILL / "templates" / "elementos.html").resolve().as_uri()
     fonte = (PASTA_SKILL / "assets" / "fontes" / "Sora-ExtraBold.ttf").resolve().as_uri()
     tmp = pasta / "previa-tmp"
     shutil.rmtree(tmp, ignore_errors=True)
@@ -706,8 +729,10 @@ def previa(pasta: Path, largura: int, altura: int, fps) -> Path:
     with sync_playwright() as pw:
         nav = abrir_navegador(pw)
         for n, item in enumerate(itens):
-            svg = None
-            if eh_gerado(item):
+            svg, imagem = None, None
+            if eh_imagem(item):
+                imagem = imagem_do_item(item)[0]
+            elif eh_gerado(item):
                 svg = ler_svg(pasta, item)
                 erros, _ = validar_svg(svg, item.get("animacao"), bool(item.get("parar")))
                 if erros:
@@ -721,9 +746,12 @@ def previa(pasta: Path, largura: int, altura: int, fps) -> Path:
             x, y = posicao_quadro(item, largura, altura)
             instantes = sorted({round(min(t, max(0.3, item["duracao"] - 0.4)), 2) for t in (0.2, 0.6, 1.4)})
             pagina = nav.new_page(viewport={"width": w, "height": h}, device_scale_factor=1)
-            pagina.goto(molde)
+            pagina.goto(molde_do_item(item))
             pagina.evaluate("document.fonts.ready")
-            pagina.evaluate("cfg => montar(cfg)", cfg_pagina(item, w, h, svg, marca))
+            cfg = cfg_pagina(item, w, h, svg, marca)
+            if imagem is not None:
+                cfg["imagem"] = imagem
+            pagina.evaluate("cfg => montar(cfg)", cfg)
             pagina.evaluate("document.fonts.ready")
             celulas = []
             for k, t in enumerate(instantes):

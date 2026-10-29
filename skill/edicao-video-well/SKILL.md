@@ -20,6 +20,9 @@ Sempre em português, com acentuação, sem travessão e sem termo em inglês se
 | `referencias/gancho-e-olhar.md` | Nota do começo, propostas de gancho, leitura e olhar para baixo | Ao rodar `gancho.py` e `olhar.py` |
 | `referencias/som-e-imagem.md` | Volume, ruído, estouro, eco, música, efeitos, HDR, formato, cor | Ao montar o cartão e renderizar |
 | `referencias/publicacao.md` | Capa, texto do post, limites do Instagram e a pasta pronta para postar | Depois que o Well aprovar o vídeo |
+| `referencias/series.md` | Séries: o jeito de editar que um conjunto de vídeos segue | Quando o vídeo é de uma série |
+| `referencias/fatos.md` | Números, datas, fontes e afirmações a confirmar antes do render | Depois de propor os cortes |
+| `referencias/imagens.md` | Biblioteca de imagens de apoio, licenças e créditos | Ao usar imagem de apoio |
 | `referencias/gravacao.md` | Dicas para o Well gravar de um jeito que edita melhor | Quando o bruto vier com problema recorrente |
 | `referencias/instalacao.md` | O que precisa estar instalado | Se faltar alguma ferramenta |
 | `marca.json` | Cores da marca (as mesmas do carrossel) | Só se for mudar a cor da legenda |
@@ -93,6 +96,9 @@ Regras do cartão:
 - Tamanho: o Instagram mostra no máximo 1080x1920. Bruto maior que isso (4K do iPhone): proponha "reduzido para 1080x1920, o tamanho do Instagram" e use `--formato original@1080` (ou `9:16@1080`) em todos os scripts que recebem `--formato`. Fica bem mais rápido e o arquivo final, bem menor. Mantenha os quadros por segundo do original.
 - Elementos 3D novos: no cartão inicial a linha ✨ diz "elementos da marca nas palavras que combinam e, onde nenhum serve, elementos novos desenhados para a ideia (você aprova a prévia antes)". Depois dos cortes, quando já der para ler a história, mostre a linha ✨ de novo com ✏️: quais são (nome, momento e palavra), quantos são novos, a folha `elementos-previa.jpg` junto, e espere o "ok". Sem ele, os gerados não entram.
 
+- Série: se o vídeo é de uma série (o Well disse, ou `python scripts/serie.py listar` mostra uma que combina), rode `serie.py cartao NOME` e use as linhas dele, com _(da série X)_. Ele pode mudar qualquer uma; o que a série não define segue os padrões. Depois do "ok", `serie.py aplicar NOME --pasta ...` guarda uma cópia na pasta do trabalho e lista os comandos com os parâmetros certos (`referencias/series.md`).
+- Imagens de apoio e fatos: o cartão inicial só diz "marco o que você afirma (números, datas, fontes) para você confirmar antes do render" e, se houver biblioteca, "uso imagens de apoio onde combinar". Os detalhes vêm depois dos cortes, com ✏️ e o "ok" dele.
+
 Padrões propostos: ritmo natural, legenda ligada fora do rosto, elementos 3D nas palavras que combinam (um a cada 6 s no máximo; liste quais no cartão depois de uma transcrição rápida, ou diga "nos momentos certos" se ainda não transcreveu) e, onde nenhum pronto serve, elementos novos com prévia, câmera parada, voz em -14 LUFS, redução de ruído só com chiado medido, cor e formato do original, sem música, sem efeito, amostra conferida por você.
 
 ### 3. Transcrever e propor os cortes (depois do ok)
@@ -111,6 +117,16 @@ Leia a lista de trechos que o script mostra e revise seguindo `referencias/corte
 - **O fim da gravação é onde costuma estar o fecho** (chamada, convite para comentar). Antes de cortar o fim, garanta que os últimos 15 s foram transcritos de verdade (`--trecho` neles). Se o vídeo editado ficar sem fecho, diga no cartão de entrega e pergunte; não termine o vídeo no meio do raciocínio sem avisar.
 - Leia o texto final emendado, do primeiro ao último trecho. Ele tem que fazer sentido e dizer exatamente o que o Well disse, sem perder ressalva nem inverter o sentido.
 - Para ajustar, edite `cortes.json` à mão: apague o trecho, ou mude `inicio`/`fim` (em segundos do vídeo original). Mantenha a ordem dos trechos.
+
+### 3a. Fatos (antes do render)
+
+```bash
+python scripts/fatos.py marcar --pasta saida/...
+python scripts/fatos.py responder ID --pasta saida/... --status confirmado|corrigir|cortar [--nota "valor certo"]
+python scripts/fatos.py pendentes --pasta saida/...
+```
+
+Depois de fechar os cortes, marque o que a fala afirma (números, datas, fontes, normas; leia `referencias/fatos.md`). Mostre ao Well o bloco 🔎 que o script imprime e espere as respostas. **Só renderize o vídeo inteiro com `pendentes` sem nada.** Você marca e pergunta, nunca decide se é verdade. Se ele corrigir um valor, corrija a legenda e diga se a fala precisa ser regravada; não mude o que ele disse sem avisar.
 
 ### 3b. Rosto
 
@@ -150,6 +166,8 @@ Revise `legendas.json` seguindo `referencias/legendas.md` (grafia de marca e ter
 
 **Elementos 3D gerados.** Rode o `sugerir` primeiro (ele reescreve o `elementos.json`; a versão anterior fica em `elementos.anterior.json`). Depois leia o texto final do corte e escolha de 3 a 6 ideias-chave: a promessa do gancho, os exemplos, a virada, a conclusão. Onde um elemento pronto (ou do catálogo) serve, use. Onde nenhum serve, desenhe um novo, seguindo a receita de `referencias/elementos-3d.md` (modelos em `templates/exemplos-gerados/`): o desenho vai em `elementos-gerados/<nome>.svg`, o item `gerado:<nome>` entra no `elementos.json` com a animação, e você roda `validar` e `previa`. Olhe a folha `elementos-previa.jpg`: legível em tamanho pequeno, da mesma família dos atuais, com contraste sobre o vídeo, sem nada de mau gosto. Refaça o que não passar. Gerado nunca entra sem o "ok": mostre ao Well a linha ✨ atualizada (com ✏️) e a folha, e espere. Sem o "ok", tire os gerados e fique só com os prontos.
 
+**Imagens de apoio.** Se existir `imagens/registro.json` e o Well aceitou imagens no cartão, rode `python scripts/imagens.py sugerir --pasta saida/...`, escolha as que combinam com a frase e aplique com `imagens.py usar ID --pasta ... --inicio S`. Elas entram no mesmo limite de um elemento a cada 6 s e passam pelo `elementos.py previa` como os outros. Mostre ao Well e espere o "ok". Rode `imagens.py creditos --pasta ...` e leve o crédito obrigatório para o texto do post.
+
 **Câmera.** Revise `camera.json` seguindo `referencias/rosto-e-camera.md`: poucas aproximações, nas palavras que pedem força. Sem zoom aprovado, não rode (e use `camera.py desligar` se existir).
 
 **Som.** Revise `som.json` seguindo `referencias/som-e-imagem.md`. Sem música nem efeito pedido, não rode (e use `som.py desligar` se existir).
@@ -183,6 +201,8 @@ Só entregue com tudo "ok". Qualquer "FALHOU" você resolve (ajusta corte, põe 
 - ✂️ **O que mudou**: 1:52 → 0:51 · 23 pausas e 2 frases repetidas tiradas · legenda e 4 elementos 3D colocados · chiado reduzido
 - ✨ **Elementos 3D**: mensagem em 0:04 ("WhatsApp"), relógio em 0:12 ("5 minutos"), ...
 - 🎥 **Câmera**: <só se tiver zoom: "zoom a cada frase e 3 aproximações: 'nunca' em 0:09, ...">
+- 🖼️ **Imagens de apoio**: <só se tiver: "café em 0:14, mesa em 0:31" e o crédito, se a licença exigir>
+- 🔎 **Fatos**: <"4 pontos conferidos com você: 130 mil reais confirmado, 2024 corrigido para 2023...">
 - 🔊 **Som**: <só se tiver música ou efeito: "música batida leve por baixo, efeito em cada elemento">
 - 🆕 **Elementos novos**: <só se tiver gerado: "bússola e escada, desenhados para este vídeo. Quer guardar no catálogo para os próximos?">
 - 🔍 **Conferido**: toca do começo ao fim, volume igual entre trechos, legenda fora do rosto, elementos, emendas sem estalo nem pulo, nenhuma palavra cortada, nenhum silêncio sobrando
@@ -224,6 +244,8 @@ Mudança pontual ("legenda maior", "volta a frase do 0:30") mexe só no que foi 
 - Sem elemento 3D, zoom, música, efeito, filtro de cor, conversão de HDR ou redução de ruído sem o Well escolher no cartão.
 - Elemento 3D gerado só entra com a prévia aprovada pelo Well e depois de passar no `validar` (sem texto, pessoa, rosto, mão, logotipo ou marca de terceiros).
 - Música e efeitos só da biblioteca da skill (domínio público) ou que o Well mandar. Nunca baixe música da internet.
+- Imagem de apoio só da biblioteca `imagens/`, com licença registrada (`referencias/imagens.md`). Nunca use imagem sem origem, de cliente ou com direitos reservados, e só baixe imagem da internet se o Well pedir. O crédito obrigatório vai no texto do post.
+- Fato (número, data, fonte, norma) marcado como pendente trava o render do vídeo inteiro até o Well responder.
 - Nada é enviado para fora do computador. A transcrição é local.
 - Nunca publique. Postar é com a skill de conteúdo, e só com "pode postar". A capa e o texto do post só entram no pacote com o "ok" do Well, e título e texto só trazem número, nome e afirmação que ele falou.
 
