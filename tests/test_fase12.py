@@ -209,11 +209,15 @@ class TestAplicarEPainel(unittest.TestCase):
         baixo = item_lista()
         self.assertIsNone(cenas.resolver_caixa(baixo, 1080, 1920, Rostos(1200), None))
         self.assertLess(baixo["caixa_usada"][1] + baixo["caixa_usada"][3], zona_protegida({"cx": 540, "cy": 1200, "w": 300, "h": 400})[1])
-        justo = item_lista()          # rosto a poucos pixels de caber com a folga cheia: aceita folga menor
+        justo = item_lista()          # rosto a poucos pixels de caber com a folga cheia: o painel encolhe
         self.assertIsNone(cenas.resolver_caixa(justo, 1080, 1920, Rostos(990), None))
-        y = justo["caixa_usada"][1]
+        x, y, w, h = justo["caixa_usada"]
+        cheio = cenas.altura_do_painel(justo, 1080)
+        self.assertLess(h, cheio)
+        self.assertGreaterEqual(h, cheio * cenas.ENCOLHE_MIN - 2)
         self.assertGreaterEqual(y, 1920 * cenas.SEGURO_TOPO - 1)
-        self.assertLessEqual(y + justo["caixa_usada"][3], zona_protegida({"cx": 540, "cy": 990, "w": 300, "h": 400})[1])
+        self.assertLessEqual(y + h, zona_protegida({"cx": 540, "cy": 990, "w": 300, "h": 400})[1] - 1920 * cenas.FOLGA_ROSTO + 2)
+        self.assertEqual(x, (1080 - w) // 2)
         grande = item_lista()
         self.assertIn("modo tela", cenas.resolver_caixa(grande, 1080, 1920, Rostos(900), None))
         tela = item_lista(modo="tela", duracao=5.0)
