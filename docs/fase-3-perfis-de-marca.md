@@ -2,6 +2,8 @@
 
 Especificação. Quem implementa: o Claude Code de quem pegou a fase (Well). Faz parte do [roadmap](roadmap.md) e é a **base**: as outras fases só começam depois dela.
 
+> **Status: implementada** e testada. As decisões que a especificação deixava em aberto estão em [Como ficou](#como-ficou). Falta só renomear o repositório no GitHub, que depende da confirmação de quem manda.
+
 ## Objetivo
 
 Hoje a skill é a ferramenta de uma pessoa: o nome, o @, as cores, o nicho e até a forma de falar com o usuário são dela. Depois desta fase, qualquer pessoa com acesso ao repositório cria o **próprio perfil de marca** (cores, fonte, nome, @ opcional, créditos) e edita nas cores dela. O visual que já existe vira o perfil padrão, **arven**, com o aviso "elementos base ARVEN". O projeto passa a se chamar **welldit**.
@@ -110,6 +112,20 @@ Aparece no topo e nos créditos do README, no rodapé do painel (vindo do campo 
 - O `trabalho.json`, o orquestrador e os modelos de edição (Fase 4).
 - Escolher o perfil pelo painel (Fase 5).
 - Licença do repositório e renomeação no GitHub.
+
+## Como ficou
+
+- **`--perfil` e `perfil.json`**: `inspecionar.py`, `legendas.py`, `elementos.py`, `renderizar.py`, `propor_cortes.py` e `painel.py` aceitam `--perfil`. O `inspecionar.py` grava o perfil na pasta do trabalho. Um perfil que não existe é recusado na hora, com a lista dos que existem. Escolher o perfil pelo painel fica na Fase 5: por enquanto o painel usa o perfil com que foi aberto.
+- **Pacote `geral` sempre ligado**: o campo `gatilhos` escolhe os pacotes extras; `geral` entra mesmo que o perfil não o liste.
+- **Legenda de edições antigas**: a legenda feita antes dos perfis não tem o campo `perfil` e continua valendo (o `renderizar.py` só recusa quando o campo existe e é de outro perfil).
+- **Cache dos elementos**: a chave de cada elemento desenhado passa a incluir cores, fonte e @ do perfil. Pastas de trabalho antigas redesenham os elementos uma vez; o resultado é o mesmo.
+- **Cores da legenda**: `legenda.cor_texto`, `cor_palavra_falada` e `cor_contorno` do perfil passam a valer (antes o código usava as cores fixas).
+- **Fonte**: a página dos elementos e a legenda usam o arquivo da fonte do perfil (procurado na pasta do perfil e depois em `assets/fontes/`). O nome interno da família na página é só um rótulo.
+- **Avisos obrigatórios**: o `propor_cortes.py` considera todas as vezes que a frase é dita. Se alguma delas ficar inteira, o aviso está mantido; só é marcado quando nenhuma ficar.
+- **Termos**: corrigem a caixa e a acentuação de palavras soltas na legenda, nunca vão para o transcritor.
+- **Perfis pessoais** ficam fora do git (`.gitignore`); `perfil.py novo` cria a partir do modelo.
+
+Testes (todos passaram): o perfil padrão gera `legendas.ass` idêntico byte a byte, a mesma lista do `sugerir` e 660 de 660 quadros iguais à referência anterior à fase; um perfil de teste com outras cores, fonte própria, @ e termo gerou legenda, elementos, folha de prévia e painel nas cores dele; o `_modelo` não chama elemento por "OAB" nem "WhatsApp" e continua chamando por "planejamento"; o aviso obrigatório foi marcado como mantido e como não encontrado (o caso "cortado" tem teste de unidade); trocar de perfil entre a legenda e o render é recusado; `./empacotar.sh` gera `dist/welldit.skill`, todos os scripts respondem a `--help` e uma busca no repositório não acha `lunardiwell` nem `edicao-video-well` fora dos documentos históricos.
 
 ## Ordem dos commits
 

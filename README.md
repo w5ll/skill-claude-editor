@@ -37,7 +37,7 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 
 **Base (primeiro e sozinha)**
 
-- [ ] **Fase 3.** Projeto para qualquer pessoa: perfis de marca, textos neutros, regras de nicho opcionais, nome welldit, aviso "elementos base ARVEN" · _Well_
+- [x] **Fase 3.** Projeto para qualquer pessoa: perfis de marca, textos neutros, regras de nicho opcionais, nome welldit, aviso "elementos base ARVEN" ([especificação](docs/fase-3-perfis-de-marca.md)) · _Well_
 
 **Trilha A: painel que roda a edição** (nesta ordem)
 
@@ -65,6 +65,7 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 | --- | --- | --- | --- | --- |
 | 1 | | | | |
 | 2 | Well | | | `402c088` |
+| 3 | Well | | | `09a07de` a `3222d12` |
 
 Referência informada: a Fase 2 e o planejamento custaram cerca de **2% do plano semanal** (Sonnet 5.5, esforço médio).
 
