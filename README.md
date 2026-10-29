@@ -47,7 +47,7 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 
 - [ ] **Fase 9.** Gancho dos 3 primeiros segundos e detecção de leitura e olhar · _Lucas (proposta)_
 - [ ] **Fase 10.** Pacote de publicação e capa do Reels · _Lucas (proposta)_
-- [ ] **Fase 11.** Direção de arte por série, conferência de fatos e imagens de apoio · _Lucas (proposta)_
+- [ ] **Fase 11.** Direção de arte por série, conferência de fatos e imagens de apoio · _Lucas, em andamento_ ([especificação](docs/fase-11-serie-fatos-imagens.md))
 - [ ] **Fase 12.** Cenas explicativas sincronizadas com a fala · _Lucas (proposta)_
 
 **Trilha C: infraestrutura** (independentes)
