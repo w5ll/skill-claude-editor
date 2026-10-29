@@ -36,9 +36,9 @@ Cada etapa guarda um hash de: as escolhas que a afetam, o conteúdo dos arquivos
 
 `cartao` gera o cartão por código: pendências com opções em letra (HDR, ruído) e as linhas de ajuste com a origem (_da série_, _você pediu_, _do seu vídeo_, _sugerido_). `aprovar --resposta "A,C"` exige **uma letra por pendência**; resposta incompleta não grava nada, então as letras não mudam entre uma tentativa e outra. O zoom não combina com HDR mantido, e o `aprovar` recusa essa combinação.
 
-## Portões de julgamento (para a Fase 8)
+## Portões de julgamento
 
-Ao abrir um portão de julgamento, o orquestrador grava `pedidos/<portao>.json` (a tarefa, os arquivos relevantes e o formato da resposta). Quem responde escreve `respostas/<portao>.json` com `{"aprovado": true, "notas": "..."}`; `aprovar` recusa se `aprovado` não for `true`. Sem arquivo de resposta, o "ok" da pessoa basta. Quem responde (a pessoa no painel, o Claude Code na conversa, `claude -p` ou a API) o orquestrador não sabe.
+Ao abrir um portão de julgamento, o orquestrador grava `pedidos/<portao>.json` (a tarefa, os arquivos relevantes e o formato da resposta). Quem responde escreve `respostas/<portao>.json` com `{"aprovado": true, "notas": "..."}`; `aprovar` recusa se `aprovado` não for `true`. Sem arquivo de resposta, o "ok" da pessoa basta. Quem responde (a pessoa no painel, o Claude Code na conversa, `claude -p` ou a API) o orquestrador não sabe. A Fase 8 acrescentou o painel chamando o `claude -p` (`assistente.py`): ele **não** grava em `respostas/`; guarda uma sugestão em `claude/<tarefa>.json` que a pessoa marca e aplica na tela, e o portão continua sendo aprovado por ela. Veja `painel.md`.
 
 ## Saída curta
 

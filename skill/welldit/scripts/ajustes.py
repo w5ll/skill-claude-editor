@@ -236,6 +236,20 @@ def adicionar_elemento(pasta: Path, elemento, inicio, modo="sobreposto"):
     _mudar_elementos(pasta, f)
 
 
+def aplicar_sugestoes(pasta: Path, novos: list[dict], tirar: list[str]):
+    """Várias mudanças de uma vez (as do Claude): tira os ids, acrescenta os itens e guarda UM histórico só,
+    então o Desfazer da tela desfaz a sugestão inteira. Se algo choca, nada é gravado."""
+    total = _total(pasta)
+
+    def f(itens):
+        for id_ in tirar:
+            del itens[_achar(itens, id_)]
+        for it in novos:
+            _sem_choque(itens, it["inicio"], it["duracao"], None, total)
+            itens.append(it)
+    _mudar_elementos(pasta, f)
+
+
 def desfazer_elementos(pasta: Path) -> bool:
     return desfazer(pasta, "elementos", pasta / "elementos.json")
 

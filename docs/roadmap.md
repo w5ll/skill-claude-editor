@@ -65,10 +65,10 @@ Elementos novos desenhados para as ideias que nenhum dos 12 prontos representa, 
 - Conferência com **botões de correção** ("aceitar essa pausa", "aplicar o ganho sugerido", "refazer").
 - Depende da Fase 5. Especificação e decisões: [fase-7-ajustes-no-painel.md](fase-7-ajustes-no-painel.md).
 
-### Fase 8. Claude por trás, opcional · médio
+### Fase 8 ✅ Claude por trás, opcional · médio
 - Botões "pedir ao Claude" nas decisões que são de julgamento: primeira revisão dos cortes, escolha das ideias-chave e desenho de elementos novos, correção de grafia da legenda.
-- O painel chama o Claude sem abrir conversa e mostra o resultado para a pessoa aprovar. Mostra quanto do plano foi usado. Dá para desligar: o painel funciona 100% sem ele.
-- Depende das Fases 6 e 7. Precisa do Claude Code instalado.
+- O painel chama o Claude sem abrir conversa e mostra o resultado para a pessoa aprovar. Mostra o gasto (tokens e custo estimado; a porcentagem do plano o Claude Code não informa). Dá para desligar: o painel funciona 100% sem ele.
+- Depende das Fases 6 e 7. Precisa do Claude Code instalado. Especificação e decisões: [fase-8-claude-por-tras.md](fase-8-claude-por-tras.md). **Ainda não foi rodada contra o Claude Code de verdade** (veja "Não coberto" na especificação).
 
 ### Fase 9. Gancho e olhar · médio (trilha B)
 - Avaliar se os 3 primeiros segundos prendem e sugerir trazer uma frase mais forte do meio ou um elemento em tela cheia.

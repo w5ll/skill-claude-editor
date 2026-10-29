@@ -56,7 +56,7 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 - [x] **Fase 5.** Painel que executa: formulário do cartão, fila, aprovações, senha de sessão · _Lucas_ ([especificação](docs/fase-5-painel-executa.md))
 - [x] **Fase 6.** Revisão de cortes e legenda no painel · _Lucas_ ([especificação](docs/fase-6-revisao-na-tela.md))
 - [x] **Fase 7.** Elementos, zoom e som no painel, conferência com botões de correção · _Well_ ([especificação](docs/fase-7-ajustes-no-painel.md))
-- [ ] **Fase 8.** Claude por trás, opcional: revisar cortes e desenhar elementos pelo painel · _Well_ ([especificação](docs/fase-8-claude-por-tras.md))
+- [x] **Fase 8.** Claude por trás, opcional: revisar cortes e desenhar elementos pelo painel · _Well_ ([especificação](docs/fase-8-claude-por-tras.md))
 
 **Trilha B: conteúdo e entrega** (independentes entre si)
 
@@ -85,6 +85,7 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 | 5 | Lucas | a anotar | a anotar | PR #7 |
 | 6 | Lucas | a anotar | a anotar | PR #8 |
 | 7 | Well | a anotar | a anotar | ramo `fase-7-ajustes-no-painel` |
+| 8 | Well | a anotar | a anotar | ramo `fase-8-claude-por-tras` |
 
 Referência informada (Sonnet 5.5, esforço médio): a Fase 2 e o planejamento custaram cerca de **2% do plano semanal**, e a Fase 3 mais cerca de **3 pontos**, indo a 5%. Números lidos no Claude Code por quem rodou a fase, sem casa decimal.
 
@@ -215,7 +216,7 @@ source .venv/bin/activate
 python skill/welldit/scripts/painel.py
 ```
 
-(Para o painel nas cores de um perfil seu: `python skill/welldit/scripts/painel.py --perfil minha-marca`.)
+(Para o painel nas cores de um perfil seu: `python skill/welldit/scripts/painel.py --perfil minha-marca`. Para abrir sem os botões do Claude: `--sem-claude`.)
 
 O navegador abre sozinho num endereço com um **código de sessão** (`http://localhost:8765/?s=...`), que muda toda vez que o painel é aberto. Se abrir a página sem o código, ela pede para colar o que aparece no terminal. Isso impede que outro site aberto no navegador use o painel. Lá você:
 
@@ -226,6 +227,7 @@ O navegador abre sozinho num endereço com um **código de sessão** (`http://lo
 - **Revisa a legenda na tela:** o texto de cada bloco, com a prévia sobre o quadro do vídeo, e **Corrigir em todos** para trocar uma palavra em todas as legendas.
 - **Ajusta elementos, zoom e som:** cada elemento 3D com prévia (trocar, tirar, mudar o rótulo e o momento, adicionar, guardar no catálogo), o nível de cada zoom com o quadro já aproximado, a música com escuta e o volume de cada efeito. Tudo com **Desfazer**.
 - **Conserta o que a conferência achou:** **Aceitar essa pausa**, **Aplicar o ganho sugerido** ou **Refazer o vídeo** (uma versão nova, a anterior fica), cada um com um clique.
+- **Pede ajuda ao Claude (opcional):** se o Claude Code está instalado, as telas de cortes, elementos e legenda têm **Pedir ao Claude**. Ele sugere (tirar tomadas repetidas, escolher ideias e desenhar elementos novos, corrigir a grafia) e **você marca o que quer aplicar**. Gasta do seu plano, mostra quanto, e se desliga no topo da página ou com `painel.py --sem-claude`. O painel funciona igual sem ele.
 - **Aprova as etapas:** quando a edição precisa da sua decisão (elementos, amostra e o resto), ela para e mostra o que decidir, com **Aprovar e seguir** ou **Copiar pedido para o Claude**, se você preferir revisar na conversa.
 - **Acompanha:** as etapas, a porcentagem das longas e a fila (uma edição por vez; as outras esperam). Dá para **Cancelar** e **Retomar** de onde parou.
 - **Recebe a entrega:** assiste às versões, vê as folhas de quadros e a conferência, clica em **Aprovar entrega** e em **Abrir a pasta**.

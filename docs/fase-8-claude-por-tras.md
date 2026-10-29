@@ -1,6 +1,6 @@
 # Fase 8. Claude por trás, opcional
 
-> **Status: em andamento.** Quinta e última fase da trilha A. Depende das Fases 6 e 7 (as telas onde as sugestões aparecem) e do protocolo de portões da Fase 4 (`pedidos/` e `respostas/`).
+> **Status: implementada** (29/10/2026), com 55 testes novos em `tests/test_fase8.py`, **mas nunca rodada contra o Claude Code de verdade**: ele não estava instalado na máquina onde a fase foi feita. Veja [Não coberto](#não-coberto). Quinta e última fase da trilha A. Depende das Fases 6 e 7 (as telas onde as sugestões aparecem) e do protocolo de portões da Fase 4 (`pedidos/` e `respostas/`).
 
 ## Objetivo
 
@@ -75,3 +75,23 @@ Leitura: `GET /api/claude?pasta` (disponibilidade, interruptor, versão, tarefas
 ## Fora desta fase
 
 Aplicar sugestão sem a pessoa marcar, outras tarefas (gancho, fatos), mostrar a resposta aos poucos enquanto chega, a porcentagem do plano (o Claude Code não a informa), e pedir ao Claude coisas livres pelo painel (só as três tarefas fixas).
+
+## Como ficou
+
+- **O uso fica em `claude/uso.json`, não no `trabalho.json`** (a Fase 4 tinha previsto o `trabalho.json`). O painel e a fila já escrevem o `trabalho.json`, e um pedido ao Claude pode rodar enquanto a edição roda: dois escritores sem trava perderiam dados.
+- **O gasto conta mesmo quando a resposta não serve.** O uso é gravado assim que o Claude Code responde, antes da conferência: uma resposta que não passou também custou.
+- **O "tirar" libera o lugar do elemento** na conferência das sugestões (o Claude pode trocar um elemento por outro no mesmo momento), e a sugestão de elementos inteira é **uma só entrada no histórico**: um Desfazer devolve tudo.
+- **Aplicar um corte confere o estado de agora.** Se a pessoa já tirou ou voltou a frase depois do pedido, o item vira "já está assim" em vez de repetir a operação.
+- **Desenho novo com o mesmo nome nunca sobrescreve** outro desenho da pasta: vira `nome-2`. Se algo bate na hora de aplicar, nada é gravado e o desenho criado é apagado.
+- **O processo do `claude` é sempre esperado depois de morto.** Os testes com um `claude` falso no PATH pegaram o processo morto virando zumbi e os canais abertos (corrigido, e a suíte roda com avisos de recurso tratados como erro).
+- De passagem: o servidor imprimia um erro quando a pessoa fechava a aba no meio de uma resposta de erro (o `_json` não tratava a conexão fechada). Corrigido.
+- A caixa de sugestões é a mesma nas três telas (um bloco de código), e aparece vazia (sem nenhum botão) com o Claude desligado.
+
+## Não coberto
+
+- **Nunca foi rodada com o Claude Code de verdade.** A linha de comando (`claude -p --output-format json --model ... --tools "" --max-turns 1 --no-session-persistence --disable-slash-commands --strict-mcp-config`) e o formato da resposta foram escritos a partir do que se sabe do Claude Code, e testados só contra um programa `claude` falso. Se uma opção não existir na versão instalada, o painel mostra a mensagem do próprio Claude Code ("o Claude Code recusou o pedido: ...") e **só a função `argumentos()` em `assistente.py` precisa mudar**. **Antes de confiar, rode uma vez com o Claude Code instalado** e confira os três pedidos.
+- **A qualidade das sugestões** (cortes, ideias e desenhos, grafia) depende do modelo e não foi avaliada; a conferência só garante que o que chega é válido, não que é bom. Por isso nada é aplicado sem a pessoa marcar, e tudo tem desfazer.
+- **O desenho novo só é medido na prévia** (a margem dentro da caixa de 400): a validação antes de aplicar confere as tags, a forma e a animação, não a margem.
+- **A porcentagem do plano**: o Claude Code não a informa. A tela mostra os tokens e o custo estimado da edição.
+- O modelo `sonnet` é só o padrão por custo; se os desenhos novos saírem fracos, `opus` pode servir melhor (é uma escolha no topo da página).
+- Falta alguém que não conhece o código usar as telas.

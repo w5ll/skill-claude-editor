@@ -164,6 +164,23 @@
   .abas { display: flex; gap: 4px; flex-wrap: wrap; }
   .abas button.ativa { background: var(--linha); color: var(--texto); border-color: var(--destaque); }
   .abas button:disabled { opacity: .45; cursor: default; }
+  .claude-chip { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--rotulo); margin-left: 12px; }
+  .claude-chip button { font-size: 12px; padding: 3px 9px; }
+  .claude-chip button.ligado { color: var(--ok); border-color: var(--ok); }
+  .claude-chip select { width: auto; font-size: 12px; padding: 3px 6px; }
+  .cl-caixa { border: 1px solid var(--linha); border-left: 3px solid var(--destaque); border-radius: 10px; padding: 10px 14px; margin: 10px 0 14px; background: var(--fundo); font-size: 14px; }
+  .cl-caixa:empty { display: none; }
+  .cl-topo { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+  .cl-topo .nota, .cl-uso { color: var(--rotulo); font-size: 12px; }
+  .cl-erro { color: var(--falha); margin-top: 6px; }
+  .cl-resumo { margin: 8px 0 4px; color: var(--apoio); }
+  .cl-itens { list-style: none; padding: 0; margin: 8px 0; }
+  .cl-itens li { margin: 6px 0; }
+  .cl-itens label { display: flex; gap: 8px; align-items: baseline; cursor: pointer; }
+  .cl-itens .acao { font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--linha); }
+  .cl-itens .acao.tirar { color: var(--falha); } .cl-itens .acao.voltar, .cl-itens .acao.usar, .cl-itens .acao.novo { color: var(--ok); }
+  .cl-itens .porque { color: var(--rotulo); font-size: 13px; }
+  .cl-avisos { color: var(--aviso); font-size: 12px; margin: 4px 0; }
   .aj-aviso { color: var(--apoio); font-size: 13px; margin: 10px 0; padding: 8px 12px; border-radius: 10px; background: var(--fundo); border: 1px solid var(--linha); }
   .aj-aviso b { color: var(--aviso); font-weight: 600; }
   .aj-linha { display: grid; grid-template-columns: minmax(200px, 440px) 1fr; gap: 14px; padding: 12px; margin: 10px 0; border: 1px solid var(--linha); border-radius: 12px; background: var(--fundo); align-items: start; }
@@ -205,6 +222,7 @@
 <body>
 <div class="topo"><div class="dentro">
   <h1>welldit <span id="marca-nome"></span></h1>
+  <div class="claude-chip" id="claude-chip" style="display:none"></div>
   <div class="conexao"><i class="bolinha" id="bolinha"></i><span id="conexao">conectando</span></div>
 </div></div>
 
@@ -425,7 +443,8 @@ async function abrirRevisao(tipo, pasta) {
   $("#rev-titulo").textContent = (tipo === "cortes" ? "Revisão dos cortes" : "Revisão da legenda") + " · " + pasta;
   $("#rev-meta-caixa").style.display = $("#rev-so-caixa").style.display = tipo === "cortes" ? "" : "none";
   $("#rev-corpo").innerHTML = `<p class="vazio">Carregando...</p>`;
-  try { rev.dados = await pegar(`/api/${tipo}?pasta=${encodeURIComponent(pasta)}`); desenharRevisao(); }
+  cl.pasta = null;
+  try { rev.dados = await pegar(`/api/${tipo}?pasta=${encodeURIComponent(pasta)}`); desenharRevisao(); tickClaude(); }
   catch (e) { aviso(e.message); fecharRevisao(); }
 }
 function fecharRevisao() { $("#revisao").classList.remove("aberto"); $("#rev-audio").pause(); rev.tipo = null; atualizar(); }
@@ -439,6 +458,7 @@ function desenharRevisao() {
   $("#rev-desfazer").textContent = n ? `Desfazer (${n})` : "Desfazer";
   if (rev.tipo === "cortes") desenharCortes(corpo); else desenharLegenda(corpo);
   corpo.scrollTop = rolagem;
+  desenharClaude();
 }
 function desenharCortes(corpo) {
   const d = rev.dados, dur = d.duracao_final, meta = d.meta;
@@ -466,7 +486,7 @@ function desenharCortes(corpo) {
     return `<div class="rev-video">${esc(v.nome)}${v.duracao ? " · " + tempoCurto(v.duracao) : ""}</div>
       <div class="fluxo">${us.length ? us.map(unidade).join("") : `<span class="vazio">${soSusp ? "Nenhum ponto para olhar neste vídeo." : "Sem fala transcrita."}</span>`}</div>`;
   }).join("");
-  corpo.innerHTML = `<p class="extras">Clique numa frase para <b>tirar</b> ou <b>voltar</b>. Frase riscada sai do vídeo. ▶ toca o trecho; ✂ toca a junção entre dois trechos, como o espectador vai ouvir.</p>${lista}${videos}`;
+  corpo.innerHTML = `<div class="cl-caixa" data-cl-tarefa="cortes"></div><p class="extras">Clique numa frase para <b>tirar</b> ou <b>voltar</b>. Frase riscada sai do vídeo. ▶ toca o trecho; ✂ toca a junção entre dois trechos, como o espectador vai ouvir.</p>${lista}${videos}`;
 }
 function desenharLegenda(corpo) {
   const d = rev.dados;
@@ -477,7 +497,7 @@ function desenharLegenda(corpo) {
       <div><div class="tempo">${tempoCurto(b.inicio)} · bloco ${b.indice + 1}</div>
         <input type="text" maxlength="80" value="${esc(b.texto)}" data-orig="${esc(b.texto)}" data-texto="${b.indice}">
         <div class="extras">${b.destaque ? "" : `<span class="marca">sem destaque da palavra</span>`}${b.marcas.map((m) => `<span class="marca">${esc(m)}</span>`).join("")}</div></div></div>`;
-  corpo.innerHTML = `<p class="extras">Corrija o texto de qualquer bloco e saia do campo (ou Enter): a prévia mostra o quadro com a legenda no lugar em que ela vai ficar.</p>
+  corpo.innerHTML = `<div class="cl-caixa" data-cl-tarefa="grafia"></div><p class="extras">Corrija o texto de qualquer bloco e saia do campo (ou Enter): a prévia mostra o quadro com a legenda no lugar em que ela vai ficar.</p>
     <div class="troca"><span>Corrigir em todos:</span><input type="text" id="troca-de" placeholder="palavra errada" maxlength="40">
       <span>→</span><input type="text" id="troca-para" placeholder="palavra certa" maxlength="40"><button id="troca-ir">Trocar</button></div><div class="leg-grade">${d.blocos.map(linha).join("")}</div>`;
 }
@@ -569,7 +589,7 @@ function botoesDoAjuste() {
   $("#aj-desfazer").textContent = n ? `Desfazer (${n})` : "Desfazer";
 }
 async function abrirAjustes(aba, pasta) {
-  aj.pasta = pasta; aj.dados = {}; aj.erros = {};
+  aj.pasta = pasta; aj.dados = {}; aj.erros = {}; cl.pasta = null;
   $("#ajustes").classList.add("aberto");
   $("#aj-titulo").textContent = "Ajustes · " + pasta;
   await trocarAba(aba);
@@ -581,7 +601,7 @@ async function trocarAba(aba) {
   desenharAbas();
   try { aj.dados[aba] = await pegar(`/api/${aba}?pasta=${qs()}`); aj.erros[aba] = null; }
   catch (e) { aj.dados[aba] = null; aj.erros[aba] = e.message; }
-  if (aj.aba === aba) desenharAjustes();
+  if (aj.aba === aba) { desenharAjustes(); tickClaude(); }
 }
 function desenharAbas() {
   $("#aj-abas").innerHTML = ABAS.map(([k, nome]) => `<button data-aba="${k}" class="${aj.aba === k ? "ativa" : ""}">${nome}</button>`).join("");
@@ -593,6 +613,7 @@ function desenharAjustes() {
   if (!d) corpo.innerHTML = `<p class="vazio">${esc(aj.erros[aj.aba] || "Sem dados.")}</p>`;
   else corpo.innerHTML = {elementos: htmlElementos, zoom: htmlZoom, som: htmlSom, conferencia: htmlConferencia}[aj.aba](d);
   corpo.scrollTop = rolagem;
+  desenharClaude();
 }
 async function agirAj(rota, corpo, ok) {
   if (aj.ocupado) return null;
@@ -641,7 +662,7 @@ function htmlElementos(d) {
           ${i.no_catalogo ? `<span class="marca">no catálogo</span>` : ""}</div></div></div>`;
   };
   const total = d.duracao_final ? ` O vídeo tem ${tempoFino(d.duracao_final)}.` : "";
-  return `<p class="aj-aviso">${AVISO_REPLANEJA}${total}</p>
+  return `<div class="cl-caixa" data-cl-tarefa="elementos"></div><p class="aj-aviso">${AVISO_REPLANEJA}${total}</p>
     <div class="troca"><span>Adicionar:</span><select id="aj-novo-el">${opcoes("")}</select>
       <span>em</span><input type="number" step="0.1" min="0" id="aj-novo-t" value="0" style="width:84px"><span>s</span>
       <select id="aj-novo-modo"><option value="sobreposto">sobreposto</option><option value="tela">tela cheia</option></select>
@@ -795,6 +816,108 @@ $("#aj-aprovar").onclick = async () => {
   catch (e) { aviso(e.message); }
 };
 document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && $("#ajustes").classList.contains("aberto")) fecharAjustes(); });
+
+/* ---------- Claude por trás, opcional (Fase 8) ---------- */
+const cl = {dados: null, pasta: null, chave: "", desmarcados: {}};
+const claudeLigado = () => !!(ultimoEstado && ultimoEstado.claude && ultimoEstado.claude.ligado);
+const pastaAberta = () => rev.tipo ? rev.pasta : aj.aba ? aj.pasta : null;
+const MOMENTO = (s) => `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, "0").replace(".", ",")}`;
+
+function desenharChipClaude() {
+  const g = ultimoEstado && ultimoEstado.claude, chip = $("#claude-chip");
+  if (!g || !g.disponivel) { chip.style.display = "none"; chip.innerHTML = ""; return; }      // sem Claude Code, ou aberto com --sem-claude: nada aparece
+  chip.style.display = "";
+  const html = `Claude por trás <button data-cl="ligar" class="${g.ligado ? "ligado" : ""}" title="${g.ligado ? "desligar" : "ligar"}">${g.ligado ? "ligado" : "desligado"}</button>` +
+    (g.ligado ? `<select data-cl-modelo title="modelo">${g.modelos.map((m) => `<option ${m === g.modelo ? "selected" : ""}>${m}</option>`).join("")}</select>` : "");
+  if (chip.dataset.h !== html) { chip.innerHTML = html; chip.dataset.h = html; }
+}
+
+function itemDoClaude(tarefa, it) {
+  if (tarefa === "cortes") return `<span class="acao ${it.acao}">${it.acao === "tirar" ? "TIRAR" : "VOLTAR"}</span><span>“${esc(it.texto)}”${it.motivo ? ` <span class="porque">· ${esc(it.motivo)}</span>` : ""}</span>`;
+  if (tarefa === "grafia") return `<span class="acao usar">bloco ${it.bloco + 1}</span><span>“${esc(it.antes)}” → “${esc(it.depois)}”${it.motivo ? ` <span class="porque">· ${esc(it.motivo)}</span>` : ""}</span>`;
+  if (it.tipo === "tirar") return `<span class="acao tirar">TIRAR</span><span>${esc(it.texto)} <span class="porque">(${esc(it.alvo)})${it.motivo ? " · " + esc(it.motivo) : ""}</span></span>`;
+  if (it.tipo === "novo") return `<span class="acao novo">DESENHAR</span><span><b>${esc(it.nome)}</b> em ${MOMENTO(it.inicio)} (${it.duracao} s, ${esc(it.animacao)})${it.texto ? ` · rótulo ${esc(it.texto)}` : ""}${it.ideia ? ` <span class="porque">· ${esc(it.ideia)}</span>` : ""} <span class="porque">· o desenho é medido na prévia depois de aplicar</span></span>`;
+  return `<span class="acao usar">PÔR</span><span><b>${esc(it.elemento)}</b> em ${MOMENTO(it.inicio)} (${it.duracao} s)${it.texto ? ` · rótulo ${esc(it.texto)}` : ""}${it.ideia ? ` <span class="porque">· ${esc(it.ideia)}</span>` : ""}</span>`;
+}
+
+function htmlClaude(tarefa) {
+  const d = cl.dados, g = ultimoEstado && ultimoEstado.claude;
+  if (!g || !g.ligado || !d) return "";
+  const t = d.tarefas.find((x) => x.id === tarefa);
+  if (!t) return "";
+  const p = t.proposta, pend = p && p.estado === "pendente";
+  const desm = cl.desmarcados[tarefa] || new Set();
+  let corpo = "";
+  if (t.rodando) corpo = `<div class="cl-topo"><i class="gira"></i>O Claude está trabalhando (${t.segundos ?? 0} s)... <button class="mini perigo" data-cl="cancelar">Cancelar</button></div>`;
+  else corpo = `<div class="cl-topo"><button class="${pend ? "" : "primario"}" data-cl="pedir" data-tarefa="${tarefa}" ${d.ocupado ? "disabled" : ""}>Pedir ao Claude: ${esc(t.titulo.toLowerCase())}</button>
+      <span class="nota">${d.ocupado ? "há outro pedido em andamento" : "gasta do seu plano; nada é aplicado sem você marcar"}</span></div>`;
+  if (t.erro) corpo += `<div class="cl-erro">${esc(t.erro)}</div>`;
+  if (pend) {
+    corpo += `<div class="cl-resumo"><b>Sugestão do Claude</b>${p.resumo ? ": " + esc(p.resumo) : ""}</div>`;
+    corpo += p.itens.length ? `<ul class="cl-itens">${p.itens.map((it) => `<li><label><input type="checkbox" data-cl-item="${esc(it.id)}" ${desm.has(it.id) ? "" : "checked"}>${itemDoClaude(tarefa, it)}</label></li>`).join("")}</ul>
+      <div class="botoes"><button class="primario" data-cl="aplicar" data-tarefa="${tarefa}">Aplicar as marcadas</button><button data-cl="descartar" data-tarefa="${tarefa}">Descartar</button></div>`
+      : `<div class="extras">O Claude não viu nada para mudar.</div><div class="botoes"><button data-cl="descartar" data-tarefa="${tarefa}">Fechar</button></div>`;
+    if (p.avisos && p.avisos.length) corpo += `<div class="cl-avisos">O painel ignorou ${p.avisos.length} sugestão(ões) que não passaram na conferência: ${esc(p.avisos.slice(0, 3).join("; "))}${p.avisos.length > 3 ? "..." : ""}</div>`;
+  } else if (p && p.estado === "aplicada") corpo += `<div class="extras">Sugestão aplicada: ${p.aplicados.length} item(ns). Use Desfazer se não gostou.${p.falhas && p.falhas.length ? " Não deu para aplicar: " + esc(p.falhas.slice(0, 2).join("; ")) : ""}</div>`;
+  const u = d.uso;
+  if (u && u.pedidos) corpo += `<div class="cl-uso">Claude nesta edição: ${u.pedidos} pedido(s), ${u.entrada.toLocaleString("pt-BR")} de entrada e ${u.saida.toLocaleString("pt-BR")} de saída${u.custo_usd ? ` (≈ US$ ${num(u.custo_usd.toFixed(2))})` : ""}. A porcentagem do plano aparece no próprio Claude Code.</div>`;
+  return corpo;
+}
+function desenharClaude() {
+  document.querySelectorAll(".cl-caixa[data-cl-tarefa]").forEach((el) => { el.innerHTML = htmlClaude(el.dataset.clTarefa); });
+}
+async function tickClaude() {
+  const pasta = pastaAberta();
+  if (!pasta || !claudeLigado()) return;
+  try {
+    const d = await pegar(`/api/claude?pasta=${encodeURIComponent(pasta)}`);
+    const chave = JSON.stringify([d.tarefas.map((t) => [t.rodando, t.erro, t.proposta && t.proposta.estado, t.proposta && t.proposta.criado_em]), d.uso, d.ocupado]);
+    const mudou = pasta !== cl.pasta || chave !== cl.chave;
+    cl.dados = d; cl.pasta = pasta; cl.chave = chave;
+    const rodando = d.tarefas.some((t) => t.rodando);
+    if (mudou || rodando) desenharClaude();
+  } catch { /* a próxima volta tenta de novo */ }
+}
+async function recarregarTelaDoClaude(tarefa) {
+  try {
+    if (tarefa === "cortes" && rev.tipo === "cortes") rev.dados = await pegar(`/api/cortes?pasta=${encodeURIComponent(rev.pasta)}`), desenharRevisao();
+    else if (tarefa === "grafia" && rev.tipo === "legenda") rev.dados = await pegar(`/api/legenda?pasta=${encodeURIComponent(rev.pasta)}`), desenharRevisao();
+    else if (tarefa === "elementos" && aj.aba === "elementos") aj.dados.elementos = await pegar(`/api/elementos?pasta=${qs()}`), desenharAjustes();
+  } catch (e) { aviso(e.message); }
+}
+document.addEventListener("click", async (ev) => {
+  const b = ev.target.closest("button[data-cl]");
+  if (!b) return;
+  const pasta = pastaAberta(), d = b.dataset, tarefa = d.tarefa;
+  try {
+    if (d.cl === "ligar") { await api("/api/claude/ligar", {ligado: !(ultimoEstado.claude && ultimoEstado.claude.ligado)}); await atualizar(); return; }
+    if (!pasta) return;
+    if (d.cl === "pedir") { await api("/api/claude/pedir", {pasta, tarefa}); aviso("Pedido enviado ao Claude."); await tickClaude(); }
+    else if (d.cl === "cancelar") { await api("/api/claude/cancelar", {}); await tickClaude(); }
+    else if (d.cl === "descartar") { await api("/api/claude/descartar", {pasta, tarefa}); await tickClaude(); }
+    else if (d.cl === "aplicar") {
+      const itens = [...document.querySelectorAll(`.cl-caixa[data-cl-tarefa="${tarefa}"] input[data-cl-item]:checked`)].map((i) => i.dataset.clItem);
+      if (!itens.length) { aviso("Marque pelo menos uma sugestão."); return; }
+      const r = await api("/api/claude/aplicar", {pasta, tarefa, itens});
+      aviso(`${r.aplicados} sugestão(ões) aplicada(s).` + (r.falhas && r.falhas.length ? " Algumas não deram: " + r.falhas[0] : ""));
+      await recarregarTelaDoClaude(tarefa); await tickClaude();
+    }
+  } catch (e) { aviso(e.message); await tickClaude(); }
+});
+document.addEventListener("change", async (ev) => {
+  const el = ev.target;
+  if (el.dataset && el.dataset.clModelo !== undefined) {
+    try { await api("/api/claude/ligar", {modelo: el.value}); await atualizar(); } catch (e) { aviso(e.message); }
+    return;
+  }
+  const item = el.closest && el.closest("input[data-cl-item]");
+  if (item) {
+    const tarefa = item.closest(".cl-caixa").dataset.clTarefa;
+    const set = cl.desmarcados[tarefa] = cl.desmarcados[tarefa] || new Set();
+    if (item.checked) set.delete(item.dataset.clItem); else set.add(item.dataset.clItem);
+  }
+});
+setInterval(tickClaude, 1500);
 
 /* ---------- nova edição ---------- */
 let opcoesDesenhadas = "";
@@ -990,7 +1113,7 @@ async function atualizar() {
     if (r.status === 401) { location.reload(); return; }
     const estado = await r.json();
     ultimoEstado = estado;
-    desenharBrutos(estado); desenharNova(estado); desenharTrabalhos(estado);
+    desenharBrutos(estado); desenharNova(estado); desenharTrabalhos(estado); desenharChipClaude();
     if (rev.tipo) $("#rev-aprovar").style.display = portaoAbertoDa(rev.tipo) ? "" : "none";
     if (aj.aba) botoesDoAjuste();
     $("#bolinha").classList.remove("fora"); $("#conexao").textContent = "atualizando ao vivo";

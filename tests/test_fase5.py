@@ -191,7 +191,9 @@ class TestSeguranca(Base):
                                  "elementos_tirar", "elementos_trocar", "elementos_rotulo", "elementos_tempo", "elementos_modo",
                                  "elementos_adicionar", "elementos_promover", "elementos_desfazer", "zoom_nivel", "zoom_tirar_enfase",
                                  "zoom_desfazer", "som_musica", "som_ganho", "som_trocar", "som_tirar", "som_desfazer",
-                                 "conferencia_aceitar_pausa", "conferencia_aplicar_ganho"]))
+                                 "conferencia_aceitar_pausa", "conferencia_aplicar_ganho",
+                                 # Fase 8: Claude por trás
+                                 "claude_pedir", "claude_cancelar", "claude_aplicar", "claude_descartar", "claude_ligar"]))
 
     def test_corpo_invalido_ou_grande(self):
         self.assertEqual(self.s.pedir("POST", "/api/novo", b"{nao json", CABECALHOS_OK)[0], 400)

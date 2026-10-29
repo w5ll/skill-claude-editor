@@ -1,7 +1,7 @@
 """Painel da edição no navegador: enviar vídeos, rodar a edição inteira com cliques e acompanhar cada etapa.
 
 Uso (da pasta do projeto, com o .venv ativo):
-    python skill/welldit/scripts/painel.py [--porta 8765] [--sem-abrir] [--perfil NOME]
+    python skill/welldit/scripts/painel.py [--porta 8765] [--sem-abrir] [--perfil NOME] [--sem-claude]
 
 Abre o navegador no endereço que aparece no terminal (com um código de sessão). Só funciona no próprio
 computador (não fica visível na rede). Para parar: Ctrl+C no terminal.
@@ -12,6 +12,9 @@ O que ele faz:
   aprove os portões. O painel roda o editar.py, uma edição por vez; dá para cancelar e retomar.
 - Acompanhar: as etapas, o progresso das longas, as versões, a conferência e as folhas de quadros.
 - Aprovar a entrega e abrir a pasta.
+- Revisar e ajustar na tela: cortes, legenda, elementos, zoom, som e a conferência com botões de correção.
+- Claude por trás (opcional): "Pedir ao Claude" na revisão dos cortes, nos elementos e na grafia da legenda. Só aparece com o
+  Claude Code instalado, e nada é aplicado sem a pessoa marcar. Com --sem-claude o painel funciona igual, sem esses botões.
 
 Segurança: código de sessão novo a cada abertura (cookie HttpOnly), conferência de Host e de origem, e só
 ações conhecidas: nunca um comando livre. Veja painel_seguranca.py e docs/fase-5-painel-executa.md.
@@ -37,6 +40,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 import ajustes
+import assistente as modulo_assistente
 import editar
 import revisao
 import serie as modulo_serie
@@ -145,7 +149,7 @@ def abrir_no_sistema(pasta: Path):
 
 
 class Painel:
-    def __init__(self, raiz: Path, fila: Fila | None = None, sessao: Sessao | None = None, abrir=abrir_no_sistema):
+    def __init__(self, raiz: Path, fila: Fila | None = None, sessao: Sessao | None = None, abrir=abrir_no_sistema, assistente=None):
         self.raiz = raiz = raiz.resolve()          # com link simbólico no caminho (como o /var do macOS), rel() quebraria
         self.bruto = raiz / "material-bruto"
         self.saida = raiz / "saida"
@@ -153,6 +157,7 @@ class Painel:
         self.bruto.mkdir(exist_ok=True)
         self.saida.mkdir(exist_ok=True)
         self.fila = fila or Fila()
+        self.assistente = assistente or modulo_assistente.Assistente(raiz)
         self.sessao = sessao
         self.abrir = abrir
         self._cache: dict[str, tuple] = {}
@@ -190,7 +195,7 @@ class Painel:
         trabalhos = [self.trabalho(p) for p in sorted(self.saida.iterdir(), key=lambda x: x.stat().st_mtime,
                                                        reverse=True) if p.is_dir()]
         return {"brutos": brutos, "enviando": enviando, "trabalhos": trabalhos, "agora": time.time(),
-                "fila": self.fila.estado(),
+                "fila": self.fila.estado(), "claude": self.assistente.estado_global(),
                 "opcoes": {"series": modulo_serie.listar(), "perfis": [p for p in perfis_disponiveis() if not p.startswith("_")]}}
 
     def trabalho(self, pasta: Path) -> dict:
@@ -505,6 +510,8 @@ class Acoes:
     def _tentar(self, funcao, *args):
         try:
             return funcao(*args)
+        except modulo_assistente.Conflito as e:
+            raise Recusa(str(e), 409) from e
         except revisao.Recusado as e:
             raise Recusa(str(e)) from e
 
@@ -600,9 +607,46 @@ class Acoes:
             raise Recusa(str(e)) from e
         return {"ok": True, "fila": self.p.fila.enfileirar(pasta)}
 
+    # ---- Claude por trás, opcional (Fase 8) ----
+    def ler_claude(self, pasta: Path, q=None) -> dict:
+        return self.p.assistente.estado(pasta)
+
+    def claude_pedir(self, d: dict) -> dict:
+        pasta = self.pasta(d.get("pasta"))
+        tarefa = d.get("tarefa")
+        if not isinstance(tarefa, str):
+            raise Recusa("tarefa desconhecida")
+        self._tentar(self.p.assistente.pedir, pasta, tarefa, self._escolhas(pasta))
+        return {"ok": True}
+
+    def claude_cancelar(self, d: dict) -> dict:
+        self._tentar(self.p.assistente.cancelar)
+        return {"ok": True}
+
+    def claude_aplicar(self, d: dict) -> dict:
+        pasta = self.pasta(d.get("pasta"))
+        self.livre(pasta)
+        tarefa = d.get("tarefa")
+        r = self._tentar(self.p.assistente.aplicar, pasta, tarefa if isinstance(tarefa, str) else "", d.get("itens"))
+        if tarefa == "grafia":
+            self._atualizar_legenda(pasta)          # recalcula as posições e grava o .ass e o .srt (o legendas.py de sempre)
+        return {"ok": True, **r}
+
+    def claude_descartar(self, d: dict) -> dict:
+        pasta = self.pasta(d.get("pasta"))
+        tarefa = d.get("tarefa")
+        self._tentar(self.p.assistente.descartar, pasta, tarefa if isinstance(tarefa, str) else "")
+        return {"ok": True}
+
+    def claude_ligar(self, d: dict) -> dict:
+        if self.p.assistente.forcado_off:
+            raise Recusa("o painel foi aberto com --sem-claude", 409)
+        return {"ok": True, "claude": self._tentar(self.p.assistente.definir, d.get("ligado"), d.get("modelo"))}
+
     LEITURAS = {"/api/elementos": "painel_de_elementos", "/api/zoom": "painel_de_zoom", "/api/som": "painel_de_som",
                 "/api/conferencia": "painel_de_conferencia", "/api/elementos/previa": "previa_de_elemento",
-                "/api/zoom/previa": "previa_de_zoom", "/api/som/ouvir": "som_para_ouvir"}
+                "/api/zoom/previa": "previa_de_zoom", "/api/som/ouvir": "som_para_ouvir",
+                "/api/claude": "ler_claude"}
 
     ROTAS = {"/api/novo": "novo", "/api/aprovar": "aprovar", "/api/iniciar": "iniciar", "/api/cancelar": "cancelar",
              "/api/ajustar": "ajustar", "/api/refazer": "refazer", "/api/aprovar-entrega": "aprovar_entrega",
@@ -617,7 +661,9 @@ class Acoes:
              "/api/som/musica": "som_musica", "/api/som/ganho": "som_ganho", "/api/som/trocar": "som_trocar",
              "/api/som/tirar": "som_tirar", "/api/som/desfazer": "som_desfazer",
              "/api/conferencia/aceitar-pausa": "conferencia_aceitar_pausa",
-             "/api/conferencia/aplicar-ganho": "conferencia_aplicar_ganho"}
+             "/api/conferencia/aplicar-ganho": "conferencia_aplicar_ganho",
+             "/api/claude/pedir": "claude_pedir", "/api/claude/cancelar": "claude_cancelar", "/api/claude/aplicar": "claude_aplicar",
+             "/api/claude/descartar": "claude_descartar", "/api/claude/ligar": "claude_ligar"}
 
 
 TIPOS_DE_AJUSTE = {".jpg": "image/jpeg", ".m4a": "audio/mp4", ".wav": "audio/wav", ".mp3": "audio/mpeg"}
@@ -643,7 +689,10 @@ def criar_handler(painel: Painel, marca: dict):
             for k, v in (extra or {}).items():
                 self.send_header(k, v)
             self.end_headers()
-            self.wfile.write(corpo)
+            try:
+                self.wfile.write(corpo)
+            except (BrokenPipeError, ConnectionResetError):     # a pessoa fechou a aba no meio da resposta
+                pass
 
         def _html(self, corpo: bytes, status=200):
             self.send_response(status)
@@ -876,16 +925,20 @@ def main():
                     help="pasta do projeto (onde ficam material-bruto/ e saida/)")
     ap.add_argument("--sem-abrir", action="store_true", help="não abre o navegador")
     ap.add_argument("--perfil", help="perfil de marca do painel (nome, cores, fonte e créditos); padrão: arven")
+    ap.add_argument("--sem-claude", action="store_true", help="desliga os botões \"pedir ao Claude\" (o painel funciona igual sem eles)")
     a = ap.parse_args()
     definir_perfil(a.perfil)
     marca = carregar_marca()
-    painel = Painel(a.raiz.resolve())
+    painel = Painel(a.raiz.resolve(), assistente=modulo_assistente.Assistente(a.raiz.resolve(), forcado_off=a.sem_claude))
     servidor = ThreadingHTTPServer(("127.0.0.1", a.porta), criar_handler(painel, marca))
     painel.sessao = Sessao(servidor.server_address[1])
     url = painel.sessao.endereco()
     print(f"painel aberto em {url}  (Ctrl+C para parar) · perfil de marca: {marca['perfil']}")
     print("o endereço tem o código de sessão: quem não o tiver não consegue usar o painel")
     print(f"vídeos brutos: {painel.bruto}")
+    g = painel.assistente.estado_global()
+    print("Claude por trás: " + ("desligado (--sem-claude)" if g["forcado_off"] else "o Claude Code não está instalado" if not g["instalado"]
+                                else "disponível" + (" (desligado na tela)" if not g["ligado"] else "")))
     if not a.sem_abrir:
         threading.Timer(0.6, lambda: webbrowser.open(url)).start()
     try:
