@@ -140,17 +140,30 @@ def retranscrever_trecho(video: Path, pasta: Path, nome_modelo: str, idioma: str
     dados = ler_json(destino)
     audio = carregar_mono(video)
     a0, b0 = max(0.0, ini), min(len(audio) / TAXA_ANALISE, fim)
+    # As bordas vão para a pausa mais próxima (fora da fala), para nenhuma palavra ficar pela
+    # metade nem duplicar ("você" velho + "você" novo).
+    regioes = medir_fala(envelope_db(audio))["regioes"]
+    for ra, rb in regioes:
+        if ra < a0 < rb:
+            a0 = ra
+        if ra < b0 < rb:
+            b0 = rb
+    for w in dados["palavras"]:
+        if w["i"] < a0 < w["f"]:
+            a0 = w["i"]
+        if w["i"] < b0 < w["f"]:
+            b0 = w["f"]
+    a0, b0 = max(0.0, a0 - 0.05), min(len(audio) / TAXA_ANALISE, b0 + 0.05)
     print(f"carregando o modelo {nome_modelo}...")
     modelo = WhisperModel(nome_modelo, device="auto", compute_type="int8")
     pedaco = audio[int(a0 * TAXA_ANALISE):int(b0 * TAXA_ANALISE)]
     segs, _ = modelo.transcribe(pedaco, language=None if idioma == "auto" else idioma, word_timestamps=True,
                                 condition_on_previous_text=False, initial_prompt=None, beam_size=5, vad_filter=False)
-    novas = [w for w in _palavras(segs, a0) if w["i"] >= a0 - 0.05 and w["f"] <= b0 + 0.05]
-    regioes = medir_fala(envelope_db(audio))["regioes"]
+    novas = [w for w in _palavras(segs, a0) if w["i"] >= a0 - 0.02 and w["f"] <= b0 + 0.02]
     novas = ajustar_palavras(novas, regioes)
     for w in novas:
         w["retranscrita"] = True
-    fora = [w for w in dados["palavras"] if not (a0 <= (w["i"] + w["f"]) / 2 <= b0)]
+    fora = [w for w in dados["palavras"] if w["f"] <= a0 or w["i"] >= b0]
     dados["palavras"] = sorted(fora + novas, key=lambda w: w["i"])
     dados["texto"] = " ".join(w["p"] for w in dados["palavras"])
     dados["sem_transcricao"] = [[round(x, 2), round(y, 2)]
