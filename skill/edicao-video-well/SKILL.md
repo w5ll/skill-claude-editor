@@ -1,6 +1,6 @@
 ---
 name: edicao-video-well
-description: "Edita os vídeos gravados pelo Well para o Instagram (@lunardiwell): corta pausas, respirações, erros e repetições, junta tomadas, coloca legenda no padrão da marca fora do rosto, faz elementos 3D da marca entrarem quando ele fala a palavra certa, dá zoom de ênfase, tira ruído, põe música e efeitos quando pedido, iguala o volume e entrega o MP4 pronto para postar. Use quando ele mandar um vídeo bruto, pedir para editar, cortar, legendar, pôr elementos 3D, zoom, música ou ajustar um vídeo já editado."
+description: "Edita os vídeos gravados pelo Well para o Instagram (@lunardiwell): corta pausas, respirações, erros e repetições, junta tomadas, coloca legenda no padrão da marca fora do rosto, faz elementos 3D da marca entrarem quando ele fala a palavra certa (e desenha elementos novos para as ideias que nenhum elemento pronto representa), dá zoom de ênfase, tira ruído, põe música e efeitos quando pedido, iguala o volume e entrega o MP4 pronto para postar. Use quando ele mandar um vídeo bruto, pedir para editar, cortar, legendar, pôr elementos 3D, zoom, música ou ajustar um vídeo já editado."
 ---
 
 # Edição de vídeo do Well
@@ -15,7 +15,7 @@ Sempre em português, com acentuação, sem travessão e sem termo em inglês se
 | --- | --- | --- |
 | `referencias/cortes.md` | Critérios editoriais: tomada certa, o que cortar, o que nunca cortar | Antes de revisar o `cortes.json` |
 | `referencias/legendas.md` | Estilo, posição, grafia dos termos, como corrigir | Antes de gerar e revisar a legenda |
-| `referencias/elementos-3d.md` | Catálogo dos elementos 3D, modos, quando usar | Ao sugerir e revisar os elementos |
+| `referencias/elementos-3d.md` | Catálogo dos elementos 3D, modos, quando usar, e como desenhar elementos novos (receita, animações, prévia, catálogo) | Ao sugerir, revisar e desenhar os elementos |
 | `referencias/rosto-e-camera.md` | Rosto (legenda e elementos fora dele) e zoom de ênfase | Ao rodar `rosto.py` e `camera.py` |
 | `referencias/som-e-imagem.md` | Volume, ruído, estouro, eco, música, efeitos, HDR, formato, cor | Ao montar o cartão e renderizar |
 | `referencias/gravacao.md` | Dicas para o Well gravar de um jeito que edita melhor | Quando o bruto vier com problema recorrente |
@@ -87,8 +87,9 @@ Regras do cartão:
 - Áudio estourado ou sala com eco: vão em ⚠️ como aviso (não têm conserto na edição), com a opção de seguir assim ou regravar a frase.
 
 - Tamanho: o Instagram mostra no máximo 1080x1920. Bruto maior que isso (4K do iPhone): proponha "reduzido para 1080x1920, o tamanho do Instagram" e use `--formato original@1080` (ou `9:16@1080`) em todos os scripts que recebem `--formato`. Fica bem mais rápido e o arquivo final, bem menor. Mantenha os quadros por segundo do original.
+- Elementos 3D novos: no cartão inicial a linha ✨ diz "elementos da marca nas palavras que combinam e, onde nenhum serve, elementos novos desenhados para a ideia (você aprova a prévia antes)". Depois dos cortes, quando já der para ler a história, mostre a linha ✨ de novo com ✏️: quais são (nome, momento e palavra), quantos são novos, a folha `elementos-previa.jpg` junto, e espere o "ok". Sem ele, os gerados não entram.
 
-Padrões propostos: ritmo natural, legenda ligada fora do rosto, elementos 3D nas palavras que combinam (um a cada 6 s no máximo; liste quais no cartão depois de uma transcrição rápida, ou diga "nos momentos certos" se ainda não transcreveu), câmera parada, voz em -14 LUFS, redução de ruído só com chiado medido, cor e formato do original, sem música, sem efeito, amostra conferida por você.
+Padrões propostos: ritmo natural, legenda ligada fora do rosto, elementos 3D nas palavras que combinam (um a cada 6 s no máximo; liste quais no cartão depois de uma transcrição rápida, ou diga "nos momentos certos" se ainda não transcreveu) e, onde nenhum pronto serve, elementos novos com prévia, câmera parada, voz em -14 LUFS, redução de ruído só com chiado medido, cor e formato do original, sem música, sem efeito, amostra conferida por você.
 
 ### 3. Transcrever e propor os cortes (depois do ok)
 
@@ -119,6 +120,8 @@ Sempre que tiver legenda, elemento 3D ou zoom. Rode depois de fechar o `cortes.j
 
 ```bash
 python scripts/elementos.py sugerir --pasta saida/... [--modo sobreposto|tela]
+python scripts/elementos.py validar --pasta saida/...                          # só com elemento gerado
+python scripts/elementos.py previa --pasta saida/... [--formato 9:16]          # só com elemento gerado
 python scripts/camera.py planejar --pasta saida/... [--intensidade leve|normal|forte]   # só com zoom aprovado
 python scripts/legendas.py --pasta saida/... [--formato 9:16]
 python scripts/som.py planejar --pasta saida/... [--musica calmo|animado|batida|ARQUIVO] [--efeitos]   # só com música ou efeito pedido
@@ -131,6 +134,8 @@ A ordem importa: a câmera não muda o zoom com elemento na tela, a legenda desv
 Revise `legendas.json` seguindo `referencias/legendas.md` (grafia de marca e termo jurídico, números, nomes). Corrija o campo `texto` de cada bloco e rode de novo com `--reaproveitar`. Use o mesmo `--formato` que vai no renderizar. A lista mostra os blocos que mudaram de lugar para não cobrir o rosto.
 
 **Elementos 3D.** Revise `elementos.json` seguindo `referencias/elementos-3d.md`: o elemento combina com a frase, o rótulo só traz número que o Well falou. A posição `auto` foge do rosto sozinha. Os elementos entram sozinhos no renderizar. Se o Well desligou os elementos no cartão, pule este passo (e apague `elementos.json` se existir).
+
+**Elementos 3D gerados.** Rode o `sugerir` primeiro (ele reescreve o `elementos.json`; a versão anterior fica em `elementos.anterior.json`). Depois leia o texto final do corte e escolha de 3 a 6 ideias-chave: a promessa do gancho, os exemplos, a virada, a conclusão. Onde um elemento pronto (ou do catálogo) serve, use. Onde nenhum serve, desenhe um novo, seguindo a receita de `referencias/elementos-3d.md` (modelos em `templates/exemplos-gerados/`): o desenho vai em `elementos-gerados/<nome>.svg`, o item `gerado:<nome>` entra no `elementos.json` com a animação, e você roda `validar` e `previa`. Olhe a folha `elementos-previa.jpg`: legível em tamanho pequeno, da mesma família dos atuais, com contraste sobre o vídeo, sem nada de mau gosto. Refaça o que não passar. Gerado nunca entra sem o "ok": mostre ao Well a linha ✨ atualizada (com ✏️) e a folha, e espere. Sem o "ok", tire os gerados e fique só com os prontos.
 
 **Câmera.** Revise `camera.json` seguindo `referencias/rosto-e-camera.md`: poucas aproximações, nas palavras que pedem força. Sem zoom aprovado, não rode (e use `camera.py desligar` se existir).
 
@@ -166,11 +171,14 @@ Só entregue com tudo "ok". Qualquer "FALHOU" você resolve (ajusta corte, põe 
 - ✨ **Elementos 3D**: mensagem em 0:04 ("WhatsApp"), relógio em 0:12 ("5 minutos"), ...
 - 🎥 **Câmera**: <só se tiver zoom: "zoom a cada frase e 3 aproximações: 'nunca' em 0:09, ...">
 - 🔊 **Som**: <só se tiver música ou efeito: "música batida leve por baixo, efeito em cada elemento">
+- 🆕 **Elementos novos**: <só se tiver gerado: "bússola e escada, desenhados para este vídeo. Quer guardar no catálogo para os próximos?">
 - 🔍 **Conferido**: toca do começo ao fim, volume igual entre trechos, legenda fora do rosto, elementos, emendas sem estalo nem pulo, nenhuma palavra cortada, nenhum silêncio sobrando
 - ⚠️ **Limites**: <só se houver: áudio estourado no original, trecho com ruído, algo que não deu>
 
 👉 Quer mudar algo? Por exemplo "legenda maior", "corta o começo", "mais rápido".
 ```
+
+Se o Well quiser guardar um elemento novo, rode `elementos.py promover NOME --pasta saida/... --palavras "começo,das,palavras"` para cada um (palavras que não chamam um elemento pronto). Daí em diante o `sugerir` usa o elemento nos outros vídeos.
 
 Se o vídeo saiu de um roteiro da skill de conteúdo, a legenda do post (o texto que vai embaixo do Reels) é feita lá, não aqui.
 
@@ -185,6 +193,7 @@ Mudança pontual ("legenda maior", "volta a frase do 0:30") mexe só no que foi 
 - A fala é do Well: não corte ressalva, negação ou condição que muda o sentido (cuidado especial com o que a OAB exige, veja `referencias/cortes.md`). Não junte pedaços de frases diferentes para criar uma frase que ele não disse.
 - Corte medido no áudio, não estimado pelo roteiro. O roteiro serve para grafia e ordem.
 - Sem elemento 3D, zoom, música, efeito, filtro de cor, conversão de HDR ou redução de ruído sem o Well escolher no cartão.
+- Elemento 3D gerado só entra com a prévia aprovada pelo Well e depois de passar no `validar` (sem texto, pessoa, rosto, mão, logotipo ou marca de terceiros).
 - Música e efeitos só da biblioteca da skill (domínio público) ou que o Well mandar. Nunca baixe música da internet.
 - Nada é enviado para fora do computador. A transcrição é local.
 - Nunca publique. Postar é com a skill de conteúdo, e só com "pode postar".

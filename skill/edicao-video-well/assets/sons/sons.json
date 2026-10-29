@@ -28,6 +28,16 @@
     "cristal": "brilho",
     "tela": "passagem-longa"
   },
+  "por_animacao": {
+    "girar": "passagem",
+    "balancar": "passagem",
+    "subir": "estalo",
+    "encaixar": "estalo",
+    "tracar": "passagem-curta",
+    "pulsar": "brilho",
+    "brilhar": "brilho",
+    "aparecer": "clique"
+  },
   "musicas": {
     "calmo": {"arquivo": "musica/calmo.mp3", "titulo": "Windows Down", "autor": "HoliznaCC0", "origem": "https://freemusicarchive.org/music/holiznacc0/", "descricao": "calma, para conteúdo explicativo"},
     "animado": {"arquivo": "musica/animado.mp3", "titulo": "Blue Skies", "autor": "HoliznaCC0", "origem": "https://freemusicarchive.org/music/holiznacc0/", "descricao": "animada, para dica rápida e virada"},

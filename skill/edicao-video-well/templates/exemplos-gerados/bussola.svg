@@ -1,0 +1,12 @@
+<ellipse cx="200" cy="368" rx="120" ry="18" fill="url(#sombra)"/>
+<circle cx="200" cy="210" r="140" fill="url(#lado)"/>
+<circle cx="200" cy="190" r="140" fill="url(#met)" stroke="url(#brilho)" stroke-width="3"/>
+<circle cx="200" cy="190" r="108" fill="#16161f"/>
+<circle cx="200" cy="190" r="108" fill="none" stroke="url(#met2)" stroke-width="4"/>
+<path d="M200 90 V110 M200 270 V290 M100 190 H120 M280 190 H300 M129 119 L136 126 M271 119 L264 126 M129 261 L136 254 M271 261 L264 254" fill="none" stroke="#eaefef" stroke-width="5" stroke-linecap="round" opacity=".85"/>
+<g id="gira">
+<polygon points="200,96 217,190 183,190" fill="#eaefef"/>
+<polygon points="200,284 217,190 183,190" fill="url(#met2)"/>
+</g>
+<circle cx="200" cy="190" r="13" fill="url(#met)" stroke="url(#brilho)" stroke-width="2"/>
+<ellipse cx="158" cy="128" rx="62" ry="24" fill="#ffffff" opacity=".12" transform="rotate(-32 158 128)"/>

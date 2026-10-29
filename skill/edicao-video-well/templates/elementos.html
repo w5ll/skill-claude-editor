@@ -21,8 +21,10 @@
 <script>
 /* Elementos 3D do Well, os mesmos do carrossel (skill conteudo-well-advogados),
    com partes nomeadas para animar. desenhar(t) posiciona tudo no instante t (segundos),
-   para gerar cada quadro do vídeo de forma exata. */
-let C, CFG, ALVO;
+   para gerar cada quadro do vídeo de forma exata.
+   Os 12 elementos prontos estão em FORMAS. Um elemento gerado (cfg.svg) vem de fora, validado,
+   e usa as animações de animarGerado(). */
+let C, CFG, ALVO, GER = null;   // GER: preparo do elemento gerado (null nos 12 prontos)
 
 function defs(E) {
   return `<defs>
@@ -106,8 +108,10 @@ function montar(cfg) {
   palco.className = cfg.modo;
   palco.style.width = cfg.largura + 'px'; palco.style.height = cfg.altura + 'px';
   const el = document.getElementById('elemento');
-  const forma = FORMAS[cfg.elemento] || FORMAS.esfera;
+  // Elemento gerado (cfg.svg): o desenho vem pronto de fora, sempre sobre os mesmos gradientes da marca.
+  const forma = cfg.svg ? () => cfg.svg : (FORMAS[cfg.elemento] || FORMAS.esfera);
   el.innerHTML = `<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">${defs(C.elemento_3d)}${forma()}</svg>`;
+  GER = cfg.svg ? prepararGerado(el.querySelector('svg'), cfg) : null;
   const txt = document.getElementById('texto');
   // *palavra* fica na cor de destaque, como no título do carrossel
   txt.innerHTML = cfg.texto ? esc(cfg.texto).replace(/\*(.+?)\*/g, '<b>$1</b>') : '';
@@ -133,6 +137,7 @@ function montar(cfg) {
 }
 
 function animarPartes(u) {
+  if (GER) { animarGerado(u); return; }
   const q = s => document.querySelector(s), qa = s => [...document.querySelectorAll(s)];
   switch (CFG.elemento) {
     case 'relogio': // ponteiro corre: o tempo passando
@@ -170,6 +175,101 @@ function animarPartes(u) {
     case 'cubo':
       q('#reflexo').setAttribute('opacity', 0.35 + 0.35 * Math.sin(u * 2)); break;
   }
+}
+
+/* ---------- Elementos gerados ----------
+   O SVG gerado marca as partes que se mexem com um id (ou a classe .passo) e escolhe uma destas
+   animações no elementos.json. Cada parte é embrulhada num <g> próprio, que é o que se anima:
+   assim a parte pode ter o seu próprio transform sem conflito. u = segundos desde que o elemento assentou. */
+const SVGNS = 'http://www.w3.org/2000/svg';
+const FORMAS_SVG = 'path,circle,ellipse,rect,line,polyline,polygon';
+const PARTE_DA_ANIMACAO = { girar: '#gira', subir: '#sobe', balancar: '#balanca', encaixar: '#encaixa',
+                            pulsar: '#pulsa', brilhar: '#reflexo', aparecer: '.passo' };
+
+function envolver(el) {
+  const w = document.createElementNS(SVGNS, 'g');
+  el.parentNode.insertBefore(w, el); w.appendChild(el);
+  return w;
+}
+
+/* O reflexo só aparece dentro do desenho: recorta pelas faces de metal (fill met ou met2). */
+function recortarReflexo(svg, alvo) {
+  const cp = document.createElementNS(SVGNS, 'clipPath');
+  cp.setAttribute('id', 'recorte-reflexo');
+  svg.querySelectorAll(FORMAS_SVG).forEach(f => {
+    if (alvo.w.contains(f)) return;
+    const fill = f.getAttribute('fill') || '';
+    if (fill !== 'url(#met)' && fill !== 'url(#met2)') return;
+    const c = f.cloneNode(false);
+    ['fill', 'stroke', 'stroke-width', 'opacity', 'id', 'class'].forEach(a => c.removeAttribute(a));
+    const ts = [];
+    for (let p = f; p && p !== svg; p = p.parentNode) {
+      const t = p.getAttribute && p.getAttribute('transform');
+      if (t) ts.unshift(t);
+    }
+    if (ts.length) c.setAttribute('transform', ts.join(' ')); else c.removeAttribute('transform');
+    cp.appendChild(c);
+  });
+  if (!cp.firstChild) return;
+  svg.querySelector('defs').appendChild(cp);
+  const fora = document.createElementNS(SVGNS, 'g');
+  fora.setAttribute('clip-path', 'url(#recorte-reflexo)');
+  alvo.w.parentNode.insertBefore(fora, alvo.w); fora.appendChild(alvo.w);
+}
+
+function prepararGerado(svg, cfg) {
+  const g = { animacao: cfg.animacao, parar: !!cfg.parar, alvos: [], traco: null, comp: 0 };
+  if (cfg.animacao === 'tracar') {
+    const p = svg.querySelector('#traco');
+    if (p && p.getTotalLength) {
+      g.traco = p; g.comp = p.getTotalLength();
+      p.setAttribute('stroke-dasharray', g.comp); p.setAttribute('stroke-dashoffset', g.comp);
+    }
+    return g;
+  }
+  const seletor = PARTE_DA_ANIMACAO[cfg.animacao];
+  if (!seletor) return g;
+  svg.querySelectorAll(seletor).forEach(el => {
+    const w = envolver(el), b = w.getBBox();
+    g.alvos.push({ w, cx: b.x + b.width / 2, cy: b.y + b.height / 2 });
+  });
+  if (cfg.animacao === 'brilhar' && g.alvos[0]) recortarReflexo(svg, g.alvos[0]);
+  return g;
+}
+
+function animarGerado(u) {
+  const g = GER, ciclo = (periodo) => (u / periodo) * Math.PI * 2;
+  if (g.animacao === 'tracar') {   // o traço se desenha em 1 s e fica
+    if (g.traco) g.traco.setAttribute('stroke-dashoffset', g.comp * (1 - saidaCubica(limitar(u / 1.0))));
+    return;
+  }
+  g.alvos.forEach((a, i) => {
+    let tr = '', op = null;
+    switch (g.animacao) {
+      case 'girar': { // uma volta a cada 3 s, ou de -25° a 0° e para (agulha de bússola)
+        const ang = g.parar ? -25 * (1 - saidaVolta(limitar(u / 0.9))) : (u / 3) * 360;
+        tr = `rotate(${ang} ${a.cx} ${a.cy})`; break; }
+      case 'subir': // sobe 40 e volta, devagar
+        tr = `translate(0 ${-40 * (0.5 - 0.5 * Math.cos(ciclo(2.4)))})`; break;
+      case 'balancar': // de -6° a 6°, como barco na onda
+        tr = `rotate(${6 * Math.sin(ciclo(2.0))} ${a.cx} ${a.cy})`; break;
+      case 'encaixar': { // desce 60, encaixa aos 0,3 s e dá um quique pequeno
+        const k = u < 0.3 ? -60 * (1 - Math.pow(u / 0.3, 2))
+                          : -7 * Math.exp(-(u - 0.3) * 9) * Math.abs(Math.sin((u - 0.3) * 20));
+        tr = `translate(0 ${k})`; break; }
+      case 'pulsar': { // cresce 8% e volta, a cada 0,8 s
+        const s = 1 + 0.08 * (0.5 - 0.5 * Math.cos(ciclo(0.8)));
+        tr = `translate(${a.cx} ${a.cy}) scale(${s}) translate(${-a.cx} ${-a.cy})`; break; }
+      case 'brilhar': { // o reflexo passa de lado a lado uma vez
+        const p = limitar((u - 0.2) / 1.2);
+        tr = `translate(${-230 + 460 * p} 0)`; op = Math.sin(Math.PI * p); break; }
+      case 'aparecer': { // as partes entram uma a uma, a cada 0,15 s
+        const k = limitar((u - i * 0.15) / 0.3);
+        tr = `translate(0 ${(1 - saidaVolta(k)) * 26})`; op = limitar(k * 3); break; }
+    }
+    a.w.setAttribute('transform', tr);
+    if (op !== null) a.w.setAttribute('opacity', op);
+  });
 }
 
 function desenhar(t) {

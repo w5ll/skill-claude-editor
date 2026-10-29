@@ -1,0 +1,6 @@
+<ellipse cx="200" cy="368" rx="120" ry="18" fill="url(#sombra)"/>
+<g class="passo"><path d="M56 270 H128 V330 H56 Z" fill="url(#lado)" transform="translate(0 18)"/><path d="M56 270 H128 V330 H56 Z" fill="url(#met)" stroke="url(#brilho)" stroke-width="3" stroke-linejoin="round"/></g>
+<g class="passo"><path d="M128 220 H200 V330 H128 Z" fill="url(#lado)" transform="translate(0 18)"/><path d="M128 220 H200 V330 H128 Z" fill="url(#met)" stroke="url(#brilho)" stroke-width="3" stroke-linejoin="round"/></g>
+<g class="passo"><path d="M200 170 H272 V330 H200 Z" fill="url(#lado)" transform="translate(0 18)"/><path d="M200 170 H272 V330 H200 Z" fill="url(#met)" stroke="url(#brilho)" stroke-width="3" stroke-linejoin="round"/></g>
+<g class="passo"><path d="M272 120 H344 V330 H272 Z" fill="url(#lado)" transform="translate(0 18)"/><path d="M272 120 H344 V330 H272 Z" fill="url(#met)" stroke="url(#brilho)" stroke-width="3" stroke-linejoin="round"/></g>
+<circle class="passo" cx="308" cy="82" r="30" fill="url(#esf)"/>

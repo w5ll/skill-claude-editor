@@ -12,7 +12,7 @@ Para instalar no seu Mac, veja [Instalar no seu Mac, com o VS Code](#instalar-no
 4. Corta pausas longas, respirações, erros, frases repetidas e começos errados. O corte é medido na onda do som, para não comer sílaba.
 5. Acha o seu rosto em cada trecho, 10 vezes por segundo.
 6. Coloca a legenda no padrão da marca: Sora ExtraBold, até 3 palavras por vez, palavra falada em azul. Se ela fosse cobrir a boca ou o queixo, desce ou sobe sozinha.
-7. Faz os **elementos 3D do carrossel** entrarem animados quando você fala a palavra certa: "WhatsApp" chama a mensagem digitando, "cinco minutos" o relógio com o rótulo "5 minutos", "funil" o funil com leads caindo. Eles procuram um lugar que não cubra o rosto. Também tem o modo tela cheia, que vira um slide do carrossel por um instante.
+7. Faz os **elementos 3D do carrossel** entrarem animados quando você fala a palavra certa: "WhatsApp" chama a mensagem digitando, "cinco minutos" o relógio com o rótulo "5 minutos", "funil" o funil com leads caindo. Eles procuram um lugar que não cubra o rosto. Também tem o modo tela cheia, que vira um slide do carrossel por um instante. Quando você fala de uma ideia que nenhum dos 12 elementos prontos representa (direção, método, sorte, estar à deriva), a skill **desenha um elemento novo** só para ela: bússola, escada, engrenagem, trevo. Você vê uma **folha de prévia** (cada elemento em três instantes, sobre o fundo da marca e sobre o seu próprio vídeo) e só entra o que você aprovar. Os que você gostar podem ficar no catálogo para os próximos vídeos.
 8. Se você pedir, dá **zoom de ênfase**: alterna o enquadramento a cada frase, como se fossem duas câmeras, e aproxima nas palavras fortes ("nunca", números, "dobro").
 9. Tira o **chiado de fundo** (leve ou forte, conforme a medição) e avisa áudio estourado e eco da sala.
 10. Se você pedir, põe **música** por baixo (abaixa sozinha quando você fala) e um **efeito sonoro** em cada elemento 3D. Tudo de domínio público.
@@ -173,7 +173,7 @@ skill/edicao-video-well/         ← a skill (é isso que vira o arquivo .skill)
   referencias/
     cortes.md                    o que cortar, o que nunca cortar, tomada certa
     legendas.md                  estilo, posição, grafia dos termos
-    elementos-3d.md              catálogo dos elementos 3D, modos e critério
+    elementos-3d.md              catálogo dos elementos 3D, modos, critério e como desenhar elementos novos
     rosto-e-camera.md            rosto (legenda e elementos fora dele) e zoom de ênfase
     som-e-imagem.md              volume, ruído, estouro, eco, música, efeitos, HDR, formato, cor
     gravacao.md                  dicas para gravar de um jeito que edita melhor
@@ -182,7 +182,9 @@ skill/edicao-video-well/         ← a skill (é isso que vira o arquivo .skill)
   assets/fontes/                 Sora ExtraBold (licença OFL)
   assets/modelos/                detector de rosto YuNet (licença MIT)
   assets/sons/                   3 músicas e 10 efeitos sonoros (domínio público), com a origem em sons.json
-  templates/elementos.html       desenho e animação dos elementos 3D
+  templates/elementos.html       desenho e animação dos 12 elementos 3D prontos e das 8 animações dos gerados
+  templates/exemplos-gerados/    4 elementos gerados de modelo: bússola, escada, engrenagem, trevo
+  templates/gerados/             catálogo dos elementos gerados que o Well aprovou (catalogo.json e os desenhos)
   templates/painel.html          página do painel
   scripts/
     inspecionar.py               lê o vídeo bruto: duração, formato, HDR, volume, quadros
@@ -193,7 +195,7 @@ skill/edicao-video-well/         ← a skill (é isso que vira o arquivo .skill)
     rosto.py                     acha o rosto em cada trecho (rosto.json)
     camera.py                    planeja o zoom de ênfase (camera.json)
     legendas.py                  monta a legenda no tempo do corte, fora do rosto (.ass e .srt)
-    elementos.py                 sugere e desenha os elementos 3D
+    elementos.py                 sugere, desenha, valida, mostra a prévia e guarda no catálogo os elementos 3D
     som.py                       música e efeitos sonoros (som.json)
     renderizar.py                monta o vídeo: amostra ou inteiro
     conferir.py                  confere o arquivo final
@@ -214,12 +216,15 @@ python transcrever.py ../../../material-bruto/2026-10-22_lead-curioso/IMG_2040.m
 python propor_cortes.py --pasta $P --ritmo natural
 python rosto.py --pasta $P
 python elementos.py sugerir --pasta $P
+python elementos.py validar --pasta $P                # só com elemento gerado
+python elementos.py previa --pasta $P                 # só com elemento gerado: folha elementos-previa.jpg
 python camera.py planejar --pasta $P                  # só se quiser zoom
 python legendas.py --pasta $P
 python som.py planejar --pasta $P --musica batida --efeitos   # só se quiser música ou efeito
 python renderizar.py --pasta $P --amostra 0 12 --ruido leve
 python renderizar.py --pasta $P --ruido leve
 python conferir.py --pasta $P --video $P/2026-10-22_lead-curioso-v001.mp4 --retranscrever
+python elementos.py promover bussola --pasta $P --palavras "bussol,rumo"   # guarda um gerado aprovado no catálogo
 ```
 
 ## Empacotando a skill

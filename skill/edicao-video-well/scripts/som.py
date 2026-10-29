@@ -12,6 +12,8 @@ planejar  grava som.json, que o renderizar.py mistura por baixo da voz:
             suave no fim. Se for mais curta que o vídeo, repete com 1 s de transição.
           - efeitos: um som para cada elemento 3D, no instante em que o elemento aparece
             (mensagem com som de mensagem, relógio com tique-taque, gráfico com acerto...).
+            Elemento gerado segue a animação dele (girar passagem, aparecer clique, brilhar
+            brilho...; veja por_animacao em assets/sons/sons.json).
             Tela cheia ganha uma passagem de ar. No mínimo 1,2 s entre um efeito e outro.
 desligar  apaga som.json (sai só a voz).
 
@@ -186,7 +188,12 @@ def planejar(pasta: Path, musica: str | None, efeitos: bool, abaixo: float, sobe
         itens = ler_json(arq).get("itens", []) if arq.exists() else []
         ultimo = -99.0
         for n, it in enumerate(sorted(itens, key=lambda x: x["inicio"])):
-            nome = cat["por_elemento"]["tela"] if it["modo"] == "tela" else cat["por_elemento"].get(it["elemento"])
+            if it["modo"] == "tela":
+                nome = cat["por_elemento"]["tela"]
+            elif it["elemento"].startswith("gerado:"):   # elemento gerado: o som segue a animação dele
+                nome = it.get("som") or cat.get("por_animacao", {}).get(it.get("animacao"))
+            else:
+                nome = cat["por_elemento"].get(it["elemento"])
             t = round(it["inicio"] + POP_DO_ELEMENTO, 3)
             if not nome or t - ultimo < ESPACO_EFEITOS:
                 continue
@@ -217,6 +224,8 @@ def main():
         por = {}
         for el, s in cat["por_elemento"].items():
             por.setdefault(s, []).append(el)
+        for an, s in cat.get("por_animacao", {}).items():
+            por.setdefault(s, []).append(f"gerado com {an}")
         for k, e in cat["efeitos"].items():
             print(f"  {k:<15} {e['descricao']}  (entra com: {', '.join(por.get(k, [])) or 'à mão'})")
         return

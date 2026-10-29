@@ -2,6 +2,8 @@
 
 Especificação para implementar. Quem implementa: o Claude Code no Mac do Well, com os vídeos de verdade para testar. Substitui a lista fixa de 12 elementos de `docs/proximas-fases.md`.
 
+> **Status: implementada** (29/10/2026) e testada com o vídeo de planejamento (IMG_5127). As decisões que a especificação deixava em aberto estão em [Como ficou](#como-ficou).
+
 ## Objetivo
 
 Hoje a skill só escolhe entre 12 elementos prontos, procurando palavras na fala. A partir desta fase, o Claude lê a transcrição, escolhe as ideias-chave do vídeo e **desenha um elemento novo** para as que nenhum elemento pronto representa. O desenho segue um molde fixo da marca, entra no cartão como prévia para o Well aprovar, e os que ele gostar viram parte do catálogo.
@@ -93,6 +95,19 @@ Depois dos cortes e antes da câmera:
 4. Um elemento gerado com posição automática foge do rosto como os atuais.
 5. Os efeitos sonoros seguem a animação.
 6. `promover` coloca o elemento no catálogo e o `sugerir` passa a achar ele pela palavra.
+
+## Como ficou
+
+Decisões da implementação, onde a especificação deixava margem:
+
+- **Cada parte que se mexe é embrulhada num grupo próprio** pela página, e é o grupo que se anima. Assim a parte pode ter o seu `transform` sem conflito.
+- **`girar` com `"parar": true`** vai de -25° até a posição em que a parte foi desenhada e assenta com um quique leve. Desenhe a agulha na posição final.
+- **`brilhar`**: a página recorta o reflexo pelas faces de metal (as formas com `fill="url(#met)"` ou `url(#met2)`), porque o desenho não pode ter `clipPath`. Desenhe uma faixa inclinada no meio do elemento.
+- **`validar`**: além das regras do item 1, confere os valores de cada atributo (só gradientes da marca e as quatro cores, só `translate`, `rotate`, `scale`, `skewX`, `skewY` e `matrix`), que o `id` não repete nem usa nome de gradiente, que a animação tem a parte que ela precisa e a margem de 30, medida no navegador (a sombra do chão não conta). Também valida um arquivo avulso: `validar --arquivo desenho.svg --animacao girar`.
+- **`previa`**: o quadro do vídeo é o do instante real do corte, na posição em que o elemento entra (sem o zoom da câmera). Elementos de 1 s mostram só os instantes que cabem.
+- **`promover`** avisa quando uma palavra também chama um elemento pronto. O `sugerir` procura **primeiro** no catálogo (é mais específico, o Well aprovou) e depois nos 12.
+- **Elementos de exemplo**: os quatro do teste ficaram em `templates/exemplos-gerados/` como modelo de estilo. Não fazem parte do catálogo: só o que o Well aprovar entra em `templates/gerados/`.
+- **Cache**: o nome da pasta de cada elemento gerado usa `gerado-nome` (sem os dois pontos) e a chave inclui o desenho, a animação e o `parar`. Os 12 prontos mantêm a chave de antes, então nada que já foi desenhado se perde.
 
 ## Prompt para implementar (colar no Claude Code do Mac)
 
