@@ -25,6 +25,12 @@ Para instalar no seu Mac, veja [Instalar no seu Mac, com o VS Code](#instalar-no
 13. Entrega o MP4, sem nunca apagar os originais nem as versões anteriores.
 14. Se você pedir, monta o **pacote de publicação**: escolhe 4 quadros para a capa (rosto grande, centrado, nítido), põe o título no padrão da marca fora do rosto e dentro do corte da grade do perfil, confere o texto do post (tamanho, hashtags, números que você não falou) e os limites do Instagram, e entrega tudo numa pasta pronta para postar. Nada é publicado.
 
+Também, quando você pedir:
+
+- **Série**: um arquivo em `series/` guarda o jeito de editar de um conjunto de vídeos (ritmo, legenda, elementos, zoom, música, avisos e hashtags do post), e todo vídeo da série o segue. O cartão mostra cada escolha com "(da série ...)".
+- **Conferência de fatos**: antes do render, a skill marca na sua fala os números, datas, fontes e referências de lei, e pergunta se estão certos. Ela nunca decide o que é verdade: só marca e pergunta.
+- **Imagens de apoio**: uma biblioteca local de imagens de uso livre, com a licença, a origem e o crédito registrados, que entram no vídeo como os elementos 3D (cartão ou tela cheia).
+
 ## Fases do projeto
 
 O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de edição para qualquer pessoa com acesso ao repositório**, com a marca configurável e um painel que roda a edição inteira sem abrir uma conversa. O nome novo é **welldit**, e o visual padrão segue a marca ARVEN (**elementos base ARVEN**). O plano completo, as dependências, a divisão entre as duas pessoas e as regras de trabalho em dupla estão em [docs/roadmap.md](docs/roadmap.md).
@@ -52,7 +58,7 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 
 - [x] **Fase 9.** Gancho dos 3 primeiros segundos e detecção de leitura e olhar · _Lucas_ ([especificação](docs/fase-9-gancho-olhar.md))
 - [x] **Fase 10.** Pacote de publicação e capa do Reels · _Lucas_ ([especificação](docs/fase-10-pacote-publicacao.md))
-- [ ] **Fase 11.** Direção de arte por série, conferência de fatos e imagens de apoio · _Lucas (proposta)_
+- [x] **Fase 11.** Direção de arte por série, conferência de fatos e imagens de apoio · _Lucas_ ([especificação](docs/fase-11-serie-fatos-imagens.md))
 - [ ] **Fase 12.** Cenas explicativas sincronizadas com a fala · _Lucas (proposta)_
 
 **Trilha C: infraestrutura** (independentes)
@@ -69,6 +75,7 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 | 3 | Well | 2% | 5% (cerca de 3 pontos) | `09a07de` a `f61ed7a` |
 | 9 | Lucas | a anotar | a anotar | PR #1 |
 | 10 | Lucas | a anotar | a anotar | PR #2 |
+| 11 | Lucas | a anotar | a anotar | PR #3 |
 
 Referência informada (Sonnet 5.5, esforço médio): a Fase 2 e o planejamento custaram cerca de **2% do plano semanal**, e a Fase 3 mais cerca de **3 pontos**, indo a 5%. Números lidos no Claude Code por quem rodou a fase, sem casa decimal.
 
@@ -244,6 +251,9 @@ skill/welldit/         ← a skill (é isso que vira o arquivo .skill)
     gancho-e-olhar.md            nota do começo, propostas de gancho, leitura e olhar para baixo
     som-e-imagem.md              volume, ruído, estouro, eco, música, efeitos, HDR, formato, cor
     publicacao.md                capa, texto do post, limites do Instagram e a pasta de publicação
+    series.md                    séries: o jeito de editar de um conjunto de vídeos
+    fatos.md                     números, datas, fontes e afirmações a confirmar
+    imagens.md                   imagens de apoio: licenças, registro e créditos
     gravacao.md                  dicas para gravar de um jeito que edita melhor
     instalacao.md                o que precisa estar instalado
   perfis/                        perfis de marca: arven (o padrão, elementos base ARVEN) e _modelo para copiar
