@@ -1,0 +1,82 @@
+# Roda todos os testes a cada envio e a cada pedido de revisão para a main.
+# O Mac é a máquina principal (é o computador de quem usa o projeto): se ele ficar vermelho, o envio fica vermelho.
+# O Linux é só informativo: avisa, mas não reprova.
+name: Testes
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: testes-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  WELLDIT_TESTES_AUTOMATICOS: "1"     # faltar ferramenta reprova em vez de pular o teste
+
+jobs:
+  mac:
+    name: Mac (principal)
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: skill/welldit/scripts/requirements.txt
+      - name: Instalar o ffmpeg completo
+        run: |
+          brew install ffmpeg-full
+          echo "$(brew --prefix ffmpeg-full)/bin" >> "$GITHUB_PATH"
+      - name: Instalar as bibliotecas e o navegador
+        run: |
+          pip install -r skill/welldit/scripts/requirements.txt
+          python -m playwright install chromium
+      - name: Conferir o ambiente
+        run: python tests/ambiente.py
+      - name: Rodar os testes
+        run: python -m unittest discover -s tests -v
+      - name: Guardar as imagens da diferença, se houver
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diferencas-dos-quadros-mac
+          path: tests/_diferencas/
+          if-no-files-found: ignore
+
+  linux:
+    name: Linux (informativo)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: skill/welldit/scripts/requirements.txt
+      - name: Instalar o ffmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+      - name: Instalar as bibliotecas e o navegador
+        run: |
+          pip install -r skill/welldit/scripts/requirements.txt
+          python -m playwright install --with-deps chromium
+      - name: Conferir o ambiente
+        run: python tests/ambiente.py
+      - name: Rodar os testes
+        run: python -m unittest discover -s tests -v
+      - name: Guardar as imagens da diferença, se houver
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: diferencas-dos-quadros-linux
+          path: tests/_diferencas/
+          if-no-files-found: ignore

@@ -1,5 +1,7 @@
 # welldit
 
+[![Testes](https://github.com/w5ll/skill-claude-editor/actions/workflows/testes.yml/badge.svg)](https://github.com/w5ll/skill-claude-editor/actions/workflows/testes.yml)
+
 Skill do Claude que **edita vídeos gravados com o celular** para o Instagram (well + edit): corta pausas e erros, coloca legenda, elementos 3D e zoom no padrão da sua marca, iguala o volume e entrega o MP4 pronto. Qualquer pessoa com acesso ao repositório pode usar, com o próprio perfil de marca.
 
 > **Elementos base ARVEN.** O visual padrão (cores, fonte e elementos 3D) é o do perfil `arven`. Para usar as suas cores, crie um perfil: veja [Marca e perfis](#marca-e-perfis).
@@ -35,6 +37,31 @@ Também, quando você pedir:
 
 Também, quando você pedir: **cenas explicativas**, com texto e números animados na marca, cada parte entrando quando você a fala. Há quatro tipos: lista de passos ("primeiro, segundo, terceiro"), antes e depois, um número que sobe ("30%", "R$ 130 mil") e de-para ("de 1 milhão para 130 mil"). Entram como um cartão fora do rosto ou em tela cheia por poucos segundos, e todo número da cena tem que ter sido falado por você.
 
+## Testes
+
+O projeto tem testes automáticos (cerca de 330) que conferem os cortes, a legenda, os elementos 3D, o painel e o pacote da skill. Sem vídeo real e sem transcrição, por isso rodam em poucos minutos.
+
+**Rodar no seu computador** (com o ambiente da instalação pronto):
+
+```bash
+tests/rodar.sh
+```
+
+Para rodar só um assunto: `tests/rodar.sh tests.test_legenda`. O comando usa o `ffmpeg-full` do Homebrew se ele existir e avisa, em português, quando a máquina não tem alguma ferramenta (nesse caso o teste que precisa dela pula).
+
+**No GitHub:** a cada envio e a cada pedido de revisão para a `main`, o GitHub roda tudo sozinho num Mac (a máquina principal: se falhar, o envio fica vermelho) e num Linux (só informativo). Lá, faltar ferramenta reprova em vez de pular. O selo no topo mostra o resultado da última rodada. Ligue a proteção da `main` em Settings > Branches (exigir a verificação "Mac (principal)") para ninguém juntar um pedido vermelho; é uma configuração do site, só quem manda no repositório liga.
+
+| Arquivo | O que confere |
+| --- | --- |
+| `tests/test_fase4.py` a `test_fase12.py` | cada fase: orquestrador, painel, revisão, ajustes, Claude por trás, gancho, publicação, séries e fatos, cenas |
+| `tests/test_validar.py` | o `validar` dos desenhos de elementos gerados |
+| `tests/test_cortes.py` | cortes: pausa, respiração, repetição e aviso obrigatório |
+| `tests/test_legenda.py` | legenda: o `.ass` do perfil padrão sai igual byte a byte, cores e fonte do perfil |
+| `tests/test_elementos_quadros.py` | os 12 elementos prontos, quadro a quadro contra as referências |
+| `tests/test_projeto.py` | `--help` de todos os scripts, o pacote `.skill`, o `SKILL.md`, nome antigo, o que o git guarda |
+
+**Mudei o visual de propósito e o teste de quadros ou da legenda ficou vermelho:** rode `python tests/atualizar_referencias.py`, confira o que mudou com `git status` e explique no pedido de revisão. Quando o teste de quadros reprova, as imagens (referência, nova e diferença) ficam em `tests/_diferencas/` (no GitHub, anexadas à rodada).
+
 ## Fases do projeto
 
 O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de edição para qualquer pessoa com acesso ao repositório**, com a marca configurável e um painel que roda a edição inteira sem abrir uma conversa. O nome novo é **welldit**, e o visual padrão segue a marca ARVEN (**elementos base ARVEN**). O plano completo, as dependências, a divisão entre as duas pessoas e as regras de trabalho em dupla estão em [docs/roadmap.md](docs/roadmap.md).
@@ -68,7 +95,7 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 **Trilha C: infraestrutura** (independentes)
 
 - [ ] **C1.** Instalação em um comando e tutorial para Windows e Linux · _Lucas (proposta)_
-- [ ] **C2.** Testes automáticos a cada envio no GitHub · _Well_
+- [x] **C2.** Testes automáticos a cada envio no GitHub · _Well_ ([especificação](docs/fase-c2-testes-automaticos.md))
 
 **Gasto do plano** (o número que o Claude Code mostra, antes e depois de cada fase)
 

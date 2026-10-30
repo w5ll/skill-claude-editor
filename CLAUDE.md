@@ -10,3 +10,4 @@ Repositório da skill `skill/welldit/`, que edita vídeos gravados com o celular
 - Perfil de marca: o padrão é o `arven`; perfis pessoais ficam fora do git. Se as cores base mudarem, atualize `skill/welldit/perfis/arven/marca.json`. Nada no código nem nos textos pressupõe uma pessoa, um @ ou um nicho: isso é do perfil.
 - Trabalho em fases: cada fase tem uma especificação em `docs/fase-N-nome.md` e termina com os testes passando, a documentação atualizada, o `./empacotar.sh` rodado e o checklist do README marcado. Quem pega uma fase escreve o nome no checklist antes de começar. Regras de trabalho em dupla em `docs/roadmap.md`.
 - Depois de mudar a skill, rode `./empacotar.sh` para gerar o `.skill` atualizado.
+- Testes: `tests/rodar.sh` roda tudo (o mesmo que o GitHub roda a cada envio). Se mudar o visual de propósito, `python tests/atualizar_referencias.py` regrava as referências.

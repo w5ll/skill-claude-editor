@@ -16,6 +16,8 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "skill" / "welldit" / "scripts"))
 
+import ambiente  # noqa: E402
+
 import revisao  # noqa: E402
 from comum import carregar_marca  # noqa: E402
 
@@ -349,6 +351,7 @@ class TestLegenda(Base):
 
 class TestPreviaDaLegenda(Base):
     def setUp(self):
+        ambiente.exigir_ffmpeg_completo()
         super().setUp()
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "testsrc=s=540x960:r=30:d=8", "-f", "lavfi", "-i", "sine=d=8",
                         "-shortest", "-pix_fmt", "yuv420p", str(self.dir / "a.mp4")], check=True)
@@ -489,6 +492,7 @@ class TestApi(unittest.TestCase):
             self.assertEqual(self.s.post("/api/legenda/editar", {"pasta": self.nome, **corpo})[0], 400, corpo)
 
     def test_legenda_corrigir_em_todos_e_previa(self):
+        ambiente.exigir_ffmpeg_completo()
         st, _, r = self.s.post("/api/legenda/substituir", {"pasta": self.nome, "de": "meta", "para": "objetivo"})
         self.assertEqual((st, r["mudou"]), (200, 1))
         self.assertEqual(self.s.post("/api/legenda/substituir", {"pasta": self.nome, "de": "nada", "para": "x"})[2]["mudou"], 0)
@@ -511,13 +515,13 @@ class TestTelaDeRevisao(unittest.TestCase):
             from playwright.sync_api import sync_playwright
             from elementos import abrir_navegador
         except ImportError:
-            raise unittest.SkipTest("sem playwright")
+            ambiente.indisponivel("sem o Playwright instalado")
         cls.pw = sync_playwright().start()
         try:
             cls.nav = abrir_navegador(cls.pw)
         except SystemExit:
             cls.pw.stop()
-            raise unittest.SkipTest("sem navegador")
+            ambiente.indisponivel("sem o Chromium do Playwright (python -m playwright install chromium)")
 
     @classmethod
     def tearDownClass(cls):

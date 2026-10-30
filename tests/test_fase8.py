@@ -19,6 +19,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 SCRIPTS = Path(__file__).resolve().parent.parent / "skill" / "welldit" / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
+import ambiente  # noqa: E402
+
 import ajustes  # noqa: E402
 import assistente as A  # noqa: E402
 import revisao  # noqa: E402
@@ -723,13 +725,13 @@ class TestTela(unittest.TestCase):
             from playwright.sync_api import sync_playwright
             from elementos import abrir_navegador
         except ImportError:
-            raise unittest.SkipTest("sem playwright")
+            ambiente.indisponivel("sem o Playwright instalado")
         cls.pw = sync_playwright().start()
         try:
             cls.nav = abrir_navegador(cls.pw)
         except SystemExit:
             cls.pw.stop()
-            raise unittest.SkipTest("sem navegador")
+            ambiente.indisponivel("sem o Chromium do Playwright (python -m playwright install chromium)")
 
     @classmethod
     def tearDownClass(cls):

@@ -8,6 +8,9 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "skill" / "welldit" / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import ambiente  # noqa: E402
 
 import publicar  # noqa: E402
 
@@ -149,7 +152,7 @@ class TestCapa(unittest.TestCase):
             try:
                 jpg = publicar.desenhar_capa(base, "Você perde *5 clientes* por mês", 1080, 1920, (1100, 1560))
             except SystemExit:
-                self.skipTest("sem navegador para desenhar a capa")
+                ambiente.indisponivel("sem o Chromium do Playwright (python -m playwright install chromium)")
             capa = Path(d) / "capa.jpg"
             capa.write_bytes(jpg)
             img = cv2.imread(str(capa))
@@ -179,7 +182,7 @@ class TestCapaComPerfil(unittest.TestCase):
                 padrao = publicar.desenhar_capa(base, "Um *destaque* aqui", 1080, 1920, (1000, 1500), marca)
                 vermelha = publicar.desenhar_capa(base, "Um *destaque* aqui", 1080, 1920, (1000, 1500), outra)
             except SystemExit:
-                self.skipTest("sem navegador para desenhar a capa")
+                ambiente.indisponivel("sem o Chromium do Playwright (python -m playwright install chromium)")
         def vermelho(jpg):
             img = cv2.imdecode(np.frombuffer(jpg, np.uint8), cv2.IMREAD_COLOR).astype(int)
             return int(((img[:, :, 2] > 200) & (img[:, :, 1] < 80) & (img[:, :, 0] < 80)).sum())

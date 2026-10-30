@@ -87,7 +87,7 @@ Elementos novos desenhados para as ideias que nenhum dos 12 prontos representa, 
 
 ### Trilha C. Infraestrutura (independente)
 - **C1. Instalação em um comando e outros sistemas** · médio: um `instalar.sh` que cria o ambiente e confere as ferramentas, e o tutorial para Windows e Linux (hoje só há o do Mac).
-- **C2. Testes automáticos** · médio: a comparação de quadros dos elementos (feita à mão na Fase 2), o `validar` dos desenhos, os cortes e a legenda, rodando sozinhos a cada envio no GitHub. Com mais de uma pessoa mexendo, é o que impede uma fase de quebrar a outra.
+- **C2 ✅ Testes automáticos** · médio ([especificação](fase-c2-testes-automaticos.md)): a comparação de quadros dos elementos (feita à mão na Fase 2), o `validar` dos desenhos, os cortes e a legenda, rodando sozinhos a cada envio no GitHub. Com mais de uma pessoa mexendo, é o que impede uma fase de quebrar a outra.
 
 ## Quem faz o quê (proposta)
 
@@ -113,7 +113,7 @@ Por que assim:
 1. **Uma fase, um ramo (branch), um pedido de revisão (pull request).** O ramo se chama `fase-N-nome-curto`. A outra pessoa revisa antes de entrar na `main`.
 2. **Quem pega a fase marca o nome** no checklist do README, num commit pequeno, antes de começar. Assim duas pessoas não fazem a mesma coisa.
 3. **Cada fase começa pela especificação** (`docs/fase-N-nome.md`): o que entra, o que não entra, os testes. Só depois vem o código.
-4. **Cada fase termina com** os testes passando, a documentação atualizada (README, SKILL.md e referências), o `./empacotar.sh` rodado e o checklist marcado. Anotar o gasto do plano não é mais exigido.
+4. **Cada fase termina com** os testes passando, a documentação atualizada (README, SKILL.md e referências), o `./empacotar.sh` rodado e o checklist marcado. Com a C2 pronta, o envio só deve entrar na `main` com os testes automáticos verdes (`tests/rodar.sh` roda os mesmos testes no seu computador). Anotar o gasto do plano não é mais exigido.
 5. **Conflitos**: a trilha A mexe em `painel.py`, `painel.html` e nos arquivos novos do orquestrador; a trilha B cria scripts novos (um por fase); a trilha C mexe em instalação e testes. `elementos.py`, `renderizar.py` e `SKILL.md` são compartilhados: avise no pedido de revisão quando mexer neles.
 6. **Mensagem de commit**: em português, no padrão do histórico, uma ideia por commit.
 7. **O que nunca entra no repositório**: vídeos, nome de cliente, número real, método interno de empresa. O repositório pode ficar público.
