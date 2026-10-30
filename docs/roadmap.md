@@ -21,7 +21,7 @@ Fase 1 ✅  Fase 2 ✅  Fase 3 ✅  ──►  ──┬──►  Trilha A: pai
 
 ## As fases
 
-Tamanho é relativo ao esforço da Fase 2 (grande): pequeno, médio ou grande. O gasto real do plano é registrado no fim de cada fase (veja [Gasto do plano](#gasto-do-plano)).
+Tamanho é relativo ao esforço da Fase 2 (grande): pequeno, médio ou grande. O gasto de referência está em [Gasto do plano](#gasto-do-plano); registrar o de novas fases é opcional.
 
 ### Fase 1 ✅ Skill de edição e painel de acompanhamento
 Inspeção, cartão de ajustes, transcrição local, cortes medidos no áudio, rosto, legenda, zoom, música e efeitos, renderização, conferência, painel que mostra o andamento, tutorial de instalação.
@@ -113,7 +113,7 @@ Por que assim:
 1. **Uma fase, um ramo (branch), um pedido de revisão (pull request).** O ramo se chama `fase-N-nome-curto`. A outra pessoa revisa antes de entrar na `main`.
 2. **Quem pega a fase marca o nome** no checklist do README, num commit pequeno, antes de começar. Assim duas pessoas não fazem a mesma coisa.
 3. **Cada fase começa pela especificação** (`docs/fase-N-nome.md`): o que entra, o que não entra, os testes. Só depois vem o código.
-4. **Cada fase termina com** os testes passando, a documentação atualizada (README, SKILL.md e referências), o `./empacotar.sh` rodado, o checklist marcado e o gasto do plano registrado.
+4. **Cada fase termina com** os testes passando, a documentação atualizada (README, SKILL.md e referências), o `./empacotar.sh` rodado e o checklist marcado. Anotar o gasto do plano não é mais exigido.
 5. **Conflitos**: a trilha A mexe em `painel.py`, `painel.html` e nos arquivos novos do orquestrador; a trilha B cria scripts novos (um por fase); a trilha C mexe em instalação e testes. `elementos.py`, `renderizar.py` e `SKILL.md` são compartilhados: avise no pedido de revisão quando mexer neles.
 6. **Mensagem de commit**: em português, no padrão do histórico, uma ideia por commit.
 7. **O que nunca entra no repositório**: vídeos, nome de cliente, número real, método interno de empresa. O repositório pode ficar público.

@@ -39,7 +39,7 @@ Também, quando você pedir: **cenas explicativas**, com texto e números animad
 
 O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de edição para qualquer pessoa com acesso ao repositório**, com a marca configurável e um painel que roda a edição inteira sem abrir uma conversa. O nome novo é **welldit**, e o visual padrão segue a marca ARVEN (**elementos base ARVEN**). O plano completo, as dependências, a divisão entre as duas pessoas e as regras de trabalho em dupla estão em [docs/roadmap.md](docs/roadmap.md).
 
-**Como usar este checklist:** quem pega uma fase escreve o próprio nome no lugar de "livre", num commit pequeno, antes de começar. Ao terminar, marca a caixa e preenche o gasto do plano na tabela abaixo. A fase 3 é feita primeiro e por uma pessoa só; depois dela, as trilhas A, B e C andam em paralelo.
+**Como usar este checklist:** quem pega uma fase escreve o próprio nome no lugar de "livre", num commit pequeno, antes de começar. Ao terminar, marca a caixa. Não é preciso anotar o gasto do plano. A fase 3 é feita primeiro e por uma pessoa só; depois dela, as trilhas A, B e C andam em paralelo.
 
 **Feito**
 
@@ -68,7 +68,7 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 **Trilha C: infraestrutura** (independentes)
 
 - [ ] **C1.** Instalação em um comando e tutorial para Windows e Linux · _Lucas (proposta)_
-- [ ] **C2.** Testes automáticos a cada envio no GitHub · _Lucas (proposta)_
+- [ ] **C2.** Testes automáticos a cada envio no GitHub · _Well_
 
 **Gasto do plano** (o número que o Claude Code mostra, antes e depois de cada fase)
 
