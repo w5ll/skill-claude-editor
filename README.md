@@ -94,7 +94,7 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 
 **Trilha C: infraestrutura** (independentes)
 
-- [ ] **C1.** Instalação em um comando e tutorial para Windows e Linux · _Lucas (proposta)_
+- [ ] **C1.** Instalação em um comando e tutorial para Windows e Linux · _Well_ ([especificação](docs/fase-c1-instalacao.md))
 - [x] **C2.** Testes automáticos a cada envio no GitHub · _Well_ ([especificação](docs/fase-c2-testes-automaticos.md))
 
 **Gasto do plano** (o número que o Claude Code mostra, antes e depois de cada fase)
