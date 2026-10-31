@@ -58,6 +58,8 @@ class InstalarSh(unittest.TestCase):
             origem = shutil.which(nome)
             if origem:
                 (self.ferramentas / nome).symlink_to(origem)
+        # no Linux o script só segue se achar o apt-get; este é de mentira e nunca é chamado (os testes não instalam)
+        fazer_executavel(self.ferramentas / "apt-get", "#!/bin/sh\nexit 1\n")
 
     def rodar(self, *opcoes: str, entrada: str = ""):
         ambiente = {"PATH": str(self.ferramentas), "HOME": str(self.tmp), "WELLDIT_BREW": "", "LANG": "pt_BR.UTF-8"}
