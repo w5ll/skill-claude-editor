@@ -8,7 +8,7 @@ Skill do Claude que **edita vídeos gravados com o celular** para o Instagram (w
 
 Combina com uma skill de conteúdo, se você usar uma (por exemplo a [skill-cards-insta](https://github.com/w5ll/skill-cards-insta)): lá nasce o roteiro, aqui o vídeo gravado vira Reels pronto.
 
-Para instalar no seu Mac, veja [Instalar no seu Mac, com o VS Code](#instalar-no-seu-mac-com-o-vs-code).
+Para instalar, veja [Instalar, com o VS Code](#instalar-com-o-vs-code): um comando no Mac e no Linux, e um caminho pelo WSL para o Windows (leia o aviso sobre o Windows).
 
 ## Como funciona
 
@@ -39,7 +39,7 @@ Também, quando você pedir: **cenas explicativas**, com texto e números animad
 
 ## Testes
 
-O projeto tem testes automáticos (cerca de 330) que conferem os cortes, a legenda, os elementos 3D, o painel e o pacote da skill. Sem vídeo real e sem transcrição, por isso rodam em poucos minutos.
+O projeto tem testes automáticos (cerca de 345) que conferem os cortes, a legenda, os elementos 3D, o painel e o pacote da skill. Sem vídeo real e sem transcrição, por isso rodam em poucos minutos.
 
 **Rodar no seu computador** (com o ambiente da instalação pronto):
 
@@ -49,7 +49,7 @@ tests/rodar.sh
 
 Para rodar só um assunto: `tests/rodar.sh tests.test_legenda`. O comando usa o `ffmpeg-full` do Homebrew se ele existir e avisa, em português, quando a máquina não tem alguma ferramenta (nesse caso o teste que precisa dela pula).
 
-**No GitHub:** a cada envio e a cada pedido de revisão para a `main`, o GitHub roda tudo sozinho num Mac (a máquina principal: se falhar, o envio fica vermelho) e num Linux (só informativo). Lá, faltar ferramenta reprova em vez de pular. O selo no topo mostra o resultado da última rodada. Ligue a proteção da `main` em Settings > Branches (exigir a verificação "Mac (principal)") para ninguém juntar um pedido vermelho; é uma configuração do site, só quem manda no repositório liga.
+**No GitHub:** a cada envio e a cada pedido de revisão para a `main`, o GitHub roda tudo sozinho num Mac (a máquina principal: se falhar, o envio fica vermelho) e num Linux (só informativo). Lá, faltar ferramenta reprova em vez de pular. Um segundo fluxo, **Instalação**, roda o `./instalar.sh` do zero num Mac e num Linux limpos (duas vezes: a segunda tem que não mudar nada) quando ele ou os requisitos mudam. O selo no topo mostra o resultado da última rodada. Ligue a proteção da `main` em Settings > Branches (exigir a verificação "Mac (principal)") para ninguém juntar um pedido vermelho; é uma configuração do site, só quem manda no repositório liga.
 
 | Arquivo | O que confere |
 | --- | --- |
@@ -58,6 +58,7 @@ Para rodar só um assunto: `tests/rodar.sh tests.test_legenda`. O comando usa o 
 | `tests/test_cortes.py` | cortes: pausa, respiração, repetição e aviso obrigatório |
 | `tests/test_legenda.py` | legenda: o `.ass` do perfil padrão sai igual byte a byte, cores e fonte do perfil |
 | `tests/test_elementos_quadros.py` | os 12 elementos prontos, quadro a quadro contra as referências |
+| `tests/test_instalar.py` | o `instalar.sh`: diz o que falta sem instalar, fala português, não mexe em `material-bruto/` nem em `saida/` (a instalação de verdade é provada no fluxo "Instalação" do GitHub) |
 | `tests/test_projeto.py` | `--help` de todos os scripts, o pacote `.skill`, o `SKILL.md`, nome antigo, o que o git guarda |
 
 **Mudei o visual de propósito e o teste de quadros ou da legenda ficou vermelho:** rode `python tests/atualizar_referencias.py`, confira o que mudou com `git status` e explique no pedido de revisão. Quando o teste de quadros reprova, as imagens (referência, nova e diferença) ficam em `tests/_diferencas/` (no GitHub, anexadas à rodada).
@@ -94,7 +95,7 @@ O projeto está crescendo de ferramenta de uma pessoa para **ferramenta de ediç
 
 **Trilha C: infraestrutura** (independentes)
 
-- [ ] **C1.** Instalação em um comando e tutorial para Windows e Linux · _Well_ ([especificação](docs/fase-c1-instalacao.md))
+- [x] **C1.** Instalação em um comando e tutorial para Windows e Linux · _Well_ ([especificação](docs/fase-c1-instalacao.md))
 - [x] **C2.** Testes automáticos a cada envio no GitHub · _Well_ ([especificação](docs/fase-c2-testes-automaticos.md))
 
 **Gasto do plano** (o número que o Claude Code mostra, antes e depois de cada fase)
@@ -128,17 +129,25 @@ python skill/welldit/scripts/perfil.py validar minha-marca   # confere campos, c
 
 Edite `skill/welldit/perfis/minha-marca/marca.json` (os campos estão em [perfis/LEIA.md](skill/welldit/perfis/LEIA.md)) e, ao pedir a edição, diga *"use o perfil minha-marca"*. A escolha fica gravada na pasta do trabalho e vale até o fim da edição. Além das cores e da fonte, o perfil guarda os **pacotes de palavras** que chamam elementos 3D (marketing, jurídico...), os **avisos obrigatórios** que nunca podem ser cortados e os **termos** com a grafia certa de marcas. Perfis pessoais não vão para o git.
 
-## Instalar no seu Mac, com o VS Code
+## Instalar, com o VS Code
 
-Passo a passo para editar no seu computador. É o jeito recomendado: o vídeo não sai da sua máquina e não tem limite de tamanho. Leva uns 20 minutos na primeira vez, e depois disso é só usar.
+Passo a passo para editar no seu computador. É o jeito recomendado: o vídeo não sai da sua máquina e não tem limite de tamanho. Leva uns 20 minutos na primeira vez, e depois disso é só usar. No Mac e no Linux, quase tudo é **um comando só**: o `./instalar.sh`.
 
-Escrito a partir da primeira instalação de verdade, num MacBook M1 Pro. Os problemas que apareceram nela já estão resolvidos aqui.
+> **Aviso sobre o Windows.** O projeto é feito e testado no **Mac** (a máquina principal) e no **Linux**. No Windows "puro" ele **não roda**: o painel e a fila de edições dependem de recursos que só existem no Mac e no Linux. O caminho para quem tem Windows é usar o **Linux que vem dentro do Windows (WSL)**, explicado em [Windows, pelo WSL](#windows-pelo-wsl). Esse tutorial **ainda não foi testado num Windows de verdade** (só o Linux que ele usa é testado automaticamente). Se você testar, conte o que travou em um pedido de revisão ou pelo repositório, que a gente ajusta.
+
+| Sistema | Situação |
+| --- | --- |
+| Mac (processador Apple) | principal, testado a cada envio |
+| Linux (Ubuntu e Debian) | testado a cada envio |
+| Windows pelo WSL | mesmo Linux, mas o passo de ligar o WSL **não foi testado** |
+| Windows direto, Mac antigo (Intel), outros Linux | não coberto |
 
 ### 1. Programas que você precisa
 
-1. **VS Code**: baixe em [code.visualstudio.com](https://code.visualstudio.com) e arraste para a pasta Aplicativos.
+1. **VS Code**: baixe em [code.visualstudio.com](https://code.visualstudio.com) e instale (no Mac, arraste para a pasta Aplicativos).
 2. **Extensão do Claude Code**: no VS Code, clique no ícone de quadradinhos da barra da esquerda (Extensões), busque "Claude Code" e instale a da Anthropic. Entre com a sua conta do Claude.
-3. **Homebrew**, o instalador de programas do Mac: abra o Terminal (Cmd + espaço, digite "Terminal") e cole o comando que aparece em [brew.sh](https://brew.sh). Ele pede a senha do Mac. No fim, ele mostra dois comandos em "Next steps": rode os dois.
+3. **Mac: Homebrew**, o instalador de programas do Mac: abra o Terminal (Cmd + espaço, digite "Terminal") e cole o comando que aparece em [brew.sh](https://brew.sh). Ele pede a senha do Mac. No fim, ele mostra dois comandos em "Next steps": rode os dois. O `./instalar.sh` não instala o Homebrew sozinho, de propósito.
+4. **Linux: git.** No terminal: `sudo apt install -y git`.
 
 ### 2. Baixar o projeto
 
@@ -162,55 +171,32 @@ git checkout main
 
 O último comando garante que você está na versão principal da skill, a `main`.
 
-### 3. Instalar as ferramentas de vídeo e o Python
-
-```bash
-brew install ffmpeg-full python@3.12
-```
-
-Use o `ffmpeg-full`, e não o `ffmpeg` simples. O simples vem sem a parte da legenda e sem a conversão de cor do iPhone, e a skill não consegue terminar o vídeo.
-
-Use o Python 3.12. O 3.14, mais novo, ainda não funciona com as bibliotecas de transcrição.
-
-### 4. Criar o ambiente da skill
+### 3. Instalar com um comando
 
 Ainda na pasta do projeto:
 
 ```bash
-/opt/homebrew/opt/python@3.12/bin/python3.12 -m venv .venv
+./instalar.sh
 ```
 
-```bash
-echo 'export PATH="/opt/homebrew/opt/ffmpeg-full/bin:$PATH"' >> .venv/bin/activate
-```
+Ele cuida do resto, falando em português: confere o Python (3.12), o ffmpeg completo, cria o ambiente da skill, instala as bibliotecas e o navegador que desenha os elementos 3D, e confere no fim se tudo funciona junto. Alguns pontos:
 
-```bash
-source .venv/bin/activate
-```
+- **Pergunta antes de instalar** o que mexe no computador (Python e ffmpeg) e pode pedir a senha do computador.
+- **Pode rodar de novo** quando quiser (por exemplo, depois de uma atualização): o que já está pronto fica como está, e ele avisa "Tudo já estava pronto".
+- **Nunca mexe** nos seus vídeos (`material-bruto`) nem nas suas edições (`saida`).
+- Para só **conferir o que falta**, sem instalar nada: `./instalar.sh --so-conferir`.
+- Se algo não der certo, ele diz o que foi em uma frase e guarda os detalhes em `instalacao.log` (na pasta do projeto). Mande esse arquivo para quem mantém o projeto.
+- O modelo de transcrição (cerca de 1,6 GB) só é baixado na primeira transcrição.
 
-```bash
-pip install -r skill/welldit/scripts/requirements.txt
-```
+Se o comando não funcionar, o [passo a passo à mão](#instalar-à-mão) faz a mesma coisa.
 
-O segundo comando faz a skill sempre usar o ffmpeg completo, mesmo que o Mac tenha outro instalado. O último baixa as bibliotecas de transcrição, rosto e desenho, e leva alguns minutos.
-
-Para conferir se ficou tudo certo:
-
-```bash
-ffmpeg -hide_banner -filters | grep -E " (ass|zscale|afftdn) "
-```
-
-Tem que aparecer três linhas: `ass`, `zscale` e `afftdn`. Se faltar alguma, o ffmpeg certo não está sendo usado: rode de novo o `source .venv/bin/activate`.
-
-Para desenhar os elementos 3D a skill usa o Google Chrome. Se você não tiver o Chrome, instale-o ou rode `python -m playwright install chromium`.
-
-### 5. Abrir no VS Code
+### 4. Abrir no VS Code
 
 1. No VS Code: menu Arquivo, Abrir Pasta, e escolha `skill-claude-editor` (fica na sua pasta de usuário).
 2. Se aparecer o aviso **"Modo Restrito"** no topo, clique nele e escolha **Confiar**. Sem isso, o Claude não consegue rodar os scripts.
 3. Abra o Claude Code pelo ícone do asterisco laranja na barra da esquerda.
 
-### 6. Editar o primeiro vídeo
+### 5. Editar o primeiro vídeo
 
 1. Passe o vídeo do iPhone para o Mac por AirDrop ou cabo. Não mande pelo WhatsApp, que piora a qualidade.
 2. Coloque o arquivo na pasta `material-bruto` do projeto. Pode arrastar direto para a pasta no VS Code.
@@ -231,7 +217,7 @@ O que acontece depois:
 
 Vídeo do iPhone em 4K: peça para sair em 1080x1920 (`--formato original@1080`). É o tamanho que o Instagram usa, a edição fica bem mais rápida e o arquivo final, bem menor.
 
-### 7. Painel no navegador (opcional)
+### 6. Painel no navegador (opcional)
 
 Uma página para **editar sem abrir uma conversa**: você envia os vídeos, preenche o cartão de ajustes e aprova cada etapa com cliques. Em outro terminal do VS Code (menu Terminal, Novo Terminal), na pasta do projeto:
 
@@ -261,7 +247,7 @@ O navegador abre sozinho num endereço com um **código de sessão** (`http://lo
 
 O painel só funciona no seu computador: ninguém na rede vê. Para fechar o painel: Ctrl+C no terminal dele. As edições feitas só pela conversa continuam aparecendo (só sem os botões de execução). Detalhes e segurança em `skill/welldit/referencias/painel.md`.
 
-### 8. Atualizar a skill
+### 7. Atualizar a skill
 
 Quando houver melhoria nova, no terminal do VS Code (menu Terminal, Novo Terminal):
 
@@ -269,19 +255,108 @@ Quando houver melhoria nova, no terminal do VS Code (menu Terminal, Novo Termina
 git pull
 ```
 
-Pode rodar com uma edição em andamento: o que já foi feito fica salvo na pasta `saida`.
+Pode rodar com uma edição em andamento: o que já foi feito fica salvo na pasta `saida`. Se a atualização trouxe bibliotecas novas, rode `./instalar.sh` de novo.
 
 ### Quando der problema
 
 | O que aparece | O que fazer |
 | --- | --- |
 | "Modo Restrito" no topo do VS Code | Clique no aviso e escolha Confiar |
-| Ele diz que o ffmpeg não tem `libass` ou `zscale` | Faça o passo 3 com `ffmpeg-full` e o segundo comando do passo 4 |
-| Erro ao instalar o faster-whisper | O ambiente foi criado com o Python errado: apague a pasta `.venv` e refaça o passo 4 |
+| Ele diz que o ffmpeg não tem `libass` ou `zscale` | Rode `./instalar.sh` de novo (no Mac ele liga o `ffmpeg-full`). Se persistir, veja [Instalar à mão](#instalar-à-mão) |
+| Erro ao instalar o faster-whisper | O ambiente foi criado com o Python errado: rode `./instalar.sh`, que oferece guardar o ambiente antigo e criar um novo |
 | "Approaching limit" no Claude Code | Seu limite de uso está acabando. Se ele parar, nada se perde: depois que o limite zerar, mande "continua a edição de onde parou, sem refazer a transcrição" |
 | A transcrição mostra palavras sem sentido repetidas ("Amém", "Obrigado", "Tchau") | É fala que o transcritor não reconheceu. Peça para transcrever aquele trecho de novo com `--trecho INICIO FIM`, sem termos |
 | O vídeo terminou antes do fecho | Peça para transcrever os últimos 20 segundos com `--trecho` e conferir antes de cortar |
 | Mac dormiu no meio | Mantenha a tampa aberta e o carregador ligado durante a edição |
+
+### Instalar à mão
+
+O `./instalar.sh` faz exatamente isto. Use só se ele não funcionar.
+
+**Mac** (com o Homebrew instalado). Use o `ffmpeg-full`, e não o `ffmpeg` simples: o simples vem sem a parte da legenda e sem a conversão de cor do iPhone. Use o Python 3.12: o 3.14 ainda não funciona com as bibliotecas de transcrição.
+
+```bash
+brew install ffmpeg-full python@3.12
+```
+
+```bash
+$(brew --prefix python@3.12)/bin/python3.12 -m venv .venv
+```
+
+```bash
+echo "export PATH=\"$(brew --prefix ffmpeg-full)/bin:\$PATH\"" >> .venv/bin/activate
+```
+
+```bash
+source .venv/bin/activate
+```
+
+```bash
+pip install -r skill/welldit/scripts/requirements.txt
+```
+
+```bash
+python -m playwright install chromium
+```
+
+**Linux (Ubuntu e Debian):**
+
+```bash
+sudo apt install -y ffmpeg python3 python3-venv python3-pip
+```
+
+```bash
+python3 -m venv .venv
+```
+
+```bash
+source .venv/bin/activate
+```
+
+```bash
+pip install -r skill/welldit/scripts/requirements.txt
+```
+
+```bash
+python -m playwright install --with-deps chromium
+```
+
+**Conferir** (tem que aparecer três linhas: `ass`, `zscale` e `afftdn`):
+
+```bash
+ffmpeg -hide_banner -filters | grep -E " (ass|zscale|afftdn) "
+```
+
+Se faltar alguma, o ffmpeg certo não está sendo usado: rode de novo `source .venv/bin/activate`.
+
+### Windows, pelo WSL
+
+> Ainda **não testado num Windows de verdade**. O Linux que ele usa (Ubuntu) é testado a cada envio; os passos de ligar o WSL e de usar o VS Code com ele não foram.
+
+O WSL é um Linux que roda dentro do Windows. Você instala uma vez e depois trabalha como no Linux.
+
+1. **Ligar o WSL.** Clique com o botão direito no menu Iniciar, escolha "Terminal (Administrador)" ou "PowerShell (Administrador)" e rode:
+
+   ```text
+   wsl --install -d Ubuntu
+   ```
+
+   Reinicie o computador quando ele pedir. Ao voltar, abra o **Ubuntu** pelo menu Iniciar e crie um nome de usuário e uma senha (a senha não aparece enquanto você digita).
+2. **VS Code com o WSL.** Instale o VS Code no Windows ([code.visualstudio.com](https://code.visualstudio.com)) e, nas extensões, a **WSL** (da Microsoft).
+3. **No Ubuntu**, instale o git e baixe o projeto **dentro do Ubuntu** (a pasta do Ubuntu é bem mais rápida que a do Windows):
+
+   ```bash
+   sudo apt update
+   sudo apt install -y git
+   cd ~
+   git clone https://github.com/w5ll/skill-claude-editor.git
+   cd skill-claude-editor
+   git checkout main
+   ./instalar.sh
+   ```
+
+4. **Abrir no VS Code:** ainda no Ubuntu, rode `code .`. O VS Code abre conectado ao Ubuntu (canto inferior esquerdo escrito "WSL: Ubuntu"). Instale de novo a extensão do Claude Code **dentro** dessa janela e siga do passo 5 (Editar o primeiro vídeo).
+5. **Vídeos:** arraste os arquivos do Windows para a pasta `material-bruto` no VS Code, ou copie pelo Explorador de Arquivos no endereço `\\wsl$\Ubuntu\home\SEU-USUARIO\skill-claude-editor\material-bruto`.
 
 ## Estrutura
 
@@ -328,6 +403,8 @@ skill/welldit/         ← a skill (é isso que vira o arquivo .skill)
     renderizar.py                monta o vídeo: amostra ou inteiro
     conferir.py                  confere o arquivo final
     painel.py                    painel no navegador: enviar vídeos e acompanhar a edição
+instalar.sh                      prepara o computador (Python, ffmpeg, ambiente, bibliotecas, navegador)
+empacotar.sh                     gera o arquivo .skill
 material-bruto/                  vídeos brutos (fora do git)
 saida/                           trabalhos editados (vídeos fora do git)
 ```

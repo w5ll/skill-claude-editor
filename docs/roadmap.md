@@ -86,7 +86,7 @@ Elementos novos desenhados para as ideias que nenhum dos 12 prontos representa, 
 - Telas com texto e números animados (lista de 3 passos, antes e depois) além dos elementos 3D.
 
 ### Trilha C. Infraestrutura (independente)
-- **C1. Instalação em um comando e outros sistemas** · médio: um `instalar.sh` que cria o ambiente e confere as ferramentas, e o tutorial para Windows e Linux (hoje só há o do Mac).
+- **C1 ✅ Instalação em um comando e outros sistemas** · médio ([especificação](fase-c1-instalacao.md)): um `instalar.sh` que cria o ambiente e confere as ferramentas, e o tutorial para Windows (pelo WSL) e Linux.
 - **C2 ✅ Testes automáticos** · médio ([especificação](fase-c2-testes-automaticos.md)): a comparação de quadros dos elementos (feita à mão na Fase 2), o `validar` dos desenhos, os cortes e a legenda, rodando sozinhos a cada envio no GitHub. Com mais de uma pessoa mexendo, é o que impede uma fase de quebrar a outra.
 
 ## Quem faz o quê (proposta)
