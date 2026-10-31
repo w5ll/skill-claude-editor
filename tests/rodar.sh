@@ -5,7 +5,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 if [ -f .venv/bin/activate ]; then source .venv/bin/activate; fi
 # o ffmpeg completo do Homebrew não substitui o do sistema: põe no caminho se existir
-if [ -d /opt/homebrew/opt/ffmpeg-full/bin ]; then export PATH="/opt/homebrew/opt/ffmpeg-full/bin:$PATH"; fi
+if command -v brew > /dev/null 2>&1 && [ -d "$(brew --prefix ffmpeg-full 2> /dev/null)/bin" ]; then export PATH="$(brew --prefix ffmpeg-full)/bin:$PATH"; fi
 python tests/ambiente.py || echo "aviso: ffmpeg incompleto, alguns testes vão pular (veja a instalação no README)"
 if [ $# -gt 0 ]; then
   python -m unittest "$@"

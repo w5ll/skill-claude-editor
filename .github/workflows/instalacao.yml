@@ -1,0 +1,72 @@
+# Prova o ./instalar.sh do zero, numa máquina limpa, a cada mudança nele ou nos requisitos.
+# Roda duas vezes: a primeira instala, a segunda tem que dizer que tudo já estava pronto e não mudar nada.
+# O Mac é a máquina principal; o Linux (Ubuntu) é informativo. O Windows (pelo WSL) não é coberto aqui.
+name: Instalação
+
+on:
+  push:
+    branches: [main]
+    paths: [instalar.sh, "skill/welldit/scripts/requirements.txt", tests/ambiente.py, ".github/workflows/instalacao.yml"]
+  pull_request:
+    branches: [main]
+    paths: [instalar.sh, "skill/welldit/scripts/requirements.txt", tests/ambiente.py, ".github/workflows/instalacao.yml"]
+  workflow_dispatch:
+
+concurrency:
+  group: instalacao-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  WELLDIT_TESTES_AUTOMATICOS: "1"
+
+jobs:
+  mac:
+    name: Instalação no Mac (principal)
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Primeira rodada (instala tudo)
+        run: ./instalar.sh --sim
+      - name: Segunda rodada (tem que dizer que já estava pronto)
+        run: |
+          ./instalar.sh --sim | tee segunda.txt
+          grep -q "Tudo já estava pronto" segunda.txt
+      - name: Conferir o ambiente que o instalador criou
+        run: |
+          source .venv/bin/activate
+          python tests/ambiente.py
+          python -m unittest tests.test_projeto tests.test_legenda tests.test_instalar
+      - name: Guardar o registro, se falhar
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: instalacao-log-mac
+          path: instalacao.log
+          if-no-files-found: ignore
+
+  linux:
+    name: Instalação no Linux (informativo)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Primeira rodada (instala tudo)
+        run: ./instalar.sh --sim
+      - name: Segunda rodada (tem que dizer que já estava pronto)
+        run: |
+          ./instalar.sh --sim | tee segunda.txt
+          grep -q "Tudo já estava pronto" segunda.txt
+      - name: Conferir o ambiente que o instalador criou
+        run: |
+          source .venv/bin/activate
+          python tests/ambiente.py
+          python -m unittest tests.test_projeto tests.test_legenda tests.test_instalar
+      - name: Guardar o registro, se falhar
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: instalacao-log-linux
+          path: instalacao.log
+          if-no-files-found: ignore

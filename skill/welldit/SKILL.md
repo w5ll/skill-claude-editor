@@ -13,7 +13,7 @@ Sempre em português, com acentuação, sem travessão e sem termo em inglês se
 
 ## Arquivos de apoio
 
-Leia só o que a etapa pede. Em `referencias/`: `fluxo-manual.md` (cada etapa, o cartão, a entrega), `cortes.md`, `legendas.md`, `elementos-3d.md`, `rosto-e-camera.md`, `gancho-e-olhar.md`, `som-e-imagem.md` (volume, ruído, HDR, formato, música), `fatos.md`, `imagens.md`, `cenas.md`, `series.md` (jeito de editar de um conjunto de vídeos), `publicacao.md` (capa, texto do post, limites do Instagram), `orquestrador.md` (o `editar.py` por dentro), `painel.md` (o painel que executa), `gravacao.md` (dicas para a pessoa), `instalacao.md`. O perfil de marca está em `perfis/NOME/marca.json`. Scripts em `scripts/`; todos aceitam `--help`.
+Leia só o que a etapa pede. Em `referencias/`: `fluxo-manual.md` (cada etapa, o cartão, a entrega), `cortes.md`, `legendas.md`, `elementos-3d.md`, `rosto-e-camera.md`, `gancho-e-olhar.md`, `som-e-imagem.md` (volume, ruído, HDR, formato, música), `fatos.md`, `imagens.md`, `cenas.md`, `series.md` (jeito de editar de um conjunto de vídeos), `publicacao.md` (capa, texto do post, limites do Instagram), `orquestrador.md` (o `editar.py` por dentro), `painel.md` (o painel que executa), `gravacao.md` (dicas para a pessoa), `instalacao.md` (o `./instalar.sh` da raiz do projeto prepara tudo). O perfil de marca está em `perfis/NOME/marca.json`. Scripts em `scripts/`; todos aceitam `--help`.
 
 ## O fluxo
 
