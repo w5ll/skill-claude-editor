@@ -12,6 +12,9 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "skill" / "welldit" / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import ambiente  # noqa: E402
 
 import cenas  # noqa: E402
 import elementos  # noqa: E402
@@ -302,7 +305,7 @@ class TestNoNavegador(unittest.TestCase):
             cls.nav = elementos.abrir_navegador(cls.pw)
         except SystemExit:
             cls.pw.stop()
-            raise unittest.SkipTest("sem navegador para desenhar as cenas")
+            ambiente.indisponivel("sem o Chromium do Playwright (python -m playwright install chromium)")
 
     @classmethod
     def tearDownClass(cls):

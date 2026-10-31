@@ -1,0 +1,24 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+WrapStyle: 0
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Legenda,Sora ExtraBold,100,&H00EFEFEA,&H00EFEFEA,&H00120A0A,&H80120A0A,0,0,0,0,100,100,0,0,1,9,4,2,140,140,461,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.30,0:00:00.75,Legenda,,0,0,0,,{\c&H00D4B4A8}Defina{\c&H00EFEFEA} uma meta
+Dialogue: 0,0:00:00.75,0:00:00.95,Legenda,,0,0,0,,Defina {\c&H00D4B4A8}uma{\c&H00EFEFEA} meta
+Dialogue: 0,0:00:00.95,0:00:01.45,Legenda,,0,0,0,,Defina uma {\c&H00D4B4A8}meta{\c&H00EFEFEA}
+Dialogue: 0,0:00:01.45,0:00:01.90,Legenda,,0,0,0,,{\c&H00D4B4A8}clara{\c&H00EFEFEA}
+Dialogue: 0,0:00:02.60,0:00:03.05,Legenda,,0,0,0,,{\c&H00D4B4A8}Depois{\c&H00EFEFEA} responda no
+Dialogue: 0,0:00:03.05,0:00:03.55,Legenda,,0,0,0,,Depois {\c&H00D4B4A8}responda{\c&H00EFEFEA} no
+Dialogue: 0,0:00:03.55,0:00:03.70,Legenda,,0,0,0,,Depois responda {\c&H00D4B4A8}no{\c&H00EFEFEA}
+Dialogue: 0,0:00:03.70,0:00:04.35,Legenda,,0,0,0,,{\c&H00D4B4A8}whatsapp{\c&H00EFEFEA} em cinco
+Dialogue: 0,0:00:04.35,0:00:04.55,Legenda,,0,0,0,,whatsapp {\c&H00D4B4A8}em{\c&H00EFEFEA} cinco
+Dialogue: 0,0:00:04.55,0:00:04.95,Legenda,,0,0,0,,whatsapp em {\c&H00D4B4A8}cinco{\c&H00EFEFEA}
+Dialogue: 0,0:00:04.95,0:00:05.50,Legenda,,0,0,0,,{\c&H00D4B4A8}minutos?{\c&H00EFEFEA}

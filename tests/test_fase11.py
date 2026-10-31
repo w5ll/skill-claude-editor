@@ -12,6 +12,9 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "skill" / "welldit" / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import ambiente  # noqa: E402
 
 import elementos  # noqa: E402
 import fatos  # noqa: E402
@@ -307,7 +310,7 @@ class TestImagens(unittest.TestCase):
             try:
                 itens = elementos.desenhar(trabalho, 540, 960, Fraction(30, 1))
             except SystemExit:
-                self.skipTest("sem navegador para desenhar")
+                ambiente.indisponivel("sem o Chromium do Playwright (python -m playwright install chromium)")
         finally:
             imagens.PASTA_IMAGENS = original
         for it in itens:

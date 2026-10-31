@@ -8,5 +8,6 @@ Repositório da skill `skill/welldit/`, que edita vídeos gravados com o celular
 - Nunca mexa nos originais e nunca sobrescreva uma entrega.
 - Nunca leve nome de cliente, número real ou método interno de nenhuma empresa para o projeto. O repositório é público. Exceção declarada: a marca ARVEN (cores e elementos base) é o visual padrão, sempre com o aviso "elementos base ARVEN".
 - Perfil de marca: o padrão é o `arven`; perfis pessoais ficam fora do git. Se as cores base mudarem, atualize `skill/welldit/perfis/arven/marca.json`. Nada no código nem nos textos pressupõe uma pessoa, um @ ou um nicho: isso é do perfil.
-- Trabalho em fases: cada fase tem uma especificação em `docs/fase-N-nome.md` e termina com os testes passando, a documentação atualizada, o `./empacotar.sh` rodado, o checklist do README marcado e o gasto do plano anotado. Quem pega uma fase escreve o nome no checklist antes de começar. Regras de trabalho em dupla em `docs/roadmap.md`.
+- Trabalho em fases: cada fase tem uma especificação em `docs/fase-N-nome.md` e termina com os testes passando, a documentação atualizada, o `./empacotar.sh` rodado e o checklist do README marcado. Quem pega uma fase escreve o nome no checklist antes de começar. Regras de trabalho em dupla em `docs/roadmap.md`.
 - Depois de mudar a skill, rode `./empacotar.sh` para gerar o `.skill` atualizado.
+- Testes: `tests/rodar.sh` roda tudo (o mesmo que o GitHub roda a cada envio). Se mudar o visual de propósito, `python tests/atualizar_referencias.py` regrava as referências.
