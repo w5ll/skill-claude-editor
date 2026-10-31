@@ -12,6 +12,8 @@ saida/*/quadros/
 *.quadros.jpg
 dist/
 .venv/
+.venv-antigo*/
+instalacao.log
 __pycache__/
 *.pyc
 .DS_Store
