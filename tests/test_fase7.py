@@ -778,7 +778,7 @@ class TestTela(unittest.TestCase):
             pg.wait_for_function("!document.querySelector('#aj-desfazer').disabled", timeout=8000)
             self.assertEqual(json.loads((pasta / "som.json").read_text())["efeitos"][1]["ganho_db"], -4.0)
             pg.click("[data-aj-musica='animado']")                                          # é só uma escolha: o som é planejado depois
-            pg.wait_for_function("document.querySelector('.musica.escolhida .nome').innerText.includes('Blue Skies')", timeout=8000)
+            pg.wait_for_function("document.querySelector('.musica.escolhida .nome')?.innerText.includes('Blue Skies')", timeout=8000)
             self.assertEqual(editar.carregar(pasta)["escolhas"]["som"]["musica"], "animado")
             self.assertEqual(self.erros, [])
             ctx.close()
