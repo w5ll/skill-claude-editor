@@ -53,6 +53,12 @@ HESITACOES = {"ahn", "ah", "hum", "hmm", "hã", "ã", "eh", "uh", "humm", "éé�
 SO_COM_ACENTO = {"ã", "é", "éé", "ééé"}
 
 
+JANELA_REFALA_S = 30.0    # a frase refalada pode vir até 30 s depois da tentativa ruim
+AVISOS_DE_RECOMECO = ("deixaeurepetir", "deixaeusorepetir", "vourepetir", "denovo", "errei",
+                      "foimal", "perai", "peraai", "voufalardenovo", "voucomecardenovo", "comecandodenovo")
+PALAVRAS_DE_LIGACAO = {"entao", "e", "ai", "a", "o", "ne", "tipo", "bom", "olha", "mas"}
+
+
 def eh_hesitacao(p: str) -> bool:
     cru = re.sub(r"[^\wãéêâ]+", "", p.lower())
     if cru in SO_COM_ACENTO:
@@ -172,21 +178,64 @@ def achar_repeticoes(palavras: list[dict], env: np.ndarray, duracao: float):
         if len(g) < 2 or gi in usados:
             continue
         a = [norm[k] for k in g if norm[k]]
-        for gj in range(gi + 1, min(gi + 3, len(grupos))):
+        for gj in range(gi + 1, min(gi + 5, len(grupos))):
             h = grupos[gj]
+            if palavras[h[0]]["i"] - palavras[g[-1]]["f"] > JANELA_REFALA_S:
+                break
             b = [norm[k] for k in h if norm[k]]
             n = min(len(a), len(b))
             if n < 2 or len(b) < len(a) * 0.8:
                 continue
             if parecido(a[:n], b[:n]) >= 0.75:
-                ini, fim = inicio_de(g[0]), inicio_de(h[0])
+                # a tentativa ruim começa onde a frase refalada começa de novo; o que vem antes disso é fala boa
+                p0 = 0
+                for p in range(len(g) - 1, -1, -1):
+                    if norm[g[p]] == b[0] and (len(b) < 2 or (p + 1 < len(g) and norm[g[p + 1]] == b[1])):
+                        p0 = p
+                        break
+                ini, fim = inicio_de(g[p0]), inicio_de(h[0])
                 remover.append({
                     "inicio": round(ini, 3), "fim": round(fim, 3),
                     "motivo": "frase repetida ou começo errado: ficou a versão seguinte",
-                    "texto": " ".join(palavras[k]["p"] for k in range(g[0], h[0])),
+                    "texto": " ".join(palavras[k]["p"] for k in range(g[p0], h[0])),
                 })
                 usados.update(range(gi, gj))
                 break
+
+    # 1b. A pessoa avisa que vai repetir ("deixa eu repetir", "de novo"): sai a tentativa anterior, do começo
+    # da frase que se parece com o que vem depois do aviso até o aviso (o aviso também sai).
+    for gi, g in enumerate(grupos):
+        texto = "".join(norm[k] for k in g)
+        if not any(m in texto for m in AVISOS_DE_RECOMECO):
+            continue
+        melhor = seguinte = None
+        for gs, h_s in enumerate(grupos[gi + 1:], start=gi + 1):
+            if palavras[h_s[0]]["i"] - palavras[g[-1]]["f"] > 12.0:
+                break
+            b = [norm[k] for k in h_s if norm[k] and norm[k] not in PALAVRAS_DE_LIGACAO][:6]
+            if len(b) < 2:
+                continue
+            for gk in range(gi - 1, -1, -1):
+                h = grupos[gk]
+                if palavras[g[0]]["i"] - palavras[h[0]]["i"] > 90.0:
+                    break
+                a = [norm[k] for k in h if norm[k] and norm[k] not in PALAVRAS_DE_LIGACAO][:6]
+                if len(a) >= 2 and parecido(a, b) >= 0.6:
+                    melhor = gk      # vai ficando o mais antigo que ainda se parece: é onde a tentativa começou
+            if melhor is not None:
+                seguinte = h_s
+                break
+        if melhor is None:
+            continue
+        ini, fim = inicio_de(grupos[melhor][0]), inicio_de(seguinte[0])
+        if melhor > 0 and len(grupos[melhor - 1]) == 1 and norm[grupos[melhor - 1][0]] in PALAVRAS_DE_LIGACAO \
+                and palavras[grupos[melhor][0]]["i"] - palavras[grupos[melhor - 1][0]]["f"] < 1.2:
+            ini = inicio_de(grupos[melhor - 1][0])      # "Então," solto que abria a tentativa ruim sai junto
+        if any(ini < r["fim"] and fim > r["inicio"] and r["motivo"].startswith("frase repetida") for r in remover):
+            remover = [r for r in remover if not (ini <= r["inicio"] and r["fim"] <= fim)]
+        remover.append({"inicio": round(ini, 3), "fim": round(fim, 3),
+                        "motivo": "a pessoa avisou que ia repetir: ficou a nova tentativa",
+                        "texto": " ".join(palavras[k]["p"] for k in range(grupos[melhor][0], seguinte[0]))})
 
     # 2. Repetição colada: "perde no WhatsApp, perde no WhatsApp".
     k = 0
