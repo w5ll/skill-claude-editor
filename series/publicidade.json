@@ -1,0 +1,12 @@
+{
+  "nome": "Publicidade",
+  "descricao": "Anúncio e depoimento: corta pausas e erros, puxa o melhor gancho para o começo, legenda limpa e sem enfeite.",
+  "ritmo": "dinamico",
+  "formato": "9:16@1080",
+  "legenda": {"palavras": 3, "borda": "limpa"},
+  "elementos": {"ligado": false},
+  "camera": {"zoom": "nenhum"},
+  "som": {"musica": "nenhuma", "efeitos": false, "volume": -14},
+  "ruido": "auto",
+  "publicidade": true
+}

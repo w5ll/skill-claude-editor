@@ -36,3 +36,7 @@ Dica: passe os termos já na transcrição (`--termos "NomeDaMarca, WhatsApp"`),
 ## Arquivo separado
 
 `legendas.srt` é gerado sempre. Só entregue se a pessoa pedir (por exemplo, para subir a legenda à parte em outra plataforma). Tradução não é feita.
+
+## Legenda limpa (sem borda escura)
+
+Para anúncio e para quem prefere um visual mais leve: `editar.py ajustar --pasta ... --escolha legenda.borda=limpa` (ou `legendas.py --borda limpa`). A borda escura dura é trocada por um brilho escuro suave e translúcido. Sem nenhum contorno a letra some em fundo claro, por isso o brilho fica. Para voltar: `legenda.borda=escura`.

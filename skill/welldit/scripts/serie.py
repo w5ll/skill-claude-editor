@@ -40,8 +40,9 @@ RUIDOS = ("auto", "nao", "leve", "forte")
 MODOS = ("sobreposto", "tela")
 POSICOES = ("auto", "baixo", "meio", "alto")
 CAMPOS = {"nome", "descricao", "ritmo", "formato", "legenda", "elementos", "camera", "som", "ruido", "termos",
-          "publicacao"}
-CAMPOS_LEGENDA = {"ligada", "palavras", "posicao", "tamanho", "maiusculas", "destaque"}
+          "publicacao", "publicidade"}
+CAMPOS_LEGENDA = {"ligada", "palavras", "posicao", "tamanho", "maiusculas", "destaque", "borda"}
+BORDAS = ("escura", "limpa")
 CAMPOS_ELEMENTOS = {"ligado", "modo", "intervalo", "permitidos", "proibidos", "gerados"}
 CAMPOS_SOM = {"musica", "efeitos", "volume"}
 CAMPOS_PUBLICACAO = {"hashtags_fixas", "avisos_obrigatorios", "chamada"}
@@ -102,6 +103,10 @@ def validar(s: dict, musicas: list[str] | None = None, elementos: list[str] | No
         p.append(f"legenda.posicao \"{leg['posicao']}\": use {', '.join(POSICOES)}")
     if "tamanho" in leg and not (isinstance(leg["tamanho"], (int, float)) and 0.02 <= leg["tamanho"] <= 0.09):
         p.append("legenda.tamanho: entre 0,02 e 0,09 (fração da altura do vídeo)")
+    if leg.get("borda") not in (None, *BORDAS):
+        p.append(f"legenda.borda \"{leg['borda']}\": use {' ou '.join(BORDAS)}")
+    if "publicidade" in s and not isinstance(s["publicidade"], bool):
+        p.append("publicidade: true ou false")
     el = s.get("elementos") or {}
     p += _desconhecidos(el, CAMPOS_ELEMENTOS, "elementos")
     if el.get("modo") not in (None, *MODOS):
