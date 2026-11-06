@@ -170,9 +170,32 @@ def caixa_texto(estilo: dict) -> float:
     return tamanho * 1.1 + 2 * max(2, tamanho * 0.09)
 
 
+def caixas_das_cenas(pasta: Path, largura: int, altura: int, rostos, camera) -> list[tuple]:
+    """Painéis de cena (lista, número...) com o tempo e o lugar onde serão desenhados: (ini, fim, x0, y0, x1, y1)."""
+    arq = pasta / "elementos.json"
+    if not arq.exists():
+        return []
+    from cenas import resolver_caixa
+    caixas = []
+    for it in ler_json(arq).get("itens", []):
+        if not str(it.get("elemento", "")).startswith("cena:"):
+            continue
+        it = dict(it)
+        resolver_caixa(it, largura, altura, rostos, camera)
+        c = it.get("caixa_usada")
+        if c:
+            caixas.append((it["inicio"], it["inicio"] + it["duracao"], c[0], c[1], c[0] + c[2], c[1] + c[3]))
+    return caixas
+
+
+SEGURO_BASE_COM_CENA = 0.88   # com um painel de cena na tela, a legenda pode descer até aqui (abaixo do painel)
+
+
 def posicionar(blocos: list[dict], estilo: dict, pasta: Path, medir) -> list[str]:
     """Escolhe a altura de cada bloco para não cobrir o rosto. Devolve avisos."""
     for b in blocos:
+        if b.get("fixo"):          # altura escolhida à mão (por exemplo, para não cobrir um elemento): não mexe
+            continue
         b.pop("y", None)
         b.pop("lugar", None)
     if estilo["posicao"] != "auto":
@@ -184,32 +207,43 @@ def posicionar(blocos: list[dict], estilo: dict, pasta: Path, medir) -> list[str
     if rostos is None:
         return ["sem rosto.json: legenda embaixo, sem desviar do rosto (rode rosto.py)"]
     camera = Camera.carregar(pasta, largura, altura)
+    caixas = caixas_das_cenas(pasta, largura, altura, rostos, camera)
     alto_txt = caixa_texto(estilo)
     folga = altura * FOLGA_ROSTO
     padrao = base_padrao(estilo)
     avisos, anterior = [], None
     caixa = (lambda t: t.upper()) if estilo["maiusculas"] else (lambda t: t)
     for b in blocos:
+        if b.get("fixo"):
+            continue
         zonas = []
         for t, r in rostos.amostras(b["inicio"], b["fim"]):
             z = zona_protegida(r)
             zonas.append(camera.na_tela(z, t) if camera else z)
-        if not zonas:
+        painel = [c for c in caixas if b["fim"] > c[0] and b["inicio"] < c[1]]
+        if not zonas and not painel:
             continue
+        if not zonas:
+            zonas = [(0, 0, 0, 0)]
         zx0, zy0 = min(z[0] for z in zonas), min(z[1] for z in zonas)
         zx1, zy1 = max(z[2] for z in zonas), max(z[3] for z in zonas)
         meia = medir(caixa(b["texto"])) / 2 + alto_txt * 0.2
         cruza_x = largura / 2 - meia < zx1 and largura / 2 + meia > zx0
 
         def livre(y):
+            if any(y - alto_txt < c[5] + folga and y > c[3] - folga for c in painel):
+                return False        # a legenda não fica em cima do painel de cena
             return not (cruza_x and y - alto_txt < zy1 + folga and y > zy0 - folga)
 
         def cabe(y):
-            return y - alto_txt >= altura * SEGURO_TOPO and y <= altura * SEGURO_BASE
+            base = SEGURO_BASE_COM_CENA if painel else SEGURO_BASE
+            return y - alto_txt >= altura * SEGURO_TOPO and y <= altura * base
 
         opcoes = [(padrao, "embaixo")]
         if anterior and anterior[1] != "embaixo":
             opcoes.append(anterior)
+        for c in painel:
+            opcoes += [(c[5] + folga + alto_txt, "abaixo do painel"), (c[3] - folga, "acima do painel")]
         opcoes += [(zy1 + folga + alto_txt, "abaixo do queixo"), (zy0 - folga, "acima da testa")]
         escolha = next(((y, nome) for y, nome in opcoes if cabe(y) and livre(y)), None)
         if escolha is None:

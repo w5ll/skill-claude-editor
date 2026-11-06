@@ -87,7 +87,7 @@ def medir_loudnorm(wav: Path, alvo: float, pico: float) -> dict:
 def filtro_loudnorm(m: dict, alvo: float, pico: float) -> str:
     return (f"loudnorm=I={alvo}:TP={pico}:LRA=11:measured_I={m['input_i']}:measured_TP={m['input_tp']}:"
             f"measured_LRA={m['input_lra']}:measured_thresh={m['input_thresh']}:offset={m['target_offset']}:"
-            f"linear=true,aresample={TAXA}")
+            f"linear=true,aresample={TAXA},alimiter=limit=0.84:level=disabled:attack=2:release=60")
 
 
 def blocos_por_video(trechos: list[dict]) -> list[list[dict]]:
