@@ -322,6 +322,16 @@ class TestRetomadaEInvalidacao(Base):
         self.assertIn("camera.py", novo.scripts())
         self.assertIn("leve", next(c for c in novo.chamadas if c[0] == "camera.py"))
 
+    def test_ajustar_recusa_valor_no_formato_errado_sem_estragar_o_estado(self):
+        pasta = self.novo()
+        antes = editar.carregar(pasta)["escolhas"]["elementos"]
+        for ruim in ("elementos=nenhum", "elementos.inventada=1", "camera.leve=1"):
+            with self.assertRaises(editar.PedidoRecusado):
+                editar.ajustar(pasta, ruim)
+        self.assertEqual(editar.carregar(pasta)["escolhas"]["elementos"], antes)
+        editar.ajustar(pasta, "elementos.ligado=false")
+        self.assertIs(editar.carregar(pasta)["escolhas"]["elementos"]["ligado"], False)
+
     def test_ajustar_escolha_desconhecida_recusa(self):
         pasta = self.novo()
         with self.assertRaises(editar.PedidoRecusado):

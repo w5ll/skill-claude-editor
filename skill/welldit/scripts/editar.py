@@ -705,11 +705,22 @@ def ajustar(pasta: Path, escolha: str) -> list[str]:
     t = carregar(pasta)
     if chaves[0] not in ESCOLHAS_PADRAO:
         raise PedidoRecusado(f"escolha desconhecida: {chaves[0]} (use {', '.join(ESCOLHAS_PADRAO)})")
+    padrao = ESCOLHAS_PADRAO[chaves[0]]
+    novo = _valor(valor)
+    if isinstance(padrao, dict):
+        partes = ", ".join(padrao)
+        exemplo = f"{chaves[0]}.{next(iter(padrao))}=..."
+        if len(chaves) == 1 and not isinstance(novo, dict):
+            raise PedidoRecusado(f"{chaves[0]} tem várias partes: use {exemplo}. Partes: {partes}")
+        if len(chaves) > 1 and chaves[1] not in padrao:
+            raise PedidoRecusado(f"{chaves[0]} não tem a parte {chaves[1]}. Partes: {partes}")
+    elif len(chaves) > 1:
+        raise PedidoRecusado(f"{chaves[0]} é um valor só: use {chaves[0]}=valor")
     antes = {e.nome: situacao(t, e, pasta) for e in ETAPAS}
     alvo = t["escolhas"]
     for k in chaves[:-1]:
         alvo = alvo.setdefault(k, {})
-    alvo[chaves[-1]] = _valor(valor)
+    alvo[chaves[-1]] = novo
     t.setdefault("origens", {})[chaves[0]] = "pediu"
     salvar(pasta, t)
     return [e.nome for e in ETAPAS if antes[e.nome] == "feita" and situacao(t, e, pasta) == "desatualizada"]
