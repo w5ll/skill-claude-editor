@@ -52,9 +52,11 @@ class PedidoRecusado(Exception):
 
 ESCOLHAS_PADRAO = {
     "ritmo": "natural", "formato": "original", "hdr": None, "ruido": "auto", "termos": [],
-    "legenda": {"ligada": True, "palavras": 3, "posicao": "auto", "tamanho": 0.046, "maiusculas": False, "destaque": True},
+    "legenda": {"ligada": True, "palavras": 3, "posicao": "auto", "tamanho": 0.046, "maiusculas": False, "destaque": True,
+                "borda": "escura"},
     "elementos": {"ligado": True, "modo": "sobreposto", "intervalo": 6, "permitidos": [], "proibidos": [], "gerados": True},
     "camera": "nenhum", "som": {"musica": "nenhuma", "efeitos": False}, "volume": -14.0,
+    "publicidade": False,       # anúncio: o melhor gancho do vídeo é puxado para o começo e o roteiro é acertado
     "amostra": "conferir", "fatos": True, "gancho_olhar": True,
     "meta_duracao": None,       # segundos; só uma referência na tela de revisão dos cortes
     "pausas_ok": [],            # segundos (no vídeo editado) de pausas que a pessoa aceitou na conferência
@@ -160,17 +162,28 @@ def _legenda_reaproveitavel(t, p) -> bool:
             and estilo.get("destaque", True) == (leg.get("destaque") is not False))
 
 
+def _c_cortes(t, p):
+    cmds = [("propor_cortes.py", ["--pasta", str(p), "--ritmo", _v(t, "ritmo", "natural")], False)]
+    if _v(t, "publicidade", False) is True:      # anúncio: o gancho vem logo depois dos cortes, antes do rosto e da legenda
+        cmds.append(("publicidade.py", ["aplicar", "--pasta", str(p), "--auto"], False))
+    return cmds
+
+
 def _c_legenda(t, p):
     leg = _v(t, "legenda", {})
+    quer = leg.get("borda", "escura")
+    arq = p / "legendas.json"
+    atual = ler_json(arq).get("estilo", {}).get("borda", "escura") if arq.exists() else "escura"
+    borda = ["--borda", quer] if quer in ("escura", "limpa") and (quer != "escura" or atual != "escura") else []
     if _legenda_reaproveitavel(t, p):           # mudou só a câmera: o texto revisado fica
-        return [("legendas.py", ["--pasta", str(p), "--reaproveitar"], False)]
+        return [("legendas.py", ["--pasta", str(p), "--reaproveitar"] + borda, False)]
     a = ["--pasta", str(p), "--formato", _formato(t), "--palavras", str(leg.get("palavras", 3)),
          "--posicao", leg.get("posicao", "auto"), "--tamanho", str(leg.get("tamanho", 0.046))]
     if leg.get("maiusculas"):
         a.append("--maiusculas")
     if leg.get("destaque") is False:
         a.append("--sem-destaque")
-    return [("legendas.py", a, False)]
+    return [("legendas.py", a + borda, False)]
 
 
 def _c_som(t, p):
@@ -246,8 +259,8 @@ ETAPAS = [
     Etapa("inspecionar", "inspecionar", (), ("perfil",), ("@videos",), ("inspecao.json",), _c_inspecionar,
           portao=lambda t, p: {"nome": "cartao", "tipo": "aprovacao", "pergunta": "Aprovar o cartão de ajustes", "arquivos": []}),
     Etapa("transcrever", "transcrever", ("inspecionar",), ("termos",), (), ("transcricoes",), _c_transcrever),
-    Etapa("cortes", "cortes", ("transcrever",), ("ritmo",), (), ("cortes.json",),
-          lambda t, p: [("propor_cortes.py", ["--pasta", str(p), "--ritmo", _v(t, "ritmo", "natural")], False)],
+    Etapa("cortes", "cortes", ("transcrever",), ("ritmo", "publicidade"), (), ("cortes.json",),
+          _c_cortes,
           portao=lambda t, p: {"nome": "cortes", "tipo": "julgamento",
                                "pergunta": "Revisar os cortes (cortes.json): tomadas, fim da gravação, o que não pode sair",
                                "arquivos": ["cortes.json"]}),
@@ -403,7 +416,7 @@ def escolhas_da_serie(s: dict) -> tuple[dict, dict]:
     """(escolhas, origens) a partir de uma série: o que a série define vem dela, o resto fica no padrão."""
     esc = json.loads(json.dumps(ESCOLHAS_PADRAO))
     org = {}
-    for chave in ("ritmo", "formato", "ruido", "termos"):
+    for chave in ("ritmo", "formato", "ruido", "termos", "publicidade"):
         if chave in s:
             esc[chave], org[chave] = s[chave], "serie"
     for chave in ("legenda", "elementos"):
@@ -473,7 +486,10 @@ def texto_do_cartao(t: dict, insp: dict) -> str:
     leg = esc["legenda"]
     out.append("- 💬 **Legenda**: " + ("desligada" if not leg.get("ligada", True) else
                f"até {leg.get('palavras', 3)} palavras por vez, "
-               f"{ {'auto': 'fora do rosto', 'baixo': 'embaixo', 'meio': 'no meio', 'alto': 'em cima'}[leg.get('posicao', 'auto')] }") + f" {_tag(org, 'legenda')}")
+               f"{ {'auto': 'fora do rosto', 'baixo': 'embaixo', 'meio': 'no meio', 'alto': 'em cima'}[leg.get('posicao', 'auto')] }"
+               + (", sem borda escura" if leg.get("borda") == "limpa" else "")) + f" {_tag(org, 'legenda')}")
+    if esc.get("publicidade") is True:
+        out.append(f"- 📣 **Anúncio**: escolho a frase mais forte do vídeo (mesmo a do fim) para abrir e acerto o roteiro; frases inteiras, na ordem em que você falou o resto {_tag(org, 'publicidade')}")
     el = esc["elementos"]
     out.append("- ✨ **Elementos 3D**: " + ("desligados" if not el.get("ligado", True) else
                f"nas palavras que combinam, {'em tela cheia' if el.get('modo') == 'tela' else 'sobrepostos, fora do rosto'}, um a cada {el.get('intervalo', 6)} s no máximo"

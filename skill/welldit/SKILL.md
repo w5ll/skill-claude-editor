@@ -13,7 +13,7 @@ Sempre em português, com acentuação, sem travessão e sem termo em inglês se
 
 ## Arquivos de apoio
 
-Leia só o que a etapa pede. Em `referencias/`: `fluxo-manual.md` (cada etapa, o cartão, a entrega), `cortes.md`, `legendas.md`, `elementos-3d.md`, `rosto-e-camera.md`, `gancho-e-olhar.md`, `som-e-imagem.md` (volume, ruído, HDR, formato, música), `fatos.md`, `imagens.md`, `cenas.md`, `series.md` (jeito de editar de um conjunto de vídeos), `publicacao.md` (capa, texto do post, limites do Instagram), `orquestrador.md` (o `editar.py` por dentro), `painel.md` (o painel que executa), `gravacao.md` (dicas para a pessoa), `licoes-de-edicao.md` (lições de corte, áudio e legenda vindas de outros projetos), `instalacao.md` (o `./instalar.sh` da raiz do projeto prepara tudo). O perfil de marca está em `perfis/NOME/marca.json`. Scripts em `scripts/`; todos aceitam `--help`.
+Leia só o que a etapa pede. Em `referencias/`: `fluxo-manual.md` (cada etapa, o cartão, a entrega), `cortes.md`, `legendas.md`, `elementos-3d.md`, `rosto-e-camera.md`, `gancho-e-olhar.md`, `som-e-imagem.md` (volume, ruído, HDR, formato, música), `fatos.md`, `imagens.md`, `cenas.md`, `series.md` (jeito de editar de um conjunto de vídeos), `publicacao.md` (capa, texto do post, limites do Instagram), `orquestrador.md` (o `editar.py` por dentro), `painel.md` (o painel que executa), `gravacao.md` (dicas para a pessoa), `licoes-de-edicao.md` (lições de corte, áudio e legenda vindas de outros projetos), `publicidade.md` (anúncio: melhor gancho puxado para o começo, roteiro e legenda limpa), `instalacao.md` (o `./instalar.sh` da raiz do projeto prepara tudo). O perfil de marca está em `perfis/NOME/marca.json`. Scripts em `scripts/`; todos aceitam `--help`.
 
 ## O fluxo
 
@@ -39,6 +39,8 @@ Cada etapa imprime uma linha; o texto completo fica em `etapas/<nome>.log` (só 
 | `legenda` | Corrija a grafia em `legendas.json` (`referencias/legendas.md`) e rode `legendas.py --reaproveitar`. |
 | `amostra` | Só se a pessoa pediu para aprovar a amostra; senão, a conferência da amostra basta. |
 | `problemas` | Falha da conferência: corrija (ganho, pausa, corte) ou explique como limite. Nunca entregue com "FALHOU" sem dizer. |
+
+**Anúncio** (a pessoa disse que é publicidade): use `--serie publicidade`; escolha o gancho com julgamento (`publicidade.py listar`, `aplicar --unidade N`) sem pedir novo ok e conte na entrega o que abriu e o que mudou de lugar (`referencias/publicidade.md`).
 
 Aprovar um portão é gravar a decisão: **nunca aprove no lugar da pessoa** os portões de cartão, fatos, elementos gerados e amostra aprovada por ela. Os de julgamento (cortes, legenda) são seus, mas a pessoa pode pedir para revisar.
 

@@ -12,7 +12,7 @@ Grava:
 - legendas.srt    arquivo de legenda separado, se a pessoa quiser subir à parte
 
 Visual: o do perfil de marca (perfis/NOME/marca.json). No perfil padrão, arven: Sora ExtraBold,
-texto #eaefef com contorno escuro, palavra que está sendo falada em #a8b4d4. Até 3 palavras
+texto #eaefef com contorno escuro (ou, com --borda limpa, só uma sombra suave), palavra que está sendo falada em #a8b4d4. Até 3 palavras
 por vez, fora do rosto e dentro da área segura do Instagram (longe dos botões da direita e da
 legenda do post). Os "termos" do perfil corrigem a caixa e a acentuação de marcas e termos.
 
@@ -267,6 +267,14 @@ def gerar_ass(blocos, largura, altura, estilo, marca) -> str:
     margem_h = round(largura * (1 - LARGURA_UTIL) / 2)
     texto, destaque, sombra = (cor_ass(cores[leg["cor_texto"]]), cor_ass(cores[leg["cor_palavra_falada"]]),
                                cor_ass(cores[leg["cor_contorno"]]))
+    if estilo.get("borda") == "limpa":
+        # sem a borda escura: só uma sombra suave, para a letra continuar legível sem pesar na imagem
+        borda, sombra_px, cor_sombra = max(2, round(tamanho * 0.07)), 0, f"&HA0{sombra[4:]}"
+        cor_borda = f"&H78{sombra[4:]}"        # contorno meio transparente e desfocado: um brilho escuro, não uma borda dura
+        desfoque = "\\blur3"
+    else:
+        borda, sombra_px, cor_sombra = contorno, max(1, contorno // 2), f"&H80{sombra[4:]}"
+        cor_borda, desfoque = sombra, ""
     linhas = [
         "[Script Info]", "ScriptType: v4.00+", f"PlayResX: {largura}", f"PlayResY: {altura}",
         "WrapStyle: 0", "ScaledBorderAndShadow: yes", "",
@@ -274,8 +282,8 @@ def gerar_ass(blocos, largura, altura, estilo, marca) -> str:
         "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, "
         "Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, "
         "MarginR, MarginV, Encoding",
-        f"Style: Legenda,{leg['fonte']},{tamanho},{texto},{texto},{sombra},&H80{sombra[4:]},0,0,0,0,100,100,0,0,1,"
-        f"{contorno},{max(1, contorno // 2)},{alinhamento},{margem_h},{margem_h},{margem_v},1",
+        f"Style: Legenda,{leg['fonte']},{tamanho},{texto},{texto},{cor_borda},{cor_sombra},0,0,0,0,100,100,0,0,1,"
+        f"{borda},{sombra_px},{alinhamento},{margem_h},{margem_h},{margem_v},1",
         "", "[Events]", "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
     ]
 
@@ -285,7 +293,8 @@ def gerar_ass(blocos, largura, altura, estilo, marca) -> str:
     for b in blocos:
         pal = b.get("palavras") or []
         partes = [caixa(escapar(p)) for p in b["texto"].split()]
-        pos = f"{{\\an2\\pos({largura // 2},{b['y']})}}" if b.get("y") is not None else ""
+        pos = f"{{\\an2\\pos({largura // 2},{b['y']}){desfoque}}}" if b.get("y") is not None else (
+            "{" + desfoque + "}" if desfoque else "")
         if not estilo["destaque"] or len(pal) != len(partes):
             # Sem destaque, ou o texto foi corrigido à mão e mudou o número de palavras.
             linhas.append(f"Dialogue: 0,{t_ass(b['inicio'])},{t_ass(b['fim'])},Legenda,,0,0,0,,{pos}{' '.join(partes)}")
@@ -315,6 +324,7 @@ def main():
     ap.add_argument("--tamanho", type=float, default=0.046, help="altura da letra em fração da altura do vídeo")
     ap.add_argument("--maiusculas", action="store_true")
     ap.add_argument("--sem-destaque", action="store_true", help="não pinta a palavra falada")
+    ap.add_argument("--borda", choices=["escura", "limpa"], help="limpa: sem a borda escura, só uma sombra suave")
     ap.add_argument("--reaproveitar", action="store_true", help="usa legendas.json já editado")
     ap.add_argument("--perfil", help="perfil de marca (padrão: o da pasta do trabalho)")
     a = ap.parse_args()
@@ -338,11 +348,13 @@ def main():
         dados = ler_json(destino)
         blocos, estilo = dados["blocos"], dados["estilo"]
         largura, altura = estilo["largura"], estilo["altura"]
+        if a.borda:
+            estilo["borda"] = a.borda
     else:
         largura, altura = dimensoes_saida(insp["largura"], insp["altura"], a.formato)
         estilo = {"palavras": a.palavras, "posicao": a.posicao, "tamanho": a.tamanho,
                   "maiusculas": a.maiusculas, "destaque": not a.sem_destaque,
-                  "formato": a.formato, "largura": largura, "altura": altura}
+                  "formato": a.formato, "largura": largura, "altura": altura, "borda": a.borda or "escura"}
         medir = Medidor(altura * a.tamanho, fonte)
         limite = largura * LARGURA_UTIL
         caixa = (lambda t: t.upper()) if a.maiusculas else (lambda t: t)
